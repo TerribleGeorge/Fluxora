@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'dashboard_page.dart';
+import 'catalog_page.dart';
 import 'settings_page.dart';
 import 'transactions_page.dart';
 
@@ -19,6 +20,7 @@ class _AppShellState extends State<AppShell> {
     final pages = [
       const DashboardPage(),
       const TransactionsPage(),
+      const CatalogPage(),
       const SettingsPage(),
     ];
     return LayoutBuilder(
@@ -50,6 +52,11 @@ class _AppShellState extends State<AppShell> {
                       label: Text('Lançamentos'),
                     ),
                     NavigationRailDestination(
+                      icon: Icon(Icons.storefront_outlined),
+                      selectedIcon: Icon(Icons.storefront),
+                      label: Text('Equipe e serviços'),
+                    ),
+                    NavigationRailDestination(
                       icon: Icon(Icons.settings_outlined),
                       selectedIcon: Icon(Icons.settings),
                       label: Text('Configurações'),
@@ -77,6 +84,11 @@ class _AppShellState extends State<AppShell> {
                 icon: Icon(Icons.receipt_long_outlined),
                 selectedIcon: Icon(Icons.receipt_long),
                 label: 'Lançamentos',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.storefront_outlined),
+                selectedIcon: Icon(Icons.storefront),
+                label: 'Cadastros',
               ),
               NavigationDestination(
                 icon: Icon(Icons.settings_outlined),

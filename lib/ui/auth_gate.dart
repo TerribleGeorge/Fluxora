@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../domain/business_repository.dart';
+import '../domain/catalog_repository.dart';
 import '../domain/finance_repository.dart';
 import '../state/auth_bloc.dart';
 import '../state/auth_state.dart';
@@ -14,11 +15,14 @@ class AuthGate extends StatelessWidget {
     super.key,
     required this.businessRepository,
     required this.financeRepositoryFactory,
+    required this.catalogRepositoryFactory,
   });
 
   final BusinessRepository? businessRepository;
   final FinanceRepository Function(BusinessAccess access)?
   financeRepositoryFactory;
+  final CatalogRepository Function(BusinessAccess access)?
+  catalogRepositoryFactory;
 
   @override
   Widget build(BuildContext context) {
@@ -26,11 +30,14 @@ class AuthGate extends StatelessWidget {
       buildWhen: (previous, current) => previous.status != current.status,
       builder: (context, state) => switch (state.status) {
         AuthStatus.authenticated =>
-          businessRepository == null || financeRepositoryFactory == null
+          businessRepository == null ||
+                  financeRepositoryFactory == null ||
+                  catalogRepositoryFactory == null
               ? const _ConfigurationError()
               : BusinessGate(
                   businessRepository: businessRepository!,
                   financeRepositoryFactory: financeRepositoryFactory!,
+                  catalogRepositoryFactory: catalogRepositoryFactory!,
                 ),
         AuthStatus.recovery => const PasswordRecoveryPage(),
         AuthStatus.unauthenticated || AuthStatus.loading => const AuthPage(),

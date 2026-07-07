@@ -3,14 +3,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app/fluxora_app.dart';
+import 'data/local_catalog_repository.dart';
 import 'data/local_finance_repository.dart';
+import 'data/offline_first_catalog_repository.dart';
 import 'data/offline_first_finance_repository.dart';
 import 'data/supabase_auth_repository.dart';
 import 'data/supabase_business_repository.dart';
+import 'data/supabase_catalog_repository.dart';
 import 'data/supabase_finance_repository.dart';
 import 'data/unconfigured_auth_repository.dart';
 import 'domain/auth_repository.dart';
 import 'domain/business_repository.dart';
+import 'domain/catalog_repository.dart';
 import 'domain/finance_repository.dart';
 
 Future<void> main() async {
@@ -21,6 +25,7 @@ Future<void> main() async {
       authRepository: dependencies.auth,
       businessRepository: dependencies.business,
       financeRepositoryFactory: dependencies.financeFactory,
+      catalogRepositoryFactory: dependencies.catalogFactory,
     ),
   );
 }
@@ -29,6 +34,7 @@ typedef _Dependencies = ({
   AuthRepository auth,
   BusinessRepository? business,
   FinanceRepository Function(BusinessAccess access)? financeFactory,
+  CatalogRepository Function(BusinessAccess access)? catalogFactory,
 });
 
 Future<_Dependencies> _createDependencies() async {
@@ -39,6 +45,7 @@ Future<_Dependencies> _createDependencies() async {
       auth: UnconfiguredAuthRepository(),
       business: null,
       financeFactory: null,
+      catalogFactory: null,
     );
   }
   await Supabase.initialize(url: url, publishableKey: publishableKey);
@@ -61,6 +68,15 @@ Future<_Dependencies> _createDependencies() async {
       return OfflineFirstFinanceRepository(
         local: local,
         remote: remote,
+        preferences: preferences,
+        businessId: businessId,
+      );
+    },
+    catalogFactory: (access) {
+      final businessId = access.business.id;
+      return OfflineFirstCatalogRepository(
+        local: LocalCatalogRepository(preferences, businessId),
+        remote: SupabaseCatalogRepository(client, businessId),
         preferences: preferences,
         businessId: businessId,
       );

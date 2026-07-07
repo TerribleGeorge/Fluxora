@@ -16,9 +16,9 @@ clínicas de estética não médica.
 - [x] 1. Definir posicionamento, público e escopo da versão 1 — **Concluído**
 - [x] 2. Definir arquitetura de usuários, negócios e permissões — **Concluído**
 - [x] 3. Implementar autenticação e recuperação de acesso — **Concluído**
-- [ ] 4. Implementar banco em nuvem e sincronização local — **Em andamento**
-- [ ] 5. Implementar cadastro de profissionais e serviços
-- [ ] 6. Implementar atendimentos, vendas e formas de pagamento
+- [x] 4. Implementar banco em nuvem e sincronização local — **Concluído no código; implantação externa pendente**
+- [x] 5. Implementar cadastro de profissionais e serviços — **Concluído**
+- [ ] 6. Implementar atendimentos, vendas e formas de pagamento — **Em andamento**
 - [ ] 7. Implementar comissões, repasses e fechamento de caixa
 - [ ] 8. Implementar despesas, taxas e retirada do proprietário
 - [ ] 9. Implementar dashboard de lucro e relatórios

@@ -3,10 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
 import '../domain/business_repository.dart';
+import '../domain/catalog_repository.dart';
 import '../domain/finance_repository.dart';
 import '../state/business_bloc.dart';
 import '../state/business_event.dart';
 import '../state/business_state.dart';
+import '../state/catalog_bloc.dart';
+import '../state/catalog_event.dart';
 import '../state/finance_bloc.dart';
 import '../state/finance_event.dart';
 import 'app_shell.dart';
@@ -17,11 +20,14 @@ class BusinessGate extends StatelessWidget {
     super.key,
     required this.businessRepository,
     required this.financeRepositoryFactory,
+    required this.catalogRepositoryFactory,
   });
 
   final BusinessRepository businessRepository;
   final FinanceRepository Function(BusinessAccess access)
   financeRepositoryFactory;
+  final CatalogRepository Function(BusinessAccess access)
+  catalogRepositoryFactory;
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +55,7 @@ class BusinessGate extends StatelessWidget {
             key: ValueKey(state.selected!.business.id),
             access: state.selected!,
             repository: financeRepositoryFactory(state.selected!),
+            catalogRepository: catalogRepositoryFactory(state.selected!),
           ),
         },
       ),
@@ -61,10 +68,12 @@ class _BusinessWorkspace extends StatelessWidget {
     super.key,
     required this.access,
     required this.repository,
+    required this.catalogRepository,
   });
 
   final BusinessAccess access;
   final FinanceRepository repository;
+  final CatalogRepository catalogRepository;
 
   @override
   Widget build(BuildContext context) {
@@ -72,8 +81,18 @@ class _BusinessWorkspace extends StatelessWidget {
       value: access,
       child: Provider<FinanceRepository>.value(
         value: repository,
-        child: BlocProvider(
-          create: (_) => FinanceBloc(repository)..add(const FinanceStarted()),
+        child: MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (_) =>
+                  FinanceBloc(repository)..add(const FinanceStarted()),
+            ),
+            BlocProvider(
+              create: (_) =>
+                  CatalogBloc(catalogRepository, access.business.id)
+                    ..add(const CatalogStarted()),
+            ),
+          ],
           child: const AppShell(),
         ),
       ),
