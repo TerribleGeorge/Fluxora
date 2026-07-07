@@ -83,26 +83,19 @@ class _AppShellState extends State<AppShell> {
             ),
           );
         }
+        const mobileIndices = [0, 3, 4, 2, 5];
+        final mobileSelected = mobileIndices.indexOf(_index);
         return Scaffold(
           body: content,
           bottomNavigationBar: NavigationBar(
-            selectedIndex: _index,
-            onDestinationSelected: (value) => setState(() => _index = value),
+            selectedIndex: mobileSelected < 0 ? 0 : mobileSelected,
+            onDestinationSelected: (value) =>
+                setState(() => _index = mobileIndices[value]),
             destinations: const [
               NavigationDestination(
                 icon: Icon(Icons.dashboard_outlined),
                 selectedIcon: Icon(Icons.dashboard),
                 label: 'Início',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.receipt_long_outlined),
-                selectedIcon: Icon(Icons.receipt_long),
-                label: 'Lançamentos',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.storefront_outlined),
-                selectedIcon: Icon(Icons.storefront),
-                label: 'Cadastros',
               ),
               NavigationDestination(
                 icon: Icon(Icons.point_of_sale_outlined),
@@ -115,9 +108,14 @@ class _AppShellState extends State<AppShell> {
                 label: 'Caixa',
               ),
               NavigationDestination(
-                icon: Icon(Icons.settings_outlined),
-                selectedIcon: Icon(Icons.settings),
-                label: 'Ajustes',
+                icon: Icon(Icons.storefront_outlined),
+                selectedIcon: Icon(Icons.storefront),
+                label: 'Cadastros',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.more_horiz),
+                selectedIcon: Icon(Icons.more),
+                label: 'Mais',
               ),
             ],
           ),

@@ -19,6 +19,8 @@ import 'data/supabase_sales_repository.dart';
 import 'data/supabase_operations_repository.dart';
 import 'data/cached_subscription_repository.dart';
 import 'data/supabase_subscription_repository.dart';
+import 'data/supabase_account_lifecycle_repository.dart';
+import 'data/unavailable_account_lifecycle_repository.dart';
 import 'data/unconfigured_auth_repository.dart';
 import 'domain/auth_repository.dart';
 import 'domain/business_repository.dart';
@@ -27,6 +29,7 @@ import 'domain/finance_repository.dart';
 import 'domain/sales_repository.dart';
 import 'domain/operations_repository.dart';
 import 'domain/subscription_repository.dart';
+import 'domain/account_lifecycle_repository.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,6 +43,7 @@ Future<void> main() async {
       salesRepositoryFactory: dependencies.salesFactory,
       operationsRepositoryFactory: dependencies.operationsFactory,
       subscriptionRepositoryFactory: dependencies.subscriptionFactory,
+      accountLifecycleRepository: dependencies.accountLifecycle,
     ),
   );
 }
@@ -52,6 +56,7 @@ typedef _Dependencies = ({
   SalesRepository Function(BusinessAccess access)? salesFactory,
   OperationsRepository Function(BusinessAccess access)? operationsFactory,
   SubscriptionRepository Function(BusinessAccess access)? subscriptionFactory,
+  AccountLifecycleRepository accountLifecycle,
 });
 
 Future<_Dependencies> _createDependencies() async {
@@ -66,6 +71,7 @@ Future<_Dependencies> _createDependencies() async {
       salesFactory: null,
       operationsFactory: null,
       subscriptionFactory: null,
+      accountLifecycle: UnavailableAccountLifecycleRepository(),
     );
   }
   await Supabase.initialize(url: url, publishableKey: publishableKey);
@@ -127,5 +133,6 @@ Future<_Dependencies> _createDependencies() async {
         businessId: businessId,
       );
     },
+    accountLifecycle: SupabaseAccountLifecycleRepository(client),
   );
 }

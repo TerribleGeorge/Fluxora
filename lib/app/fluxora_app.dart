@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
 
 import '../domain/auth_repository.dart';
 import '../domain/business_repository.dart';
@@ -8,6 +9,7 @@ import '../domain/finance_repository.dart';
 import '../domain/sales_repository.dart';
 import '../domain/operations_repository.dart';
 import '../domain/subscription_repository.dart';
+import '../domain/account_lifecycle_repository.dart';
 import '../state/auth_bloc.dart';
 import '../ui/auth_gate.dart';
 import 'theme.dart';
@@ -22,6 +24,7 @@ class FluxoraApp extends StatelessWidget {
     required this.salesRepositoryFactory,
     required this.operationsRepositoryFactory,
     required this.subscriptionRepositoryFactory,
+    required this.accountLifecycleRepository,
   });
 
   final AuthRepository authRepository;
@@ -35,24 +38,28 @@ class FluxoraApp extends StatelessWidget {
   operationsRepositoryFactory;
   final SubscriptionRepository Function(BusinessAccess access)?
   subscriptionRepositoryFactory;
+  final AccountLifecycleRepository accountLifecycleRepository;
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => AuthBloc(authRepository),
-      child: MaterialApp(
-        title: 'Fluxora',
-        debugShowCheckedModeBanner: false,
-        theme: FluxoraTheme.light,
-        darkTheme: FluxoraTheme.dark,
-        themeMode: ThemeMode.dark,
-        home: AuthGate(
-          businessRepository: businessRepository,
-          financeRepositoryFactory: financeRepositoryFactory,
-          catalogRepositoryFactory: catalogRepositoryFactory,
-          salesRepositoryFactory: salesRepositoryFactory,
-          operationsRepositoryFactory: operationsRepositoryFactory,
-          subscriptionRepositoryFactory: subscriptionRepositoryFactory,
+    return Provider<AccountLifecycleRepository>.value(
+      value: accountLifecycleRepository,
+      child: BlocProvider(
+        create: (_) => AuthBloc(authRepository),
+        child: MaterialApp(
+          title: 'Fluxora',
+          debugShowCheckedModeBanner: false,
+          theme: FluxoraTheme.light,
+          darkTheme: FluxoraTheme.dark,
+          themeMode: ThemeMode.dark,
+          home: AuthGate(
+            businessRepository: businessRepository,
+            financeRepositoryFactory: financeRepositoryFactory,
+            catalogRepositoryFactory: catalogRepositoryFactory,
+            salesRepositoryFactory: salesRepositoryFactory,
+            operationsRepositoryFactory: operationsRepositoryFactory,
+            subscriptionRepositoryFactory: subscriptionRepositoryFactory,
+          ),
         ),
       ),
     );

@@ -23,8 +23,8 @@ clínicas de estética não médica.
 - [x] 8. Implementar despesas, taxas e retirada do proprietário — **Concluído**
 - [x] 9. Implementar dashboard de lucro e relatórios — **Concluído**
 - [x] 10. Implementar onboarding, planos e período de teste — **Concluído**
-- [ ] 11. Preparar privacidade, exclusão de conta e Play Store — **Em andamento**
-- [ ] 12. Executar testes, beta fechado e publicação
+- [x] 11. Preparar privacidade, exclusão de conta e Play Store — **Concluído no código; URLs públicas pendentes**
+- [ ] 12. Executar testes, beta fechado e publicação — **Bloqueado por contas externas**
 
 ## Regra de trabalho
 
