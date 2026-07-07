@@ -6,20 +6,24 @@ import 'app/fluxora_app.dart';
 import 'data/local_catalog_repository.dart';
 import 'data/local_finance_repository.dart';
 import 'data/local_sales_repository.dart';
+import 'data/local_operations_repository.dart';
 import 'data/offline_first_catalog_repository.dart';
 import 'data/offline_first_finance_repository.dart';
 import 'data/offline_first_sales_repository.dart';
+import 'data/offline_first_operations_repository.dart';
 import 'data/supabase_auth_repository.dart';
 import 'data/supabase_business_repository.dart';
 import 'data/supabase_catalog_repository.dart';
 import 'data/supabase_finance_repository.dart';
 import 'data/supabase_sales_repository.dart';
+import 'data/supabase_operations_repository.dart';
 import 'data/unconfigured_auth_repository.dart';
 import 'domain/auth_repository.dart';
 import 'domain/business_repository.dart';
 import 'domain/catalog_repository.dart';
 import 'domain/finance_repository.dart';
 import 'domain/sales_repository.dart';
+import 'domain/operations_repository.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,6 +35,7 @@ Future<void> main() async {
       financeRepositoryFactory: dependencies.financeFactory,
       catalogRepositoryFactory: dependencies.catalogFactory,
       salesRepositoryFactory: dependencies.salesFactory,
+      operationsRepositoryFactory: dependencies.operationsFactory,
     ),
   );
 }
@@ -41,6 +46,7 @@ typedef _Dependencies = ({
   FinanceRepository Function(BusinessAccess access)? financeFactory,
   CatalogRepository Function(BusinessAccess access)? catalogFactory,
   SalesRepository Function(BusinessAccess access)? salesFactory,
+  OperationsRepository Function(BusinessAccess access)? operationsFactory,
 });
 
 Future<_Dependencies> _createDependencies() async {
@@ -53,6 +59,7 @@ Future<_Dependencies> _createDependencies() async {
       financeFactory: null,
       catalogFactory: null,
       salesFactory: null,
+      operationsFactory: null,
     );
   }
   await Supabase.initialize(url: url, publishableKey: publishableKey);
@@ -93,6 +100,15 @@ Future<_Dependencies> _createDependencies() async {
       return OfflineFirstSalesRepository(
         local: LocalSalesRepository(preferences, businessId),
         remote: SupabaseSalesRepository(client, businessId),
+        preferences: preferences,
+        businessId: businessId,
+      );
+    },
+    operationsFactory: (access) {
+      final businessId = access.business.id;
+      return OfflineFirstOperationsRepository(
+        local: LocalOperationsRepository(preferences, businessId),
+        remote: SupabaseOperationsRepository(client, businessId),
         preferences: preferences,
         businessId: businessId,
       );

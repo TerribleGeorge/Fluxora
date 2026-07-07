@@ -5,6 +5,7 @@ import '../domain/business_repository.dart';
 import '../domain/catalog_repository.dart';
 import '../domain/finance_repository.dart';
 import '../domain/sales_repository.dart';
+import '../domain/operations_repository.dart';
 import '../state/auth_bloc.dart';
 import '../state/auth_state.dart';
 import 'auth_page.dart';
@@ -18,6 +19,7 @@ class AuthGate extends StatelessWidget {
     required this.financeRepositoryFactory,
     required this.catalogRepositoryFactory,
     required this.salesRepositoryFactory,
+    required this.operationsRepositoryFactory,
   });
 
   final BusinessRepository? businessRepository;
@@ -26,6 +28,8 @@ class AuthGate extends StatelessWidget {
   final CatalogRepository Function(BusinessAccess access)?
   catalogRepositoryFactory;
   final SalesRepository Function(BusinessAccess access)? salesRepositoryFactory;
+  final OperationsRepository Function(BusinessAccess access)?
+  operationsRepositoryFactory;
 
   @override
   Widget build(BuildContext context) {
@@ -36,13 +40,15 @@ class AuthGate extends StatelessWidget {
           businessRepository == null ||
                   financeRepositoryFactory == null ||
                   catalogRepositoryFactory == null ||
-                  salesRepositoryFactory == null
+                  salesRepositoryFactory == null ||
+                  operationsRepositoryFactory == null
               ? const _ConfigurationError()
               : BusinessGate(
                   businessRepository: businessRepository!,
                   financeRepositoryFactory: financeRepositoryFactory!,
                   catalogRepositoryFactory: catalogRepositoryFactory!,
                   salesRepositoryFactory: salesRepositoryFactory!,
+                  operationsRepositoryFactory: operationsRepositoryFactory!,
                 ),
         AuthStatus.recovery => const PasswordRecoveryPage(),
         AuthStatus.unauthenticated || AuthStatus.loading => const AuthPage(),

@@ -12,6 +12,7 @@ class SaleItem {
     required this.quantity,
     required this.unitPrice,
     this.serviceId,
+    this.commissionAmount = 0,
   });
 
   final String id;
@@ -20,6 +21,7 @@ class SaleItem {
   final int quantity;
   final double unitPrice;
   final String? serviceId;
+  final double commissionAmount;
 
   double get total => quantity * unitPrice;
 
@@ -30,6 +32,7 @@ class SaleItem {
     'quantity': quantity,
     'unitPrice': unitPrice,
     'serviceId': serviceId,
+    'commissionAmount': commissionAmount,
   };
 
   factory SaleItem.fromJson(Map<String, dynamic> json) => SaleItem(
@@ -39,6 +42,17 @@ class SaleItem {
     quantity: json['quantity'] as int,
     unitPrice: (json['unitPrice'] as num).toDouble(),
     serviceId: json['serviceId'] as String?,
+    commissionAmount: (json['commissionAmount'] as num?)?.toDouble() ?? 0,
+  );
+
+  SaleItem withCommission(double value) => SaleItem(
+    id: id,
+    type: type,
+    description: description,
+    quantity: quantity,
+    unitPrice: unitPrice,
+    serviceId: serviceId,
+    commissionAmount: value,
   );
 }
 
@@ -104,6 +118,8 @@ class Sale {
 
   double get grossTotal => items.fold(0, (sum, item) => sum + item.total);
   double get netTotal => grossTotal - payment.feeAmount;
+  double get commissionTotal =>
+      items.fold(0, (sum, item) => sum + item.commissionAmount);
 
   Sale copyWith({SaleStatus? status}) => Sale(
     id: id,

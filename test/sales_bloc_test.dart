@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluxora/data/local_sales_repository.dart';
+import 'package:fluxora/data/local_catalog_repository.dart';
+import 'package:fluxora/domain/catalog.dart';
 import 'package:fluxora/domain/sale.dart';
 import 'package:fluxora/state/sales_bloc.dart';
 import 'package:fluxora/state/sales_event.dart';
@@ -8,18 +10,38 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   late LocalSalesRepository repository;
+  late LocalCatalogRepository catalogRepository;
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
-    repository = LocalSalesRepository(
-      await SharedPreferences.getInstance(),
-      'business-1',
+    final preferences = await SharedPreferences.getInstance();
+    repository = LocalSalesRepository(preferences, 'business-1');
+    catalogRepository = LocalCatalogRepository(preferences, 'business-1');
+    await catalogRepository.saveProfessional(
+      Professional(
+        id: 'professional-1',
+        businessId: 'business-1',
+        name: 'Ana',
+        defaultCommissionPercent: 40,
+        createdAt: DateTime(2026, 7, 7),
+      ),
+    );
+    await catalogRepository.saveService(
+      BeautyService(
+        id: 'service-1',
+        businessId: 'business-1',
+        name: 'Corte',
+        price: 100,
+        durationMinutes: 30,
+        createdAt: DateTime(2026, 7, 7),
+      ),
     );
   });
 
   test('registra venda e calcula taxa líquida', () async {
     final bloc = SalesBloc(
       repository,
+      catalogRepository: catalogRepository,
       businessId: 'business-1',
       userId: 'user-1',
     );
@@ -50,6 +72,7 @@ void main() {
     expect(state.sales.single.grossTotal, 100);
     expect(state.sales.single.payment.feeAmount, 4);
     expect(state.sales.single.netTotal, 96);
+    expect(state.sales.single.commissionTotal, 40);
   });
 
   test('cancela sem apagar o histórico da venda', () async {
@@ -76,6 +99,7 @@ void main() {
     );
     final bloc = SalesBloc(
       repository,
+      catalogRepository: catalogRepository,
       businessId: 'business-1',
       userId: 'user-1',
     );
@@ -94,6 +118,7 @@ void main() {
   test('rejeita venda sem profissional', () async {
     final bloc = SalesBloc(
       repository,
+      catalogRepository: catalogRepository,
       businessId: 'business-1',
       userId: 'user-1',
     );

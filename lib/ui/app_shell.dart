@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'dashboard_page.dart';
 import 'catalog_page.dart';
 import 'sales_page.dart';
+import 'operations_page.dart';
 import 'settings_page.dart';
 import 'transactions_page.dart';
 
@@ -23,6 +24,7 @@ class _AppShellState extends State<AppShell> {
       const TransactionsPage(),
       const CatalogPage(),
       const SalesPage(),
+      const OperationsPage(),
       const SettingsPage(),
     ];
     return LayoutBuilder(
@@ -64,6 +66,11 @@ class _AppShellState extends State<AppShell> {
                       label: Text('Vendas'),
                     ),
                     NavigationRailDestination(
+                      icon: Icon(Icons.account_balance_wallet_outlined),
+                      selectedIcon: Icon(Icons.account_balance_wallet),
+                      label: Text('Caixa e comissões'),
+                    ),
+                    NavigationRailDestination(
                       icon: Icon(Icons.settings_outlined),
                       selectedIcon: Icon(Icons.settings),
                       label: Text('Configurações'),
@@ -101,6 +108,11 @@ class _AppShellState extends State<AppShell> {
                 icon: Icon(Icons.point_of_sale_outlined),
                 selectedIcon: Icon(Icons.point_of_sale),
                 label: 'Vendas',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.account_balance_wallet_outlined),
+                selectedIcon: Icon(Icons.account_balance_wallet),
+                label: 'Caixa',
               ),
               NavigationDestination(
                 icon: Icon(Icons.settings_outlined),

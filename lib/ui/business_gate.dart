@@ -6,6 +6,7 @@ import '../domain/business_repository.dart';
 import '../domain/catalog_repository.dart';
 import '../domain/finance_repository.dart';
 import '../domain/sales_repository.dart';
+import '../domain/operations_repository.dart';
 import '../state/auth_bloc.dart';
 import '../state/business_bloc.dart';
 import '../state/business_event.dart';
@@ -16,6 +17,8 @@ import '../state/finance_bloc.dart';
 import '../state/finance_event.dart';
 import '../state/sales_bloc.dart';
 import '../state/sales_event.dart';
+import '../state/operations_bloc.dart';
+import '../state/operations_event.dart';
 import 'app_shell.dart';
 import 'business_setup_page.dart';
 
@@ -26,6 +29,7 @@ class BusinessGate extends StatelessWidget {
     required this.financeRepositoryFactory,
     required this.catalogRepositoryFactory,
     required this.salesRepositoryFactory,
+    required this.operationsRepositoryFactory,
   });
 
   final BusinessRepository businessRepository;
@@ -34,6 +38,8 @@ class BusinessGate extends StatelessWidget {
   final CatalogRepository Function(BusinessAccess access)
   catalogRepositoryFactory;
   final SalesRepository Function(BusinessAccess access) salesRepositoryFactory;
+  final OperationsRepository Function(BusinessAccess access)
+  operationsRepositoryFactory;
 
   @override
   Widget build(BuildContext context) {
@@ -63,6 +69,7 @@ class BusinessGate extends StatelessWidget {
             repository: financeRepositoryFactory(state.selected!),
             catalogRepository: catalogRepositoryFactory(state.selected!),
             salesRepository: salesRepositoryFactory(state.selected!),
+            operationsRepository: operationsRepositoryFactory(state.selected!),
           ),
         },
       ),
@@ -77,12 +84,14 @@ class _BusinessWorkspace extends StatelessWidget {
     required this.repository,
     required this.catalogRepository,
     required this.salesRepository,
+    required this.operationsRepository,
   });
 
   final BusinessAccess access;
   final FinanceRepository repository;
   final CatalogRepository catalogRepository;
   final SalesRepository salesRepository;
+  final OperationsRepository operationsRepository;
 
   @override
   Widget build(BuildContext context) {
@@ -104,9 +113,18 @@ class _BusinessWorkspace extends StatelessWidget {
             BlocProvider(
               create: (context) => SalesBloc(
                 salesRepository,
+                catalogRepository: catalogRepository,
                 businessId: access.business.id,
                 userId: context.read<AuthBloc>().state.identity!.id,
               )..add(const SalesStarted()),
+            ),
+            BlocProvider(
+              create: (context) => OperationsBloc(
+                operationsRepository,
+                salesRepository,
+                businessId: access.business.id,
+                userId: context.read<AuthBloc>().state.identity!.id,
+              )..add(const OperationsStarted()),
             ),
           ],
           child: const AppShell(),

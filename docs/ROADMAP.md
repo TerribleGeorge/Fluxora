@@ -19,8 +19,8 @@ clínicas de estética não médica.
 - [x] 4. Implementar banco em nuvem e sincronização local — **Concluído no código; implantação externa pendente**
 - [x] 5. Implementar cadastro de profissionais e serviços — **Concluído**
 - [x] 6. Implementar atendimentos, vendas e formas de pagamento — **Concluído**
-- [ ] 7. Implementar comissões, repasses e fechamento de caixa — **Em andamento**
-- [ ] 8. Implementar despesas, taxas e retirada do proprietário
+- [x] 7. Implementar comissões, repasses e fechamento de caixa — **Concluído**
+- [ ] 8. Implementar despesas, taxas e retirada do proprietário — **Em andamento**
 - [ ] 9. Implementar dashboard de lucro e relatórios
 - [ ] 10. Implementar onboarding, planos e período de teste
 - [ ] 11. Preparar privacidade, exclusão de conta e Play Store

@@ -1,20 +1,28 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../domain/id_generator.dart';
+import '../domain/catalog.dart';
+import '../domain/catalog_repository.dart';
 import '../domain/sale.dart';
 import '../domain/sales_repository.dart';
 import 'sales_event.dart';
 import 'sales_state.dart';
 
 class SalesBloc extends Bloc<SalesEvent, SalesState> {
-  SalesBloc(this._repository, {required this.businessId, required this.userId})
-    : super(const SalesState()) {
+  SalesBloc(
+    this._repository, {
+    required CatalogRepository catalogRepository,
+    required this.businessId,
+    required this.userId,
+  }) : _catalogRepository = catalogRepository,
+       super(const SalesState()) {
     on<SalesStarted>(_onStarted);
     on<SaleCreated>(_onCreated);
     on<SaleCancelled>(_onCancelled);
   }
 
   final SalesRepository _repository;
+  final CatalogRepository _catalogRepository;
   final String businessId;
   final String userId;
 
@@ -42,12 +50,39 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
       _failure(emit, 'Revise profissional, itens e forma de pagamento.');
       return;
     }
+    final professionals = await _catalogRepository.getProfessionals();
+    final services = await _catalogRepository.getServices();
+    final professional = professionals
+        .where((item) => item.id == event.professionalId)
+        .firstOrNull;
+    if (professional == null) {
+      _failure(emit, 'O profissional selecionado não foi encontrado.');
+      return;
+    }
+    final calculatedItems = event.items
+        .map((item) {
+          if (item.type != SaleItemType.service) return item.withCommission(0);
+          final service = services
+              .where((candidate) => candidate.id == item.serviceId)
+              .firstOrNull;
+          if (service == null) return item.withCommission(0);
+          final commission = switch (service.commissionType) {
+            ServiceCommissionType.businessDefault =>
+              item.total * professional.defaultCommissionPercent / 100,
+            ServiceCommissionType.percentage =>
+              item.total * service.commissionValue / 100,
+            ServiceCommissionType.fixedAmount =>
+              service.commissionValue * item.quantity,
+          };
+          return item.withCommission(commission);
+        })
+        .toList(growable: false);
     final now = DateTime.now();
     final sale = Sale(
       id: createUuid(),
       businessId: businessId,
       professionalId: event.professionalId,
-      items: List.unmodifiable(event.items),
+      items: calculatedItems,
       payment: SalePayment(
         method: event.paymentMethod,
         amount: total,
