@@ -5,6 +5,8 @@ import '../domain/operations.dart';
 import '../domain/operations_repository.dart';
 import '../domain/sale.dart';
 import '../domain/sales_repository.dart';
+import '../domain/finance_repository.dart';
+import '../domain/transaction.dart';
 import 'operations_event.dart';
 import 'operations_state.dart';
 
@@ -12,9 +14,11 @@ class OperationsBloc extends Bloc<OperationsEvent, OperationsState> {
   OperationsBloc(
     this._repository,
     this._salesRepository, {
+    required FinanceRepository financeRepository,
     required this.businessId,
     required this.userId,
-  }) : super(const OperationsState()) {
+  }) : _financeRepository = financeRepository,
+       super(const OperationsState()) {
     on<OperationsStarted>(_onStarted);
     on<CashOpened>(_onCashOpened);
     on<CashClosed>(_onCashClosed);
@@ -23,6 +27,7 @@ class OperationsBloc extends Bloc<OperationsEvent, OperationsState> {
 
   final OperationsRepository _repository;
   final SalesRepository _salesRepository;
+  final FinanceRepository _financeRepository;
   final String businessId;
   final String userId;
 
@@ -139,10 +144,12 @@ class OperationsBloc extends Bloc<OperationsEvent, OperationsState> {
         _repository.getPayouts(),
         _repository.getCashSessions(),
         _salesRepository.getSales(),
+        _financeRepository.getTransactions(),
       ]);
       final payouts = results[0] as List<CommissionPayout>;
       final sessions = results[1] as List<CashSession>;
       final sales = results[2] as List<Sale>;
+      final transactions = results[3] as List<FinanceTransaction>;
       final balances = <String, double>{};
       for (final sale in sales.where(
         (item) => item.status == SaleStatus.completed,
@@ -180,6 +187,15 @@ class OperationsBloc extends Bloc<OperationsEvent, OperationsState> {
                   !payout.paidAt.isBefore(open.openedAt),
             )
             .fold(0, (sum, payout) => sum + payout.amount);
+        for (final transaction in transactions.where(
+          (item) =>
+              item.paymentSource == EntryPaymentSource.cash &&
+              !item.date.isBefore(open.openedAt),
+        )) {
+          expected += transaction.type == TransactionType.income
+              ? transaction.amount
+              : -transaction.amount;
+        }
       }
       emit(
         OperationsState(

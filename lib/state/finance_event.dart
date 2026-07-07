@@ -15,6 +15,8 @@ final class FinanceTransactionAdded extends FinanceEvent {
     required this.category,
     required this.type,
     this.notes = '',
+    this.kind,
+    this.paymentSource = EntryPaymentSource.bank,
   });
 
   final String description;
@@ -22,6 +24,8 @@ final class FinanceTransactionAdded extends FinanceEvent {
   final String category;
   final TransactionType type;
   final String notes;
+  final FinancialEntryKind? kind;
+  final EntryPaymentSource paymentSource;
 }
 
 final class FinanceTransactionDeleted extends FinanceEvent {

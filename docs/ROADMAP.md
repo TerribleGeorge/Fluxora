@@ -20,8 +20,8 @@ clínicas de estética não médica.
 - [x] 5. Implementar cadastro de profissionais e serviços — **Concluído**
 - [x] 6. Implementar atendimentos, vendas e formas de pagamento — **Concluído**
 - [x] 7. Implementar comissões, repasses e fechamento de caixa — **Concluído**
-- [ ] 8. Implementar despesas, taxas e retirada do proprietário — **Em andamento**
-- [ ] 9. Implementar dashboard de lucro e relatórios
+- [x] 8. Implementar despesas, taxas e retirada do proprietário — **Concluído**
+- [ ] 9. Implementar dashboard de lucro e relatórios — **Em andamento**
 - [ ] 10. Implementar onboarding, planos e período de teste
 - [ ] 11. Preparar privacidade, exclusão de conta e Play Store
 - [ ] 12. Executar testes, beta fechado e publicação

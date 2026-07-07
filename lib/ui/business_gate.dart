@@ -122,6 +122,7 @@ class _BusinessWorkspace extends StatelessWidget {
               create: (context) => OperationsBloc(
                 operationsRepository,
                 salesRepository,
+                financeRepository: repository,
                 businessId: access.business.id,
                 userId: context.read<AuthBloc>().state.identity!.id,
               )..add(const OperationsStarted()),

@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluxora/data/local_operations_repository.dart';
 import 'package:fluxora/data/local_sales_repository.dart';
+import 'package:fluxora/data/in_memory_finance_repository.dart';
 import 'package:fluxora/domain/sale.dart';
 import 'package:fluxora/state/operations_bloc.dart';
 import 'package:fluxora/state/operations_event.dart';
@@ -23,6 +24,7 @@ void main() {
     final bloc = OperationsBloc(
       operationsRepository,
       salesRepository,
+      financeRepository: InMemoryFinanceRepository(seed: false),
       businessId: 'business-1',
       userId: 'user-1',
     );
@@ -50,6 +52,7 @@ void main() {
     final bloc = OperationsBloc(
       operationsRepository,
       salesRepository,
+      financeRepository: InMemoryFinanceRepository(seed: false),
       businessId: 'business-1',
       userId: 'user-1',
     );
@@ -79,6 +82,7 @@ void main() {
     final bloc = OperationsBloc(
       operationsRepository,
       salesRepository,
+      financeRepository: InMemoryFinanceRepository(seed: false),
       businessId: 'business-1',
       userId: 'user-1',
     );

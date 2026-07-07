@@ -99,4 +99,44 @@ void main() {
     expect(restored.type, TransactionType.income);
     expect(restored.notes, 'Pagamento confirmado');
   });
+
+  test('separa despesas, impostos e retiradas do proprietário', () {
+    final state = FinanceState(
+      status: FinanceStatus.success,
+      transactions: [
+        FinanceTransaction(
+          id: 'expense',
+          description: 'Aluguel',
+          amount: 1000,
+          category: 'Estrutura',
+          date: DateTime(2026, 7, 7),
+          type: TransactionType.expense,
+          kind: FinancialEntryKind.operatingExpense,
+        ),
+        FinanceTransaction(
+          id: 'tax',
+          description: 'DAS',
+          amount: 100,
+          category: 'Tributos',
+          date: DateTime(2026, 7, 7),
+          type: TransactionType.expense,
+          kind: FinancialEntryKind.tax,
+        ),
+        FinanceTransaction(
+          id: 'withdrawal',
+          description: 'Pró-labore',
+          amount: 500,
+          category: 'Retiradas',
+          date: DateTime(2026, 7, 7),
+          type: TransactionType.expense,
+          kind: FinancialEntryKind.ownerWithdrawal,
+        ),
+      ],
+    );
+
+    expect(state.operatingExpenses, 1000);
+    expect(state.taxes, 100);
+    expect(state.ownerWithdrawals, 500);
+    expect(state.expenses, 1600);
+  });
 }

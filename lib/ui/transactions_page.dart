@@ -16,6 +16,8 @@ class TransactionsPage extends StatelessWidget {
     final amount = TextEditingController();
     final category = TextEditingController();
     var type = TransactionType.expense;
+    var kind = FinancialEntryKind.operatingExpense;
+    var paymentSource = EntryPaymentSource.bank;
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -54,10 +56,43 @@ class TransactionsPage extends StatelessWidget {
                     ),
                   ],
                   selected: {type},
-                  onSelectionChanged: (value) =>
-                      setModalState(() => type = value.first),
+                  onSelectionChanged: (value) => setModalState(() {
+                    type = value.first;
+                    kind = type == TransactionType.income
+                        ? FinancialEntryKind.otherIncome
+                        : FinancialEntryKind.operatingExpense;
+                  }),
                 ),
                 const SizedBox(height: 16),
+                if (type == TransactionType.expense) ...[
+                  DropdownButtonFormField<FinancialEntryKind>(
+                    initialValue: kind,
+                    decoration: const InputDecoration(
+                      labelText: 'Tipo de saída',
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: FinancialEntryKind.operatingExpense,
+                        child: Text('Despesa operacional'),
+                      ),
+                      DropdownMenuItem(
+                        value: FinancialEntryKind.tax,
+                        child: Text('Imposto ou tributo'),
+                      ),
+                      DropdownMenuItem(
+                        value: FinancialEntryKind.ownerWithdrawal,
+                        child: Text('Retirada do proprietário'),
+                      ),
+                      DropdownMenuItem(
+                        value: FinancialEntryKind.otherExpense,
+                        child: Text('Outra saída'),
+                      ),
+                    ],
+                    onChanged: (value) =>
+                        setModalState(() => kind = value ?? kind),
+                  ),
+                  const SizedBox(height: 12),
+                ],
                 TextFormField(
                   controller: description,
                   textCapitalization: TextCapitalization.sentences,
@@ -93,6 +128,30 @@ class TransactionsPage extends StatelessWidget {
                     labelText: 'Categoria (opcional)',
                   ),
                 ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<EntryPaymentSource>(
+                  initialValue: paymentSource,
+                  decoration: const InputDecoration(
+                    labelText: 'Origem do valor',
+                  ),
+                  items: const [
+                    DropdownMenuItem(
+                      value: EntryPaymentSource.cash,
+                      child: Text('Caixa em dinheiro'),
+                    ),
+                    DropdownMenuItem(
+                      value: EntryPaymentSource.bank,
+                      child: Text('Banco / conta digital'),
+                    ),
+                    DropdownMenuItem(
+                      value: EntryPaymentSource.other,
+                      child: Text('Outra origem'),
+                    ),
+                  ],
+                  onChanged: (value) => setModalState(
+                    () => paymentSource = value ?? paymentSource,
+                  ),
+                ),
                 const SizedBox(height: 20),
                 FilledButton(
                   onPressed: () async {
@@ -110,6 +169,8 @@ class TransactionsPage extends StatelessWidget {
                                   : 'Despesas'
                             : category.text.trim(),
                         type: type,
+                        kind: kind,
+                        paymentSource: paymentSource,
                       ),
                     );
                     Navigator.pop(context);
@@ -181,7 +242,9 @@ class TransactionsPage extends StatelessWidget {
                     child: Card(
                       child: ListTile(
                         title: Text(item.description),
-                        subtitle: Text(item.category),
+                        subtitle: Text(
+                          '${_kindLabel(item.kind)} • ${item.category}',
+                        ),
                         leading: CircleAvatar(
                           child: Icon(
                             item.type == TransactionType.income
@@ -206,4 +269,13 @@ class TransactionsPage extends StatelessWidget {
       ),
     );
   }
+
+  String _kindLabel(FinancialEntryKind? kind) => switch (kind) {
+    FinancialEntryKind.otherIncome => 'Outra receita',
+    FinancialEntryKind.operatingExpense => 'Despesa operacional',
+    FinancialEntryKind.tax => 'Imposto',
+    FinancialEntryKind.ownerWithdrawal => 'Retirada do proprietário',
+    FinancialEntryKind.otherExpense => 'Outra saída',
+    null => 'Lançamento',
+  };
 }
