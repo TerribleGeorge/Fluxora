@@ -7,6 +7,7 @@ import '../domain/catalog_repository.dart';
 import '../domain/finance_repository.dart';
 import '../domain/sales_repository.dart';
 import '../domain/operations_repository.dart';
+import '../domain/subscription_repository.dart';
 import '../state/auth_bloc.dart';
 import '../state/business_bloc.dart';
 import '../state/business_event.dart';
@@ -19,7 +20,9 @@ import '../state/sales_bloc.dart';
 import '../state/sales_event.dart';
 import '../state/operations_bloc.dart';
 import '../state/operations_event.dart';
-import 'app_shell.dart';
+import '../state/subscription_bloc.dart';
+import '../state/subscription_event.dart';
+import 'subscription_shell.dart';
 import 'business_setup_page.dart';
 
 class BusinessGate extends StatelessWidget {
@@ -30,6 +33,7 @@ class BusinessGate extends StatelessWidget {
     required this.catalogRepositoryFactory,
     required this.salesRepositoryFactory,
     required this.operationsRepositoryFactory,
+    required this.subscriptionRepositoryFactory,
   });
 
   final BusinessRepository businessRepository;
@@ -40,6 +44,8 @@ class BusinessGate extends StatelessWidget {
   final SalesRepository Function(BusinessAccess access) salesRepositoryFactory;
   final OperationsRepository Function(BusinessAccess access)
   operationsRepositoryFactory;
+  final SubscriptionRepository Function(BusinessAccess access)
+  subscriptionRepositoryFactory;
 
   @override
   Widget build(BuildContext context) {
@@ -70,6 +76,9 @@ class BusinessGate extends StatelessWidget {
             catalogRepository: catalogRepositoryFactory(state.selected!),
             salesRepository: salesRepositoryFactory(state.selected!),
             operationsRepository: operationsRepositoryFactory(state.selected!),
+            subscriptionRepository: subscriptionRepositoryFactory(
+              state.selected!,
+            ),
           ),
         },
       ),
@@ -85,6 +94,7 @@ class _BusinessWorkspace extends StatelessWidget {
     required this.catalogRepository,
     required this.salesRepository,
     required this.operationsRepository,
+    required this.subscriptionRepository,
   });
 
   final BusinessAccess access;
@@ -92,6 +102,7 @@ class _BusinessWorkspace extends StatelessWidget {
   final CatalogRepository catalogRepository;
   final SalesRepository salesRepository;
   final OperationsRepository operationsRepository;
+  final SubscriptionRepository subscriptionRepository;
 
   @override
   Widget build(BuildContext context) {
@@ -127,8 +138,13 @@ class _BusinessWorkspace extends StatelessWidget {
                 userId: context.read<AuthBloc>().state.identity!.id,
               )..add(const OperationsStarted()),
             ),
+            BlocProvider(
+              create: (_) =>
+                  SubscriptionBloc(subscriptionRepository)
+                    ..add(const SubscriptionStarted()),
+            ),
           ],
-          child: const AppShell(),
+          child: const SubscriptionShell(),
         ),
       ),
     );

@@ -6,6 +6,7 @@ import '../domain/catalog_repository.dart';
 import '../domain/finance_repository.dart';
 import '../domain/sales_repository.dart';
 import '../domain/operations_repository.dart';
+import '../domain/subscription_repository.dart';
 import '../state/auth_bloc.dart';
 import '../state/auth_state.dart';
 import 'auth_page.dart';
@@ -20,6 +21,7 @@ class AuthGate extends StatelessWidget {
     required this.catalogRepositoryFactory,
     required this.salesRepositoryFactory,
     required this.operationsRepositoryFactory,
+    required this.subscriptionRepositoryFactory,
   });
 
   final BusinessRepository? businessRepository;
@@ -30,6 +32,8 @@ class AuthGate extends StatelessWidget {
   final SalesRepository Function(BusinessAccess access)? salesRepositoryFactory;
   final OperationsRepository Function(BusinessAccess access)?
   operationsRepositoryFactory;
+  final SubscriptionRepository Function(BusinessAccess access)?
+  subscriptionRepositoryFactory;
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +45,8 @@ class AuthGate extends StatelessWidget {
                   financeRepositoryFactory == null ||
                   catalogRepositoryFactory == null ||
                   salesRepositoryFactory == null ||
-                  operationsRepositoryFactory == null
+                  operationsRepositoryFactory == null ||
+                  subscriptionRepositoryFactory == null
               ? const _ConfigurationError()
               : BusinessGate(
                   businessRepository: businessRepository!,
@@ -49,6 +54,7 @@ class AuthGate extends StatelessWidget {
                   catalogRepositoryFactory: catalogRepositoryFactory!,
                   salesRepositoryFactory: salesRepositoryFactory!,
                   operationsRepositoryFactory: operationsRepositoryFactory!,
+                  subscriptionRepositoryFactory: subscriptionRepositoryFactory!,
                 ),
         AuthStatus.recovery => const PasswordRecoveryPage(),
         AuthStatus.unauthenticated || AuthStatus.loading => const AuthPage(),

@@ -7,6 +7,7 @@ import '../domain/catalog_repository.dart';
 import '../domain/finance_repository.dart';
 import '../domain/sales_repository.dart';
 import '../domain/operations_repository.dart';
+import '../domain/subscription_repository.dart';
 import '../state/auth_bloc.dart';
 import '../ui/auth_gate.dart';
 import 'theme.dart';
@@ -20,6 +21,7 @@ class FluxoraApp extends StatelessWidget {
     required this.catalogRepositoryFactory,
     required this.salesRepositoryFactory,
     required this.operationsRepositoryFactory,
+    required this.subscriptionRepositoryFactory,
   });
 
   final AuthRepository authRepository;
@@ -31,6 +33,8 @@ class FluxoraApp extends StatelessWidget {
   final SalesRepository Function(BusinessAccess access)? salesRepositoryFactory;
   final OperationsRepository Function(BusinessAccess access)?
   operationsRepositoryFactory;
+  final SubscriptionRepository Function(BusinessAccess access)?
+  subscriptionRepositoryFactory;
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +52,7 @@ class FluxoraApp extends StatelessWidget {
           catalogRepositoryFactory: catalogRepositoryFactory,
           salesRepositoryFactory: salesRepositoryFactory,
           operationsRepositoryFactory: operationsRepositoryFactory,
+          subscriptionRepositoryFactory: subscriptionRepositoryFactory,
         ),
       ),
     );

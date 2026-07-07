@@ -17,6 +17,8 @@ import 'data/supabase_catalog_repository.dart';
 import 'data/supabase_finance_repository.dart';
 import 'data/supabase_sales_repository.dart';
 import 'data/supabase_operations_repository.dart';
+import 'data/cached_subscription_repository.dart';
+import 'data/supabase_subscription_repository.dart';
 import 'data/unconfigured_auth_repository.dart';
 import 'domain/auth_repository.dart';
 import 'domain/business_repository.dart';
@@ -24,6 +26,7 @@ import 'domain/catalog_repository.dart';
 import 'domain/finance_repository.dart';
 import 'domain/sales_repository.dart';
 import 'domain/operations_repository.dart';
+import 'domain/subscription_repository.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,6 +39,7 @@ Future<void> main() async {
       catalogRepositoryFactory: dependencies.catalogFactory,
       salesRepositoryFactory: dependencies.salesFactory,
       operationsRepositoryFactory: dependencies.operationsFactory,
+      subscriptionRepositoryFactory: dependencies.subscriptionFactory,
     ),
   );
 }
@@ -47,6 +51,7 @@ typedef _Dependencies = ({
   CatalogRepository Function(BusinessAccess access)? catalogFactory,
   SalesRepository Function(BusinessAccess access)? salesFactory,
   OperationsRepository Function(BusinessAccess access)? operationsFactory,
+  SubscriptionRepository Function(BusinessAccess access)? subscriptionFactory,
 });
 
 Future<_Dependencies> _createDependencies() async {
@@ -60,6 +65,7 @@ Future<_Dependencies> _createDependencies() async {
       catalogFactory: null,
       salesFactory: null,
       operationsFactory: null,
+      subscriptionFactory: null,
     );
   }
   await Supabase.initialize(url: url, publishableKey: publishableKey);
@@ -109,6 +115,14 @@ Future<_Dependencies> _createDependencies() async {
       return OfflineFirstOperationsRepository(
         local: LocalOperationsRepository(preferences, businessId),
         remote: SupabaseOperationsRepository(client, businessId),
+        preferences: preferences,
+        businessId: businessId,
+      );
+    },
+    subscriptionFactory: (access) {
+      final businessId = access.business.id;
+      return CachedSubscriptionRepository(
+        remote: SupabaseSubscriptionRepository(client, businessId),
         preferences: preferences,
         businessId: businessId,
       );

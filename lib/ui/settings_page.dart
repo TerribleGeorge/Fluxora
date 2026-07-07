@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'plans_page.dart';
+
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
@@ -9,8 +11,8 @@ class SettingsPage extends StatelessWidget {
       appBar: AppBar(title: const Text('Configurações')),
       body: ListView(
         padding: const EdgeInsets.all(16),
-        children: const [
-          Card(
+        children: [
+          const Card(
             child: ListTile(
               leading: CircleAvatar(child: Icon(Icons.person_outline)),
               title: Text('Perfil do espaço'),
@@ -18,7 +20,7 @@ class SettingsPage extends StatelessWidget {
               trailing: Icon(Icons.chevron_right),
             ),
           ),
-          Card(
+          const Card(
             child: ListTile(
               leading: CircleAvatar(
                 child: Icon(Icons.account_balance_outlined),
@@ -28,7 +30,7 @@ class SettingsPage extends StatelessWidget {
               trailing: Icon(Icons.chevron_right),
             ),
           ),
-          Card(
+          const Card(
             child: ListTile(
               leading: CircleAvatar(child: Icon(Icons.group_outlined)),
               title: Text('Equipe e permissões'),
@@ -36,12 +38,25 @@ class SettingsPage extends StatelessWidget {
               trailing: Icon(Icons.chevron_right),
             ),
           ),
-          Card(
+          const Card(
             child: ListTile(
               leading: CircleAvatar(child: Icon(Icons.cloud_outlined)),
               title: Text('Sincronização segura'),
-              subtitle: Text('Supabase será conectado na próxima etapa'),
+              subtitle: Text('Dados locais e nuvem protegidos por acesso'),
               trailing: Icon(Icons.chevron_right),
+            ),
+          ),
+          Card(
+            child: ListTile(
+              leading: const CircleAvatar(
+                child: Icon(Icons.workspace_premium_outlined),
+              ),
+              title: const Text('Plano e assinatura'),
+              subtitle: const Text('Conheça os planos do Fluxora'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const PlansPage()),
+              ),
             ),
           ),
         ],

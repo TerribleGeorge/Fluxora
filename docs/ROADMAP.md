@@ -22,8 +22,8 @@ clínicas de estética não médica.
 - [x] 7. Implementar comissões, repasses e fechamento de caixa — **Concluído**
 - [x] 8. Implementar despesas, taxas e retirada do proprietário — **Concluído**
 - [x] 9. Implementar dashboard de lucro e relatórios — **Concluído**
-- [ ] 10. Implementar onboarding, planos e período de teste — **Em andamento**
-- [ ] 11. Preparar privacidade, exclusão de conta e Play Store
+- [x] 10. Implementar onboarding, planos e período de teste — **Concluído**
+- [ ] 11. Preparar privacidade, exclusão de conta e Play Store — **Em andamento**
 - [ ] 12. Executar testes, beta fechado e publicação
 
 ## Regra de trabalho
