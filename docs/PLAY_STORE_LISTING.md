@@ -31,6 +31,16 @@ Principais recursos:
 
 Negócios.
 
+## Materiais visuais prontos
+
+- Ícone da loja (512 x 512): `store_assets/fluxora-app-icon-512.png`.
+- Imagem de destaque (1024 x 500):
+  `store_assets/fluxora-feature-graphic-1024x500.png`.
+- Arquivos mestres: `assets/branding/`.
+
+As capturas de tela devem ser produzidas depois da configuração do projeto
+Supabase, para mostrar o fluxo real do produto sem dados de demonstração.
+
 ## Data safety preliminar
 
 - Dados pessoais: nome e e-mail para gerenciamento da conta.
