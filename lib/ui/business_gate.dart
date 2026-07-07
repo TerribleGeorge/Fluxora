@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../domain/business_repository.dart';
 import '../domain/catalog_repository.dart';
 import '../domain/finance_repository.dart';
+import '../domain/sales_repository.dart';
+import '../state/auth_bloc.dart';
 import '../state/business_bloc.dart';
 import '../state/business_event.dart';
 import '../state/business_state.dart';
@@ -12,6 +14,8 @@ import '../state/catalog_bloc.dart';
 import '../state/catalog_event.dart';
 import '../state/finance_bloc.dart';
 import '../state/finance_event.dart';
+import '../state/sales_bloc.dart';
+import '../state/sales_event.dart';
 import 'app_shell.dart';
 import 'business_setup_page.dart';
 
@@ -21,6 +25,7 @@ class BusinessGate extends StatelessWidget {
     required this.businessRepository,
     required this.financeRepositoryFactory,
     required this.catalogRepositoryFactory,
+    required this.salesRepositoryFactory,
   });
 
   final BusinessRepository businessRepository;
@@ -28,6 +33,7 @@ class BusinessGate extends StatelessWidget {
   financeRepositoryFactory;
   final CatalogRepository Function(BusinessAccess access)
   catalogRepositoryFactory;
+  final SalesRepository Function(BusinessAccess access) salesRepositoryFactory;
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +62,7 @@ class BusinessGate extends StatelessWidget {
             access: state.selected!,
             repository: financeRepositoryFactory(state.selected!),
             catalogRepository: catalogRepositoryFactory(state.selected!),
+            salesRepository: salesRepositoryFactory(state.selected!),
           ),
         },
       ),
@@ -69,11 +76,13 @@ class _BusinessWorkspace extends StatelessWidget {
     required this.access,
     required this.repository,
     required this.catalogRepository,
+    required this.salesRepository,
   });
 
   final BusinessAccess access;
   final FinanceRepository repository;
   final CatalogRepository catalogRepository;
+  final SalesRepository salesRepository;
 
   @override
   Widget build(BuildContext context) {
@@ -91,6 +100,13 @@ class _BusinessWorkspace extends StatelessWidget {
               create: (_) =>
                   CatalogBloc(catalogRepository, access.business.id)
                     ..add(const CatalogStarted()),
+            ),
+            BlocProvider(
+              create: (context) => SalesBloc(
+                salesRepository,
+                businessId: access.business.id,
+                userId: context.read<AuthBloc>().state.identity!.id,
+              )..add(const SalesStarted()),
             ),
           ],
           child: const AppShell(),

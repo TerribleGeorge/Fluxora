@@ -5,17 +5,21 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'app/fluxora_app.dart';
 import 'data/local_catalog_repository.dart';
 import 'data/local_finance_repository.dart';
+import 'data/local_sales_repository.dart';
 import 'data/offline_first_catalog_repository.dart';
 import 'data/offline_first_finance_repository.dart';
+import 'data/offline_first_sales_repository.dart';
 import 'data/supabase_auth_repository.dart';
 import 'data/supabase_business_repository.dart';
 import 'data/supabase_catalog_repository.dart';
 import 'data/supabase_finance_repository.dart';
+import 'data/supabase_sales_repository.dart';
 import 'data/unconfigured_auth_repository.dart';
 import 'domain/auth_repository.dart';
 import 'domain/business_repository.dart';
 import 'domain/catalog_repository.dart';
 import 'domain/finance_repository.dart';
+import 'domain/sales_repository.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +30,7 @@ Future<void> main() async {
       businessRepository: dependencies.business,
       financeRepositoryFactory: dependencies.financeFactory,
       catalogRepositoryFactory: dependencies.catalogFactory,
+      salesRepositoryFactory: dependencies.salesFactory,
     ),
   );
 }
@@ -35,6 +40,7 @@ typedef _Dependencies = ({
   BusinessRepository? business,
   FinanceRepository Function(BusinessAccess access)? financeFactory,
   CatalogRepository Function(BusinessAccess access)? catalogFactory,
+  SalesRepository Function(BusinessAccess access)? salesFactory,
 });
 
 Future<_Dependencies> _createDependencies() async {
@@ -46,6 +52,7 @@ Future<_Dependencies> _createDependencies() async {
       business: null,
       financeFactory: null,
       catalogFactory: null,
+      salesFactory: null,
     );
   }
   await Supabase.initialize(url: url, publishableKey: publishableKey);
@@ -77,6 +84,15 @@ Future<_Dependencies> _createDependencies() async {
       return OfflineFirstCatalogRepository(
         local: LocalCatalogRepository(preferences, businessId),
         remote: SupabaseCatalogRepository(client, businessId),
+        preferences: preferences,
+        businessId: businessId,
+      );
+    },
+    salesFactory: (access) {
+      final businessId = access.business.id;
+      return OfflineFirstSalesRepository(
+        local: LocalSalesRepository(preferences, businessId),
+        remote: SupabaseSalesRepository(client, businessId),
         preferences: preferences,
         businessId: businessId,
       );
