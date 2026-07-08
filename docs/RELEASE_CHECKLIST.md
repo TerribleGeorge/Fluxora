@@ -17,9 +17,10 @@
 - [x] Substituir a assinatura de depuração da configuração `release`.
 - [ ] Criar o aplicativo na Play Console.
 - [ ] Preencher conteúdo, classificação etária e Data safety.
-- [ ] Enviar ícone, feature graphic e capturas de tela finais.
+- [x] Gerar ícone e feature graphic finais da loja.
+- [ ] Enviar capturas de tela finais.
 - [ ] Configurar produtos de assinatura antes de habilitar cobranças.
-- [ ] Gerar e verificar o Android App Bundle assinado.
+- [x] Gerar e verificar o Android App Bundle assinado.
 - [ ] Executar teste fechado com 12 testadores por 14 dias, se exigido pela conta.
 - [ ] Solicitar acesso à produção e publicar após aprovação.
 

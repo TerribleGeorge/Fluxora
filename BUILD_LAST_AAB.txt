@@ -1,12 +1,12 @@
-Fluxora 1.0.0 (build 2)
+Fluxora 1.0.0 (build 3)
 Pacote: dev.devvoid.fluxora
 Empresa: DevVoid.dev
 Artefato: build/app/outputs/bundle/release/app-release.aab
-Tamanho: 43829400 bytes
-SHA-256: 1D0B9A0BDCB43547AF3CF7A9E2F5AEE01C69978B4916E5C759A05E1D5A377F5C
+Tamanho: 43814334 bytes
+SHA-256: 38349DF32272A86020B448F4512EF60BDF007336D662D3743A1EFE9516E16C71
 Assinatura: verificada
 Certificado de upload válido até: 2053-11-22
-Gerado em: 2026-07-07
+Gerado em: 2026-07-08
 Backend: Supabase nqcoxxbzwzcuwprbzpdb (São Paulo)
 
 A chave e as senhas de upload permanecem somente em android/key.properties e

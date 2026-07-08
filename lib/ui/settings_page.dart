@@ -37,7 +37,7 @@ class SettingsPage extends StatelessWidget {
                 child: Icon(Icons.new_releases_outlined),
               ),
               title: const Text('Novidades da versão'),
-              subtitle: const Text('Fluxora 1.0.0 (2)'),
+              subtitle: const Text('Fluxora 1.0.0 (3)'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const PatchNotesPage()),

@@ -4,7 +4,7 @@ class PatchNotesPage extends StatelessWidget {
   const PatchNotesPage({super.key});
 
   static const version = '1.0.0';
-  static const buildNumber = '2';
+  static const buildNumber = '3';
 
   @override
   Widget build(BuildContext context) {
