@@ -12,6 +12,7 @@ import '../domain/subscription_repository.dart';
 import '../domain/account_lifecycle_repository.dart';
 import '../state/auth_bloc.dart';
 import '../ui/auth_gate.dart';
+import '../ui/startup_splash_page.dart';
 import 'theme.dart';
 
 class FluxoraApp extends StatelessWidget {
@@ -52,13 +53,15 @@ class FluxoraApp extends StatelessWidget {
           theme: FluxoraTheme.light,
           darkTheme: FluxoraTheme.dark,
           themeMode: ThemeMode.dark,
-          home: AuthGate(
-            businessRepository: businessRepository,
-            financeRepositoryFactory: financeRepositoryFactory,
-            catalogRepositoryFactory: catalogRepositoryFactory,
-            salesRepositoryFactory: salesRepositoryFactory,
-            operationsRepositoryFactory: operationsRepositoryFactory,
-            subscriptionRepositoryFactory: subscriptionRepositoryFactory,
+          home: StartupSplashPage(
+            child: AuthGate(
+              businessRepository: businessRepository,
+              financeRepositoryFactory: financeRepositoryFactory,
+              catalogRepositoryFactory: catalogRepositoryFactory,
+              salesRepositoryFactory: salesRepositoryFactory,
+              operationsRepositoryFactory: operationsRepositoryFactory,
+              subscriptionRepositoryFactory: subscriptionRepositoryFactory,
+            ),
           ),
         ),
       ),
