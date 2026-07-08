@@ -23,7 +23,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.fluxora.app</string>
+				<string>dev.devvoid.fluxora</string>
 			</array>
 		</dict>
 	</array>

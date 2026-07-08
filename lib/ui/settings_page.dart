@@ -16,6 +16,7 @@ import '../state/operations_bloc.dart';
 import '../state/sales_bloc.dart';
 import '../state/subscription_bloc.dart';
 import 'plans_page.dart';
+import 'patch_notes_page.dart';
 import 'privacy_page.dart';
 import 'transactions_page.dart';
 
@@ -30,6 +31,19 @@ class SettingsPage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          Card(
+            child: ListTile(
+              leading: const CircleAvatar(
+                child: Icon(Icons.new_releases_outlined),
+              ),
+              title: const Text('Novidades da versão'),
+              subtitle: const Text('Fluxora 1.0.0 (1)'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const PatchNotesPage()),
+              ),
+            ),
+          ),
           Card(
             child: ListTile(
               leading: const CircleAvatar(

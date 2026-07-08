@@ -1,0 +1,13 @@
+Fluxora 1.0.0 (build 1)
+Pacote: dev.devvoid.fluxora
+Empresa: DevVoid.dev
+Artefato: build/app/outputs/bundle/release/app-release.aab
+Tamanho: 43091521 bytes
+SHA-256: 9132235C88E28C5042907F34452F71A287BE2905AD0FFD00826763B0E7DCB111
+Assinatura: verificada
+Certificado de upload válido até: 2053-11-22
+Gerado em: 2026-07-07
+
+A chave e as senhas de upload permanecem somente em android/key.properties e
+android/upload-keystore.jks, ambos ignorados pelo Git. Faça backup privado dos
+dois arquivos antes de publicar a primeira versão na Google Play.

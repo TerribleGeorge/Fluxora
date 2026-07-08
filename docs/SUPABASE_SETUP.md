@@ -13,7 +13,7 @@ No painel do Supabase:
 
 1. habilite autenticação por e-mail e senha;
 2. mantenha confirmação de e-mail ativa para produção;
-3. adicione `com.fluxora.app://reset-password` às URLs de redirecionamento;
+3. adicione `dev.devvoid.fluxora://reset-password` às URLs de redirecionamento;
 4. configure SMTP próprio antes do lançamento;
 5. nunca coloque `service_role` ou outra chave secreta no aplicativo.
 

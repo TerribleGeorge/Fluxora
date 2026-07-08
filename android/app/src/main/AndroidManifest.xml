@@ -30,7 +30,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
-                    android:scheme="com.fluxora.app"
+                    android:scheme="dev.devvoid.fluxora"
                     android:host="reset-password" />
             </intent-filter>
         </activity>

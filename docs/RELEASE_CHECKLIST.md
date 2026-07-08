@@ -12,9 +12,9 @@
 
 ## Android e Google Play
 
-- [ ] Confirmar definitivamente o application ID `com.fluxora.fluxora`.
-- [ ] Criar e guardar em backup o upload keystore de produção.
-- [ ] Substituir a assinatura de depuração da configuração `release`.
+- [x] Confirmar definitivamente o application ID `dev.devvoid.fluxora`.
+- [x] Criar o upload keystore de produção (backup externo ainda necessário).
+- [x] Substituir a assinatura de depuração da configuração `release`.
 - [ ] Criar o aplicativo na Play Console.
 - [ ] Preencher conteúdo, classificação etária e Data safety.
 - [ ] Enviar ícone, feature graphic e capturas de tela finais.

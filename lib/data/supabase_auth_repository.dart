@@ -5,7 +5,7 @@ import '../domain/auth_repository.dart';
 class SupabaseAuthRepository implements AuthRepository {
   SupabaseAuthRepository(this._client);
 
-  static const passwordResetRedirect = 'com.fluxora.app://reset-password';
+  static const passwordResetRedirect = 'dev.devvoid.fluxora://reset-password';
 
   final SupabaseClient _client;
 
