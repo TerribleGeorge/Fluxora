@@ -1,90 +1,167 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-class PlansPage extends StatelessWidget {
+import '../domain/billing_repository.dart';
+
+class PlansPage extends StatefulWidget {
   const PlansPage({super.key, this.expired = false});
   final bool expired;
 
   @override
+  State<PlansPage> createState() => _PlansPageState();
+}
+
+class _PlansPageState extends State<PlansPage> {
+  late final Future<List<BillingProduct>> _productsFuture;
+  bool _buying = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _productsFuture = context.read<BillingRepository>().loadProducts();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final plans = const [
-      _Plan(
-        name: 'Essencial',
-        price: 'R\$ 69,90/mês',
-        description: 'Para pequenos espaços com até 3 profissionais.',
-        features: ['Vendas e serviços', 'Caixa', 'Comissões', 'Dashboard'],
-      ),
-      _Plan(
-        name: 'Gestão',
-        price: 'R\$ 119,90/mês',
-        description: 'Para equipes que precisam enxergar o lucro real.',
-        features: [
-          'Profissionais ilimitados',
-          'Relatórios completos',
-          'Repasses e taxas',
-          'Sincronização segura',
-        ],
-        highlighted: true,
-      ),
-      _Plan(
-        name: 'Pro',
-        price: 'R\$ 179,90/mês',
-        description: 'Preparado para operações em crescimento.',
-        features: [
-          'Tudo do Gestão',
-          'Recursos avançados futuros',
-          'Suporte prioritário',
-          'Exportações avançadas',
-        ],
-      ),
-    ];
+    final plans = FluxoraBillingCatalog.founderPlans;
     return Scaffold(
-      appBar: expired ? null : AppBar(title: const Text('Planos Fluxora')),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          if (expired) ...[
-            const SizedBox(height: 32),
-            Text(
-              'Seu período gratuito terminou',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Seus dados continuam protegidos. Escolha um plano para continuar.',
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-          ],
-          for (final plan in plans) _PlanCard(plan: plan),
-          const SizedBox(height: 16),
-          const Text(
-            'A contratação será habilitada após a configuração do faturamento na Google Play. Nenhuma cobrança é feita nesta versão.',
-            textAlign: TextAlign.center,
-          ),
-        ],
+      appBar: widget.expired ? null : AppBar(title: const Text('Fluxora Pro')),
+      body: FutureBuilder<List<BillingProduct>>(
+        future: _productsFuture,
+        builder: (context, snapshot) {
+          final storeProduct = snapshot.data
+              ?.where(
+                (product) =>
+                    product.productId == FluxoraBillingCatalog.founderProductId,
+              )
+              .firstOrNull;
+          return ListView(
+            padding: const EdgeInsets.all(20),
+            children: [
+              if (widget.expired) ...[
+                const SizedBox(height: 32),
+                Text(
+                  'Seu período gratuito terminou',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Seus dados continuam protegidos. Assine o Fluxora Pro para continuar usando a gestão do seu negócio.',
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+              ] else ...[
+                Text(
+                  'Plano fundador',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Entre cedo, pague justo e ajude a construir o melhor app de gestão para beleza.',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'O preço fundador existe porque o Fluxora ainda está evoluindo com os primeiros negócios reais. Conforme entregarmos agenda, automações, relatórios avançados e integrações, novos clientes poderão entrar em preços maiores.',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 24),
+              ],
+              if (snapshot.connectionState == ConnectionState.waiting)
+                const LinearProgressIndicator(),
+              if (snapshot.hasError)
+                _BillingNotice(
+                  text:
+                      'A Google Play ainda não retornou os planos. Você pode continuar usando o app durante o período gratuito.',
+                  isError: true,
+                ),
+              for (final plan in plans)
+                _PlanCard(
+                  plan: plan,
+                  storeProduct: storeProduct,
+                  buying: _buying,
+                  onBuy: plan.id == FluxoraBillingCatalog.founderMonthlyBasePlanId
+                      ? () => _buy(context)
+                      : null,
+                ),
+              const SizedBox(height: 12),
+              _BillingNotice(
+                text: storeProduct == null
+                    ? 'A contratação aparecerá aqui assim que a assinatura for criada e aprovada na Google Play.'
+                    : 'A cobrança é processada pela Google Play. Você pode cancelar pela sua conta Google.',
+              ),
+            ],
+          );
+        },
       ),
     );
+  }
+
+  Future<void> _buy(BuildContext context) async {
+    setState(() => _buying = true);
+    try {
+      await context.read<BillingRepository>().buy(
+        FluxoraBillingCatalog.founderProductId,
+      );
+    } on Exception catch (error) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error.toString())));
+      }
+    } finally {
+      if (mounted) setState(() => _buying = false);
+    }
   }
 }
 
 class _PlanCard extends StatelessWidget {
-  const _PlanCard({required this.plan});
-  final _Plan plan;
+  const _PlanCard({
+    required this.plan,
+    required this.storeProduct,
+    required this.buying,
+    required this.onBuy,
+  });
+
+  final BillingPlan plan;
+  final BillingProduct? storeProduct;
+  final bool buying;
+  final VoidCallback? onBuy;
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final active = storeProduct != null && onBuy != null;
     return Card(
-      color: plan.highlighted
-          ? Theme.of(context).colorScheme.primaryContainer
-          : null,
+      color: plan.highlight ? colorScheme.primaryContainer : null,
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(plan.name, style: Theme.of(context).textTheme.titleLarge),
-            Text(plan.price, style: Theme.of(context).textTheme.headlineSmall),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    plan.name,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ),
+                if (plan.highlight)
+                  Chip(
+                    label: const Text('Fundador'),
+                    backgroundColor: colorScheme.primary,
+                    labelStyle: TextStyle(color: colorScheme.onPrimary),
+                  ),
+              ],
+            ),
+            Text(
+              storeProduct?.price ?? plan.priceLabel,
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
             const SizedBox(height: 8),
             Text(plan.description),
             const SizedBox(height: 12),
@@ -100,7 +177,16 @@ class _PlanCard extends StatelessWidget {
                 ),
               ),
             const SizedBox(height: 16),
-            FilledButton(onPressed: null, child: const Text('Em breve')),
+            FilledButton(
+              onPressed: active && !buying ? onBuy : null,
+              child: Text(
+                active
+                    ? buying
+                          ? 'Abrindo Google Play...'
+                          : 'Começar 14 dias grátis'
+                    : 'Em breve na Google Play',
+              ),
+            ),
           ],
         ),
       ),
@@ -108,17 +194,29 @@ class _PlanCard extends StatelessWidget {
   }
 }
 
-class _Plan {
-  const _Plan({
-    required this.name,
-    required this.price,
-    required this.description,
-    required this.features,
-    this.highlighted = false,
-  });
-  final String name;
-  final String price;
-  final String description;
-  final List<String> features;
-  final bool highlighted;
+class _BillingNotice extends StatelessWidget {
+  const _BillingNotice({required this.text, this.isError = false});
+
+  final String text;
+  final bool isError;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Card(
+      color: isError ? colorScheme.errorContainer : colorScheme.surfaceContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: isError
+                ? colorScheme.onErrorContainer
+                : colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ),
+    );
+  }
 }

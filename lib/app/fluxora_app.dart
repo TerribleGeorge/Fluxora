@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
 import '../domain/auth_repository.dart';
+import '../domain/billing_repository.dart';
 import '../domain/business_repository.dart';
 import '../domain/catalog_repository.dart';
 import '../domain/finance_repository.dart';
@@ -26,6 +27,7 @@ class FluxoraApp extends StatelessWidget {
     required this.operationsRepositoryFactory,
     required this.subscriptionRepositoryFactory,
     required this.accountLifecycleRepository,
+    required this.billingRepository,
   });
 
   final AuthRepository authRepository;
@@ -40,11 +42,17 @@ class FluxoraApp extends StatelessWidget {
   final SubscriptionRepository Function(BusinessAccess access)?
   subscriptionRepositoryFactory;
   final AccountLifecycleRepository accountLifecycleRepository;
+  final BillingRepository billingRepository;
 
   @override
   Widget build(BuildContext context) {
-    return Provider<AccountLifecycleRepository>.value(
-      value: accountLifecycleRepository,
+    return MultiProvider(
+      providers: [
+        Provider<AccountLifecycleRepository>.value(
+          value: accountLifecycleRepository,
+        ),
+        Provider<BillingRepository>.value(value: billingRepository),
+      ],
       child: BlocProvider(
         create: (_) => AuthBloc(authRepository),
         child: MaterialApp(

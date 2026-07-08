@@ -4,7 +4,7 @@ class PatchNotesPage extends StatelessWidget {
   const PatchNotesPage({super.key});
 
   static const version = '1.0.0';
-  static const buildNumber = '4';
+  static const buildNumber = '5';
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +49,15 @@ class PatchNotesPage extends StatelessWidget {
               'Abra, confira e feche o caixa com segurança.',
               'Compare o dinheiro esperado com o valor contado.',
               'Mantenha as movimentações financeiras organizadas.',
+            ],
+          ),
+          _ReleaseSection(
+            icon: Icons.workspace_premium_outlined,
+            title: 'Plano fundador preparado',
+            items: [
+              'A tela de planos agora apresenta o Fluxora Pro Fundador.',
+              'O app foi preparado para assinaturas pela Google Play.',
+              'A condição fundadora comunica preço justo para os primeiros usuários.',
             ],
           ),
           _ReleaseSection(

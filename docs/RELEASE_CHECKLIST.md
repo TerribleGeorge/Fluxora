@@ -4,22 +4,30 @@
 
 - [x] Criar o projeto Supabase na região de São Paulo.
 - [x] Aplicar todas as migrações em `supabase/migrations/`.
-- [ ] Implantar a função `delete-account`.
+- [x] Implantar a função `delete-account` no Supabase remoto.
+  - Código atualizado e validado pelo Flutter em 08/07/2026.
+  - Deploy realizado no projeto `nqcoxxbzwzcuwprbzpdb` em 08/07/2026.
 - [x] Configurar URL e publishable key no build.
 - [x] Configurar URLs de confirmação/recuperação (SMTP próprio pendente).
 - [ ] Definir e publicar e-mail oficial de suporte.
-- [ ] Publicar `privacy.html` e `delete-account.html` em endereço público.
+- [x] Publicar `privacy.html` e `delete-account.html` em endereço público.
+  - Política: https://terriblegeorge.github.io/fluxora-legal/privacy.html
+  - Exclusão de conta: https://terriblegeorge.github.io/fluxora-legal/delete-account.html
 
 ## Android e Google Play
 
 - [x] Confirmar definitivamente o application ID `dev.devvoid.fluxora`.
 - [x] Criar o upload keystore de produção (backup externo ainda necessário).
 - [x] Substituir a assinatura de depuração da configuração `release`.
-- [ ] Criar o aplicativo na Play Console.
-- [ ] Preencher conteúdo, classificação etária e Data safety.
+- [x] Criar o aplicativo na Play Console.
+- [x] Preencher conteúdo do app e Data safety.
+- [ ] Confirmar classificação etária antes do envio à revisão.
 - [x] Gerar ícone e feature graphic finais da loja.
 - [ ] Enviar capturas de tela finais.
 - [ ] Configurar produtos de assinatura antes de habilitar cobranças.
+  - Estratégia definida em `docs/MONETIZATION_STRATEGY.md`.
+  - O Play Console exige upload de novo AAB com Billing antes de criar o produto.
+  - Produto planejado: `fluxora_pro`.
 - [x] Gerar e verificar o Android App Bundle assinado.
 - [ ] Executar teste fechado com 12 testadores por 14 dias, se exigido pela conta.
 - [ ] Solicitar acesso à produção e publicar após aprovação.
@@ -30,7 +38,7 @@
 - [ ] Testar recuperação de senha pelo deep link.
 - [ ] Validar isolamento de dois estabelecimentos no banco.
 - [ ] Validar sincronização offline e reconexão em dois dispositivos.
-- [ ] Validar exclusão completa da conta e dos dados.
+- [ ] Validar exclusão completa da conta e dos dados em um usuário de teste.
 - [ ] Validar os cálculos com pelo menos cinco negócios reais.
 - [ ] Revisar textos legais com responsável jurídico antes da produção.
 
