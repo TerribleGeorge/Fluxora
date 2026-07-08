@@ -2,11 +2,11 @@
 
 ## Dependências externas pendentes
 
-- [ ] Criar o projeto Supabase.
-- [ ] Aplicar todas as migrações em `supabase/migrations/`.
+- [x] Criar o projeto Supabase na região de São Paulo.
+- [x] Aplicar todas as migrações em `supabase/migrations/`.
 - [ ] Implantar a função `delete-account`.
-- [ ] Configurar URL e publishable key no build.
-- [ ] Configurar SMTP e URLs de confirmação/recuperação.
+- [x] Configurar URL e publishable key no build.
+- [x] Configurar URLs de confirmação/recuperação (SMTP próprio pendente).
 - [ ] Definir e publicar e-mail oficial de suporte.
 - [ ] Publicar `privacy.html` e `delete-account.html` em endereço público.
 
