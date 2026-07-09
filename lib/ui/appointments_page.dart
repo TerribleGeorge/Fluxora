@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../domain/account.dart';
 import '../domain/appointment.dart';
+import '../domain/appointment_availability.dart';
 import '../domain/business_repository.dart';
 import '../state/auth_bloc.dart';
 import '../state/appointment_bloc.dart';
@@ -67,8 +68,7 @@ class AppointmentsPage extends StatelessWidget {
                   ),
                 ),
               Expanded(
-                child:
-                    professionalMode && linkedProfessionalId == null
+                child: professionalMode && linkedProfessionalId == null
                     ? const Center(
                         child: Padding(
                           padding: EdgeInsets.all(32),
@@ -151,7 +151,9 @@ class _DayHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final today = DateTime.now();
     final isToday =
-        day.year == today.year && day.month == today.month && day.day == today.day;
+        day.year == today.year &&
+        day.month == today.month &&
+        day.day == today.day;
     return Card(
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       child: Padding(
@@ -294,6 +296,12 @@ Future<void> _showAppointmentForm(BuildContext context) async {
     builder: (sheetContext) => StatefulBuilder(
       builder: (context, setModalState) {
         final service = services.firstWhere((item) => item.id == serviceId);
+        final slots = AppointmentAvailability.availableStarts(
+          day: day,
+          durationMinutes: service.durationMinutes,
+          appointments: bloc.state.appointments,
+          professionalId: professionalId,
+        ).take(16).toList(growable: false);
         return SafeArea(
           child: Padding(
             padding: EdgeInsets.fromLTRB(
@@ -328,7 +336,9 @@ Future<void> _showAppointmentForm(BuildContext context) async {
                   const SizedBox(height: 14),
                   DropdownButtonFormField<String>(
                     initialValue: professionalId,
-                    decoration: const InputDecoration(labelText: 'Profissional'),
+                    decoration: const InputDecoration(
+                      labelText: 'Profissional',
+                    ),
                     items: professionals
                         .map(
                           (item) => DropdownMenuItem(
@@ -337,8 +347,9 @@ Future<void> _showAppointmentForm(BuildContext context) async {
                           ),
                         )
                         .toList(),
-                    onChanged: (value) =>
-                        professionalId = value ?? professionalId,
+                    onChanged: (value) => setModalState(
+                      () => professionalId = value ?? professionalId,
+                    ),
                   ),
                   const SizedBox(height: 14),
                   DropdownButtonFormField<String>(
@@ -354,9 +365,8 @@ Future<void> _showAppointmentForm(BuildContext context) async {
                           ),
                         )
                         .toList(),
-                    onChanged: (value) => setModalState(
-                      () => serviceId = value ?? serviceId,
-                    ),
+                    onChanged: (value) =>
+                        setModalState(() => serviceId = value ?? serviceId),
                   ),
                   const SizedBox(height: 14),
                   Row(
@@ -375,6 +385,7 @@ Future<void> _showAppointmentForm(BuildContext context) async {
                               ),
                             );
                             if (picked != null) {
+                              bloc.add(AppointmentDayChanged(picked));
                               setModalState(() => day = picked);
                             }
                           },
@@ -405,6 +416,35 @@ Future<void> _showAppointmentForm(BuildContext context) async {
                     ],
                   ),
                   const SizedBox(height: 14),
+                  if (slots.isNotEmpty) ...[
+                    Text(
+                      'Horários disponíveis',
+                      style: Theme.of(context).textTheme.labelLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final slot in slots)
+                          ChoiceChip(
+                            label: Text(_timeLabel(slot)),
+                            selected:
+                                time.hour == slot.hour &&
+                                time.minute == slot.minute,
+                            onSelected: (_) => setModalState(
+                              () => time = TimeOfDay.fromDateTime(slot),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                  ] else ...[
+                    const Text(
+                      'Nenhum horário livre encontrado para este profissional neste dia. Você ainda pode escolher outro dia, serviço ou profissional.',
+                    ),
+                    const SizedBox(height: 14),
+                  ],
                   TextField(
                     controller: notes,
                     decoration: const InputDecoration(labelText: 'Observações'),
@@ -446,3 +486,6 @@ Future<void> _showAppointmentForm(BuildContext context) async {
   phone.dispose();
   notes.dispose();
 }
+
+String _timeLabel(DateTime value) =>
+    '${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}';

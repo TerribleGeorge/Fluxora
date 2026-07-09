@@ -4,7 +4,7 @@ class PatchNotesPage extends StatelessWidget {
   const PatchNotesPage({super.key});
 
   static const version = '1.0.0';
-  static const buildNumber = '11';
+  static const buildNumber = '12';
 
   @override
   Widget build(BuildContext context) {
@@ -15,6 +15,24 @@ class PatchNotesPage extends StatelessWidget {
         children: const [
           _ReleaseHeader(),
           SizedBox(height: 16),
+          _ReleaseSection(
+            icon: Icons.search_outlined,
+            title: 'Serviços prontos por segmento',
+            items: [
+              'O cadastro de serviços agora sugere opções por tipo de estabelecimento.',
+              'Barbearia, salão, esmalteria, cílios e sobrancelhas, maquiagem, spa e estética têm listas próprias.',
+              'Busque por algumas letras, toque no serviço e ajuste preço, duração e comissão.',
+            ],
+          ),
+          _ReleaseSection(
+            icon: Icons.schedule_outlined,
+            title: 'Horários disponíveis no agendamento',
+            items: [
+              'Ao escolher profissional e serviço, o Fluxora calcula horários livres conforme a duração.',
+              'Horários que batem com atendimentos existentes deixam de aparecer como sugestão.',
+              'A proteção contra conflito continua ativa ao salvar o agendamento.',
+            ],
+          ),
           _ReleaseSection(
             icon: Icons.event_available_outlined,
             title: 'Agenda integrada ao negócio',

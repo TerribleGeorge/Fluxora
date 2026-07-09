@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../domain/catalog.dart';
+import '../domain/business_repository.dart';
+import '../domain/service_template.dart';
 import '../state/catalog_bloc.dart';
 import '../state/catalog_event.dart';
 import '../state/catalog_state.dart';
@@ -263,6 +265,8 @@ Future<void> _showServiceForm(
   BeautyService? item,
 ]) async {
   final bloc = context.read<CatalogBloc>();
+  final businessType = context.read<BusinessAccess>().business.type;
+  final templates = ServiceTemplateCatalog.forBusinessType(businessType);
   final messenger = ScaffoldMessenger.of(context);
   final name = TextEditingController(text: item?.name);
   final category = TextEditingController(text: item?.category ?? 'Serviços');
@@ -273,117 +277,164 @@ Future<void> _showServiceForm(
   final commission = TextEditingController(
     text: item?.commissionValue.toStringAsFixed(2) ?? '0',
   );
+  final search = TextEditingController();
   var commissionType =
       item?.commissionType ?? ServiceCommissionType.businessDefault;
   await showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     builder: (sheetContext) => StatefulBuilder(
-      builder: (context, setModalState) => _FormSheet(
-        title: item == null ? 'Novo serviço' : 'Editar serviço',
-        children: [
-          TextField(
-            controller: name,
-            decoration: const InputDecoration(labelText: 'Nome'),
-          ),
-          TextField(
-            controller: category,
-            decoration: const InputDecoration(labelText: 'Categoria'),
-          ),
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: price,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  decoration: const InputDecoration(labelText: 'Preço (R\$)'),
+      builder: (context, setModalState) {
+        final suggestions = templates
+            .where((template) => template.matches(search.text))
+            .take(18)
+            .toList(growable: false);
+        return _FormSheet(
+          title: item == null ? 'Novo serviço' : 'Editar serviço',
+          children: [
+            if (item == null) ...[
+              TextField(
+                controller: search,
+                decoration: const InputDecoration(
+                  labelText: 'Buscar serviço pronto',
+                  hintText: 'Ex.: corte, barba, manicure, limpeza...',
+                  prefixIcon: Icon(Icons.search),
                 ),
+                onChanged: (_) => setModalState(() {}),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: TextField(
-                  controller: duration,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Duração (min)'),
-                ),
+              Text(
+                'Toque em uma sugestão para preencher nome, categoria e duração. Depois ajuste preço e tempo do seu negócio.',
+                style: Theme.of(context).textTheme.bodySmall,
               ),
-            ],
-          ),
-          DropdownButtonFormField<ServiceCommissionType>(
-            initialValue: commissionType,
-            decoration: const InputDecoration(labelText: 'Regra de comissão'),
-            items: const [
-              DropdownMenuItem(
-                value: ServiceCommissionType.businessDefault,
-                child: Text('Usar comissão do profissional'),
-              ),
-              DropdownMenuItem(
-                value: ServiceCommissionType.percentage,
-                child: Text('Percentual específico'),
-              ),
-              DropdownMenuItem(
-                value: ServiceCommissionType.fixedAmount,
-                child: Text('Valor fixo'),
-              ),
-            ],
-            onChanged: (value) =>
-                setModalState(() => commissionType = value ?? commissionType),
-          ),
-          if (commissionType != ServiceCommissionType.businessDefault)
-            TextField(
-              controller: commission,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              decoration: InputDecoration(
-                labelText: commissionType == ServiceCommissionType.percentage
-                    ? 'Comissão (%)'
-                    : 'Comissão fixa (R\$)',
-              ),
-            ),
-          FilledButton(
-            onPressed: () {
-              final parsedPrice = _number(price.text);
-              final parsedDuration = int.tryParse(duration.text.trim()) ?? 0;
-              final parsedCommission = _number(commission.text);
-              final invalidCommission =
-                  parsedCommission < 0 ||
-                  (commissionType == ServiceCommissionType.percentage &&
-                      parsedCommission > 100);
-              if (name.text.trim().length < 2 ||
-                  parsedPrice <= 0 ||
-                  parsedDuration < 5 ||
-                  invalidCommission) {
-                messenger
-                  ..hideCurrentSnackBar()
-                  ..showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Revise o serviço: nome, preço, duração mínima de 5 minutos e comissão válida.',
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final template in suggestions)
+                    ActionChip(
+                      label: Text(
+                        '${template.name} • ${template.durationMinutes} min',
                       ),
+                      onPressed: () {
+                        setModalState(() {
+                          name.text = template.name;
+                          category.text = template.category;
+                          duration.text = template.durationMinutes.toString();
+                          if (template.suggestedPrice > 0) {
+                            price.text = template.suggestedPrice
+                                .toStringAsFixed(2);
+                          }
+                        });
+                      },
                     ),
-                  );
-                return;
-              }
-              bloc.add(
-                ServiceSaved(
-                  id: item?.id,
-                  name: name.text,
-                  category: category.text,
-                  price: parsedPrice,
-                  durationMinutes: parsedDuration,
-                  commissionType: commissionType,
-                  commissionValue: parsedCommission,
+                ],
+              ),
+            ],
+            TextField(
+              controller: name,
+              decoration: const InputDecoration(labelText: 'Nome'),
+            ),
+            TextField(
+              controller: category,
+              decoration: const InputDecoration(labelText: 'Categoria'),
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: price,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: const InputDecoration(labelText: 'Preço (R\$)'),
+                  ),
                 ),
-              );
-              Navigator.pop(sheetContext);
-            },
-            child: const Text('Salvar serviço'),
-          ),
-        ],
-      ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextField(
+                    controller: duration,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Duração (min)',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            DropdownButtonFormField<ServiceCommissionType>(
+              initialValue: commissionType,
+              decoration: const InputDecoration(labelText: 'Regra de comissão'),
+              items: const [
+                DropdownMenuItem(
+                  value: ServiceCommissionType.businessDefault,
+                  child: Text('Usar comissão do profissional'),
+                ),
+                DropdownMenuItem(
+                  value: ServiceCommissionType.percentage,
+                  child: Text('Percentual específico'),
+                ),
+                DropdownMenuItem(
+                  value: ServiceCommissionType.fixedAmount,
+                  child: Text('Valor fixo'),
+                ),
+              ],
+              onChanged: (value) =>
+                  setModalState(() => commissionType = value ?? commissionType),
+            ),
+            if (commissionType != ServiceCommissionType.businessDefault)
+              TextField(
+                controller: commission,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: InputDecoration(
+                  labelText: commissionType == ServiceCommissionType.percentage
+                      ? 'Comissão (%)'
+                      : 'Comissão fixa (R\$)',
+                ),
+              ),
+            FilledButton(
+              onPressed: () {
+                final parsedPrice = _number(price.text);
+                final parsedDuration = int.tryParse(duration.text.trim()) ?? 0;
+                final parsedCommission = _number(commission.text);
+                final invalidCommission =
+                    parsedCommission < 0 ||
+                    (commissionType == ServiceCommissionType.percentage &&
+                        parsedCommission > 100);
+                if (name.text.trim().length < 2 ||
+                    parsedPrice <= 0 ||
+                    parsedDuration < 5 ||
+                    invalidCommission) {
+                  messenger
+                    ..hideCurrentSnackBar()
+                    ..showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Revise o serviço: nome, preço, duração mínima de 5 minutos e comissão válida.',
+                        ),
+                      ),
+                    );
+                  return;
+                }
+                bloc.add(
+                  ServiceSaved(
+                    id: item?.id,
+                    name: name.text,
+                    category: category.text,
+                    price: parsedPrice,
+                    durationMinutes: parsedDuration,
+                    commissionType: commissionType,
+                    commissionValue: parsedCommission,
+                  ),
+                );
+                Navigator.pop(sheetContext);
+              },
+              child: const Text('Salvar serviço'),
+            ),
+          ],
+        );
+      },
     ),
   );
   name.dispose();
@@ -391,6 +442,7 @@ Future<void> _showServiceForm(
   price.dispose();
   duration.dispose();
   commission.dispose();
+  search.dispose();
 }
 
 class _FormSheet extends StatelessWidget {
