@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'dashboard_page.dart';
+import 'appointments_page.dart';
 import 'catalog_page.dart';
 import 'sales_page.dart';
 import 'operations_page.dart';
@@ -21,6 +22,7 @@ class _AppShellState extends State<AppShell> {
   Widget build(BuildContext context) {
     final pages = [
       const DashboardPage(),
+      const AppointmentsPage(),
       const TransactionsPage(),
       const CatalogPage(),
       const SalesPage(),
@@ -49,6 +51,11 @@ class _AppShellState extends State<AppShell> {
                       icon: Icon(Icons.dashboard_outlined),
                       selectedIcon: Icon(Icons.dashboard),
                       label: Text('Visão geral'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.calendar_month_outlined),
+                      selectedIcon: Icon(Icons.calendar_month),
+                      label: Text('Agenda'),
                     ),
                     NavigationRailDestination(
                       icon: Icon(Icons.receipt_long_outlined),
@@ -83,7 +90,7 @@ class _AppShellState extends State<AppShell> {
             ),
           );
         }
-        const mobileIndices = [0, 3, 4, 2, 5];
+        const mobileIndices = [0, 1, 4, 5, 3, 6];
         final mobileSelected = mobileIndices.indexOf(_index);
         return Scaffold(
           body: content,
@@ -96,6 +103,11 @@ class _AppShellState extends State<AppShell> {
                 icon: Icon(Icons.dashboard_outlined),
                 selectedIcon: Icon(Icons.dashboard),
                 label: 'Início',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.calendar_month_outlined),
+                selectedIcon: Icon(Icons.calendar_month),
+                label: 'Agenda',
               ),
               NavigationDestination(
                 icon: Icon(Icons.point_of_sale_outlined),

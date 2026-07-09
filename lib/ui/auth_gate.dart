@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../domain/business_repository.dart';
+import '../domain/appointment_repository.dart';
 import '../domain/catalog_repository.dart';
 import '../domain/finance_repository.dart';
 import '../domain/sales_repository.dart';
@@ -18,6 +19,7 @@ class AuthGate extends StatelessWidget {
     super.key,
     required this.businessRepository,
     required this.financeRepositoryFactory,
+    required this.appointmentRepositoryFactory,
     required this.catalogRepositoryFactory,
     required this.salesRepositoryFactory,
     required this.operationsRepositoryFactory,
@@ -27,6 +29,8 @@ class AuthGate extends StatelessWidget {
   final BusinessRepository? businessRepository;
   final FinanceRepository Function(BusinessAccess access)?
   financeRepositoryFactory;
+  final AppointmentRepository Function(BusinessAccess access)?
+  appointmentRepositoryFactory;
   final CatalogRepository Function(BusinessAccess access)?
   catalogRepositoryFactory;
   final SalesRepository Function(BusinessAccess access)? salesRepositoryFactory;
@@ -43,6 +47,7 @@ class AuthGate extends StatelessWidget {
         AuthStatus.authenticated =>
           businessRepository == null ||
                   financeRepositoryFactory == null ||
+                  appointmentRepositoryFactory == null ||
                   catalogRepositoryFactory == null ||
                   salesRepositoryFactory == null ||
                   operationsRepositoryFactory == null ||
@@ -51,6 +56,7 @@ class AuthGate extends StatelessWidget {
               : BusinessGate(
                   businessRepository: businessRepository!,
                   financeRepositoryFactory: financeRepositoryFactory!,
+                  appointmentRepositoryFactory: appointmentRepositoryFactory!,
                   catalogRepositoryFactory: catalogRepositoryFactory!,
                   salesRepositoryFactory: salesRepositoryFactory!,
                   operationsRepositoryFactory: operationsRepositoryFactory!,

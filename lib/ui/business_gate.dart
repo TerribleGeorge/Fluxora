@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
 import '../app/theme.dart';
+import '../domain/appointment_repository.dart';
 import '../domain/business_repository.dart';
 import '../domain/catalog_repository.dart';
 import '../domain/finance_repository.dart';
@@ -10,6 +11,8 @@ import '../domain/sales_repository.dart';
 import '../domain/operations_repository.dart';
 import '../domain/subscription_repository.dart';
 import '../state/auth_bloc.dart';
+import '../state/appointment_bloc.dart';
+import '../state/appointment_event.dart';
 import '../state/business_bloc.dart';
 import '../state/business_event.dart';
 import '../state/business_state.dart';
@@ -31,6 +34,7 @@ class BusinessGate extends StatelessWidget {
     super.key,
     required this.businessRepository,
     required this.financeRepositoryFactory,
+    required this.appointmentRepositoryFactory,
     required this.catalogRepositoryFactory,
     required this.salesRepositoryFactory,
     required this.operationsRepositoryFactory,
@@ -40,6 +44,8 @@ class BusinessGate extends StatelessWidget {
   final BusinessRepository businessRepository;
   final FinanceRepository Function(BusinessAccess access)
   financeRepositoryFactory;
+  final AppointmentRepository Function(BusinessAccess access)
+  appointmentRepositoryFactory;
   final CatalogRepository Function(BusinessAccess access)
   catalogRepositoryFactory;
   final SalesRepository Function(BusinessAccess access) salesRepositoryFactory;
@@ -74,6 +80,9 @@ class BusinessGate extends StatelessWidget {
             key: ValueKey(state.selected!.business.id),
             access: state.selected!,
             repository: financeRepositoryFactory(state.selected!),
+            appointmentRepository: appointmentRepositoryFactory(
+              state.selected!,
+            ),
             catalogRepository: catalogRepositoryFactory(state.selected!),
             salesRepository: salesRepositoryFactory(state.selected!),
             operationsRepository: operationsRepositoryFactory(state.selected!),
@@ -92,6 +101,7 @@ class _BusinessWorkspace extends StatelessWidget {
     super.key,
     required this.access,
     required this.repository,
+    required this.appointmentRepository,
     required this.catalogRepository,
     required this.salesRepository,
     required this.operationsRepository,
@@ -100,6 +110,7 @@ class _BusinessWorkspace extends StatelessWidget {
 
   final BusinessAccess access;
   final FinanceRepository repository;
+  final AppointmentRepository appointmentRepository;
   final CatalogRepository catalogRepository;
   final SalesRepository salesRepository;
   final OperationsRepository operationsRepository;
@@ -121,6 +132,16 @@ class _BusinessWorkspace extends StatelessWidget {
               create: (_) =>
                   CatalogBloc(catalogRepository, access.business.id)
                     ..add(const CatalogStarted()),
+            ),
+            BlocProvider(
+              create: (context) {
+                final userId = context.read<AuthBloc>().state.identity!.id;
+                return AppointmentBloc(
+                  appointmentRepository,
+                  businessId: access.business.id,
+                  userId: userId,
+                )..add(const AppointmentsStarted());
+              },
             ),
             BlocProvider(
               create: (context) => SalesBloc(

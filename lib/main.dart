@@ -4,17 +4,20 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app/fluxora_app.dart';
 import 'data/local_catalog_repository.dart';
+import 'data/local_appointment_repository.dart';
 import 'data/local_finance_repository.dart';
 import 'data/local_sales_repository.dart';
 import 'data/local_operations_repository.dart';
 import 'data/google_play_billing_repository.dart';
 import 'data/offline_first_catalog_repository.dart';
+import 'data/offline_first_appointment_repository.dart';
 import 'data/offline_first_finance_repository.dart';
 import 'data/offline_first_sales_repository.dart';
 import 'data/offline_first_operations_repository.dart';
 import 'data/supabase_auth_repository.dart';
 import 'data/supabase_business_repository.dart';
 import 'data/supabase_catalog_repository.dart';
+import 'data/supabase_appointment_repository.dart';
 import 'data/supabase_finance_repository.dart';
 import 'data/supabase_sales_repository.dart';
 import 'data/supabase_operations_repository.dart';
@@ -24,6 +27,7 @@ import 'data/supabase_account_lifecycle_repository.dart';
 import 'data/unavailable_account_lifecycle_repository.dart';
 import 'data/unconfigured_auth_repository.dart';
 import 'domain/auth_repository.dart';
+import 'domain/appointment_repository.dart';
 import 'domain/billing_repository.dart';
 import 'domain/business_repository.dart';
 import 'domain/catalog_repository.dart';
@@ -41,6 +45,7 @@ Future<void> main() async {
       authRepository: dependencies.auth,
       businessRepository: dependencies.business,
       financeRepositoryFactory: dependencies.financeFactory,
+      appointmentRepositoryFactory: dependencies.appointmentFactory,
       catalogRepositoryFactory: dependencies.catalogFactory,
       salesRepositoryFactory: dependencies.salesFactory,
       operationsRepositoryFactory: dependencies.operationsFactory,
@@ -55,6 +60,7 @@ typedef _Dependencies = ({
   AuthRepository auth,
   BusinessRepository? business,
   FinanceRepository Function(BusinessAccess access)? financeFactory,
+  AppointmentRepository Function(BusinessAccess access)? appointmentFactory,
   CatalogRepository Function(BusinessAccess access)? catalogFactory,
   SalesRepository Function(BusinessAccess access)? salesFactory,
   OperationsRepository Function(BusinessAccess access)? operationsFactory,
@@ -71,6 +77,7 @@ Future<_Dependencies> _createDependencies() async {
       auth: UnconfiguredAuthRepository(),
       business: null,
       financeFactory: null,
+      appointmentFactory: null,
       catalogFactory: null,
       salesFactory: null,
       operationsFactory: null,
@@ -108,6 +115,19 @@ Future<_Dependencies> _createDependencies() async {
       return OfflineFirstCatalogRepository(
         local: LocalCatalogRepository(preferences, businessId),
         remote: SupabaseCatalogRepository(client, businessId),
+        preferences: preferences,
+        businessId: businessId,
+      );
+    },
+    appointmentFactory: (access) {
+      final businessId = access.business.id;
+      return OfflineFirstAppointmentRepository(
+        local: LocalAppointmentRepository(preferences, businessId),
+        remote: SupabaseAppointmentRepository(
+          client,
+          businessId,
+          client.auth.currentUser!.id,
+        ),
         preferences: preferences,
         businessId: businessId,
       );

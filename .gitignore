@@ -37,6 +37,7 @@ migrate_working_dir/
 .env
 .env.*
 !.env.example
+.agents/
 /supabase/.branches/
 /supabase/.temp/
 

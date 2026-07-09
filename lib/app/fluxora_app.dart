@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../domain/auth_repository.dart';
 import '../domain/billing_repository.dart';
 import '../domain/business_repository.dart';
+import '../domain/appointment_repository.dart';
 import '../domain/catalog_repository.dart';
 import '../domain/finance_repository.dart';
 import '../domain/sales_repository.dart';
@@ -22,6 +23,7 @@ class FluxoraApp extends StatelessWidget {
     required this.authRepository,
     required this.businessRepository,
     required this.financeRepositoryFactory,
+    required this.appointmentRepositoryFactory,
     required this.catalogRepositoryFactory,
     required this.salesRepositoryFactory,
     required this.operationsRepositoryFactory,
@@ -34,6 +36,8 @@ class FluxoraApp extends StatelessWidget {
   final BusinessRepository? businessRepository;
   final FinanceRepository Function(BusinessAccess access)?
   financeRepositoryFactory;
+  final AppointmentRepository Function(BusinessAccess access)?
+  appointmentRepositoryFactory;
   final CatalogRepository Function(BusinessAccess access)?
   catalogRepositoryFactory;
   final SalesRepository Function(BusinessAccess access)? salesRepositoryFactory;
@@ -65,6 +69,7 @@ class FluxoraApp extends StatelessWidget {
             child: AuthGate(
               businessRepository: businessRepository,
               financeRepositoryFactory: financeRepositoryFactory,
+              appointmentRepositoryFactory: appointmentRepositoryFactory,
               catalogRepositoryFactory: catalogRepositoryFactory,
               salesRepositoryFactory: salesRepositoryFactory,
               operationsRepositoryFactory: operationsRepositoryFactory,

@@ -1,9 +1,9 @@
-Fluxora 1.0.0 (build 10)
+Fluxora 1.0.0 (build 11)
 Pacote: dev.devvoid.fluxora
 Empresa: DevVoid.dev
 Artefato: build/app/outputs/bundle/release/app-release.aab
-Tamanho: 47680282 bytes
-SHA-256: 008BE95AEA5B0140A72301ECD6E2BEAC90B60D385C8D7AD7571D3135AFEFD775
+Tamanho: 48208370 bytes
+SHA-256: E819A4243018B6F3AC592BE309BD3FD22105B58282571DB27B54C5BFBB08EABC
 Assinatura: verificada
 Certificado de upload: CN=DevVoid.dev, OU=Mobile, O=DevVoid.dev, L=Brasilia, ST=DF, C=BR
 Gerado em: 2026-07-09
@@ -13,6 +13,8 @@ Produto Google Play: fluxora_pro
 Plano básico ativo: mensal
 Oferta ativa: teste-14-dias (teste gratuito de 2 semanas)
 Supabase: SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY passados via --dart-define
+Agenda: navegação, criação de atendimentos, bloqueio de conflito, status e
+sincronização offline-first com Supabase.
 
 A chave e as senhas de upload permanecem somente em android/key.properties e
 android/upload-keystore.jks, ambos ignorados pelo Git. Faça backup privado dos

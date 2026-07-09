@@ -4,7 +4,7 @@ class PatchNotesPage extends StatelessWidget {
   const PatchNotesPage({super.key});
 
   static const version = '1.0.0';
-  static const buildNumber = '10';
+  static const buildNumber = '11';
 
   @override
   Widget build(BuildContext context) {
@@ -15,6 +15,16 @@ class PatchNotesPage extends StatelessWidget {
         children: const [
           _ReleaseHeader(),
           SizedBox(height: 16),
+          _ReleaseSection(
+            icon: Icons.event_available_outlined,
+            title: 'Agenda integrada ao negócio',
+            items: [
+              'Crie agendamentos escolhendo cliente, WhatsApp, profissional, serviço, data e horário.',
+              'O Fluxora bloqueia conflito quando o mesmo profissional já possui atendimento no horário.',
+              'Confirme, conclua ou cancele atendimentos sem perder o histórico.',
+              'Profissionais acessam a área Minha agenda para acompanhar os próprios atendimentos.',
+            ],
+          ),
           _ReleaseSection(
             icon: Icons.insights_outlined,
             title: 'Entenda o que realmente sobra',
