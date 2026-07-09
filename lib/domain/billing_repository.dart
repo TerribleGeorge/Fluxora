@@ -49,7 +49,7 @@ class BillingUnavailableException implements Exception {
 
 class FluxoraBillingCatalog {
   static const founderProductId = 'fluxora_pro';
-  static const founderMonthlyBasePlanId = 'pro-fundador-mensal';
+  static const founderMonthlyBasePlanId = 'mensal';
   static const founderAnnualBasePlanId = 'pro-fundador-anual';
   static const founderTrialOfferId = 'teste-14-dias';
 
@@ -57,7 +57,7 @@ class FluxoraBillingCatalog {
     BillingPlan(
       id: founderMonthlyBasePlanId,
       name: 'Fluxora Pro Fundador',
-      priceLabel: 'R\$ 39,90/mês',
+      priceLabel: 'R\$ 39,99/mês',
       description:
           'Condição especial para os primeiros negócios que ajudarem a construir o Fluxora.',
       highlight: true,

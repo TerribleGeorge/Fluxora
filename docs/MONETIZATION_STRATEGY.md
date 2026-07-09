@@ -6,9 +6,10 @@ Na primeira versão comercial, o Fluxora usa um único produto de assinatura:
 
 - Produto Google Play: `fluxora_pro`
 - Nome comercial: Fluxora Pro Fundador
-- Plano mensal: `pro-fundador-mensal` — R$ 39,90/mês
+- Plano mensal: `mensal` — R$ 39,99/mês
 - Plano anual planejado: `pro-fundador-anual` — R$ 399,90/ano
-- Oferta de aquisição: `teste-14-dias` — 14 dias grátis para novos usuários
+- Oferta de aquisição: `teste-14-dias` — 2 semanas grátis para novos usuários
+  (equivalente comercial a 14 dias)
 
 ## Por que um único produto
 
@@ -27,7 +28,7 @@ reprecificar novas entradas.
 
 ## Por que preço fundador
 
-O preço de R$ 39,90/mês é competitivo para pequenos negócios de beleza e evita
+O preço de R$ 39,99/mês é competitivo para pequenos negócios de beleza e evita
 posicionar o Fluxora como ferramenta barata demais. A narrativa correta não é
 "vamos aumentar depois", mas:
 
@@ -61,12 +62,12 @@ Correção aplicada:
 5. O próximo AAB precisa ser enviado ao teste interno antes de criar/ativar a
    assinatura no Console.
 
-## Próximo passo operacional
+## Status operacional
 
-1. Gerar novo AAB assinado com Billing.
-2. Subir no teste interno da Play Console.
-3. Voltar em Monetizar com o Google Play → Produtos → Assinaturas.
-4. Criar `fluxora_pro`.
-5. Criar plano base mensal `pro-fundador-mensal`.
-6. Criar oferta `teste-14-dias`.
-7. Testar compra com testador licenciado antes de produção.
+- [x] Gerar AAB assinado com Billing.
+- [x] Subir no teste interno da Play Console.
+- [x] Criar produto de assinatura `fluxora_pro`.
+- [x] Criar plano base mensal `mensal`.
+- [x] Ativar plano mensal por R$ 39,99/mês.
+- [x] Criar oferta `teste-14-dias` com teste gratuito de 2 semanas.
+- [ ] Testar compra com testador licenciado antes de produção.
