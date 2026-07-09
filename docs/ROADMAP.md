@@ -26,6 +26,20 @@ clínicas de estética não médica.
 - [x] 11. Preparar privacidade, exclusão de conta e Play Store — **Concluído no código; URLs públicas pendentes**
 - [ ] 12. Executar testes, beta fechado e publicação — **Bloqueado por contas externas**
 
+## Expansão de plataforma
+
+A partir da validação inicial, o Fluxora passa a mirar uma operação completa
+para o estabelecimento:
+
+- [ ] 13. Agenda interna do estabelecimento
+- [ ] 14. Acesso limitado do profissional
+- [ ] 15. Página pública de agendamento para clientes
+- [ ] 16. Eventos para automações externas
+- [ ] 17. Integração n8n + WhatsApp
+- [ ] 18. Painel web para uso no PC
+
+Detalhes da decisão estão em `docs/PLATFORM_VISION.md`.
+
 ## Regra de trabalho
 
 Não iniciaremos a próxima etapa antes de implementar, testar e registrar a
