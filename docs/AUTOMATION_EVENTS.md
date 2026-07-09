@@ -94,10 +94,27 @@ Destinatários:
 
 - dono ou gestor.
 
-## n8n
+## Supabase como motor gratuito
 
-O n8n deve receber os eventos por webhook ou consultar uma tabela de fila de
-eventos no Supabase. A decisão final depende do provedor de WhatsApp escolhido.
+Para reduzir custo e evitar dependência de plataformas externas, o primeiro
+motor de automação do Fluxora será o próprio Supabase.
+
+Componentes:
+
+- tabela `automation_events`;
+- triggers no banco para criar eventos;
+- Edge Function `process-automation-events`;
+- integração futura com WhatsApp/e-mail dentro da função.
+
+O app não precisa conhecer o provedor final de mensagem. Ele registra o dado
+operacional e o banco cria o evento correspondente.
+
+## n8n ou alternativas futuras
+
+O n8n, Make, Pipedream ou Activepieces podem ser conectados depois consultando
+a tabela `automation_events` ou recebendo webhooks disparados pela Edge
+Function. A decisão final depende do provedor de WhatsApp escolhido e dos
+custos reais.
 
 Para produção, o envio precisa respeitar:
 
