@@ -4,7 +4,7 @@ class PatchNotesPage extends StatelessWidget {
   const PatchNotesPage({super.key});
 
   static const version = '1.0.0';
-  static const buildNumber = '9';
+  static const buildNumber = '10';
 
   @override
   Widget build(BuildContext context) {
@@ -78,6 +78,7 @@ class PatchNotesPage extends StatelessWidget {
               'Continue trabalhando quando a conexão estiver instável.',
               'Exporte seus dados e solicite a exclusão da conta pelo app.',
               'Controle o acesso de proprietário, gestor e profissional.',
+              'A configuração Android do link de recuperação de senha foi revisada.',
             ],
           ),
           SizedBox(height: 8),

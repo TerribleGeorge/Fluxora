@@ -59,6 +59,12 @@ android {
             signingConfig = signingConfigs.getByName("release")
         }
     }
+
+    lint {
+        // Flutter rewrites android/local.properties with Windows SDK paths.
+        // The file is local-only and ignored by Git, so this check is noise here.
+        disable += "PropertyEscape"
+    }
 }
 
 flutter {
