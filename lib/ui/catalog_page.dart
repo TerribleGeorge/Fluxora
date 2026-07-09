@@ -202,6 +202,7 @@ Future<void> _showProfessionalForm(
   BuildContext context, [
   Professional? item,
 ]) async {
+  final bloc = context.read<CatalogBloc>();
   final name = TextEditingController(text: item?.name);
   final phone = TextEditingController(text: item?.phone);
   final email = TextEditingController(text: item?.email);
@@ -235,7 +236,7 @@ Future<void> _showProfessionalForm(
         ),
         FilledButton(
           onPressed: () {
-            context.read<CatalogBloc>().add(
+            bloc.add(
               ProfessionalSaved(
                 id: item?.id,
                 name: name.text,
@@ -261,6 +262,8 @@ Future<void> _showServiceForm(
   BuildContext context, [
   BeautyService? item,
 ]) async {
+  final bloc = context.read<CatalogBloc>();
+  final messenger = ScaffoldMessenger.of(context);
   final name = TextEditingController(text: item?.name);
   final category = TextEditingController(text: item?.category ?? 'Serviços');
   final price = TextEditingController(text: item?.price.toStringAsFixed(2));
@@ -342,15 +345,37 @@ Future<void> _showServiceForm(
             ),
           FilledButton(
             onPressed: () {
-              context.read<CatalogBloc>().add(
+              final parsedPrice = _number(price.text);
+              final parsedDuration = int.tryParse(duration.text.trim()) ?? 0;
+              final parsedCommission = _number(commission.text);
+              final invalidCommission =
+                  parsedCommission < 0 ||
+                  (commissionType == ServiceCommissionType.percentage &&
+                      parsedCommission > 100);
+              if (name.text.trim().length < 2 ||
+                  parsedPrice <= 0 ||
+                  parsedDuration < 5 ||
+                  invalidCommission) {
+                messenger
+                  ..hideCurrentSnackBar()
+                  ..showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Revise o serviço: nome, preço, duração mínima de 5 minutos e comissão válida.',
+                      ),
+                    ),
+                  );
+                return;
+              }
+              bloc.add(
                 ServiceSaved(
                   id: item?.id,
                   name: name.text,
                   category: category.text,
-                  price: _number(price.text),
-                  durationMinutes: int.tryParse(duration.text) ?? 0,
+                  price: parsedPrice,
+                  durationMinutes: parsedDuration,
                   commissionType: commissionType,
-                  commissionValue: _number(commission.text),
+                  commissionValue: parsedCommission,
                 ),
               );
               Navigator.pop(sheetContext);

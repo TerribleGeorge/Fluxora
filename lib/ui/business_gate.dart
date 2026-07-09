@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
+import '../app/theme.dart';
 import '../domain/business_repository.dart';
 import '../domain/catalog_repository.dart';
 import '../domain/finance_repository.dart';
@@ -144,7 +145,10 @@ class _BusinessWorkspace extends StatelessWidget {
                     ..add(const SubscriptionStarted()),
             ),
           ],
-          child: const SubscriptionShell(),
+          child: Theme(
+            data: FluxoraTheme.businessDark(access.business.type),
+            child: const SubscriptionShell(),
+          ),
         ),
       ),
     );

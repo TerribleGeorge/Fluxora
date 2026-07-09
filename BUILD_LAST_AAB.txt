@@ -1,9 +1,9 @@
-Fluxora 1.0.0 (build 8)
+Fluxora 1.0.0 (build 9)
 Pacote: dev.devvoid.fluxora
 Empresa: DevVoid.dev
 Artefato: build/app/outputs/bundle/release/app-release.aab
-Tamanho: 47682561 bytes
-SHA-256: 327AC17B77D98AA3CDD84566828A44A4DCC58DB61156BCDF29A7E2426CBFA586
+Tamanho: 47680280 bytes
+SHA-256: D01E5FEFD6CD8A18882E95BCA9FCE42789C927FC746514B5229CF79BC1ACD01F
 Assinatura: verificada
 Certificado de upload: CN=DevVoid.dev, OU=Mobile, O=DevVoid.dev, L=Brasilia, ST=DF, C=BR
 Gerado em: 2026-07-09

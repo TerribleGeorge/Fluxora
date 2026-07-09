@@ -4,7 +4,7 @@ class PatchNotesPage extends StatelessWidget {
   const PatchNotesPage({super.key});
 
   static const version = '1.0.0';
-  static const buildNumber = '8';
+  static const buildNumber = '9';
 
   @override
   Widget build(BuildContext context) {
@@ -38,8 +38,18 @@ class PatchNotesPage extends StatelessWidget {
             title: 'Equipe, serviços e comissões',
             items: [
               'Cadastre profissionais, serviços e regras de comissão.',
+              'O cadastro de serviços agora orienta o usuário antes de fechar o formulário.',
               'Calcule automaticamente o valor devido a cada profissional.',
               'Registre repasses e acompanhe os saldos pendentes.',
+            ],
+          ),
+          _ReleaseSection(
+            icon: Icons.palette_outlined,
+            title: 'Identidade por tipo de negócio',
+            items: [
+              'Barbearias, esmalterias, salões, spas e estúdios agora têm paletas próprias.',
+              'A personalização começa após a escolha do tipo de estabelecimento.',
+              'A base visual foi preparada para temas mais ricos por segmento.',
             ],
           ),
           _ReleaseSection(
