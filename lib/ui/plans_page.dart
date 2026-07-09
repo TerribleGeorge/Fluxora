@@ -159,9 +159,18 @@ class _PlanCard extends StatelessWidget {
               ],
             ),
             Text(
-              storeProduct?.price ?? plan.priceLabel,
+              plan.priceLabel,
               style: Theme.of(context).textTheme.headlineSmall,
             ),
+            if (plan.id == FluxoraBillingCatalog.founderMonthlyBasePlanId) ...[
+              const SizedBox(height: 4),
+              Text(
+                '14 dias grátis. Depois, ${plan.priceLabel} pela Google Play.',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
             const SizedBox(height: 8),
             Text(plan.description),
             const SizedBox(height: 12),

@@ -4,7 +4,7 @@ class PatchNotesPage extends StatelessWidget {
   const PatchNotesPage({super.key});
 
   static const version = '1.0.0';
-  static const buildNumber = '5';
+  static const buildNumber = '8';
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +56,7 @@ class PatchNotesPage extends StatelessWidget {
             title: 'Plano fundador preparado',
             items: [
               'A tela de planos agora apresenta o Fluxora Pro Fundador.',
+              'O preço fundador aparece com valor real após o teste grátis.',
               'O app foi preparado para assinaturas pela Google Play.',
               'A condição fundadora comunica preço justo para os primeiros usuários.',
             ],
