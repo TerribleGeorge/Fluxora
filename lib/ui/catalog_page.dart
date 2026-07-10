@@ -408,16 +408,38 @@ Future<void> _showServiceForm(
               TextField(
                 controller: search,
                 decoration: const InputDecoration(
-                  labelText: 'Buscar serviço pronto',
-                  hintText: 'Ex.: corte, barba, manicure, limpeza...',
+                  labelText: 'Buscar sugestão ou criar serviço personalizado',
+                  hintText: 'Ex.: corte, barba, manicure, realidade virtual...',
                   prefixIcon: Icon(Icons.search),
                 ),
                 onChanged: (_) => setModalState(() {}),
               ),
               Text(
-                'Toque em uma sugestão para preencher nome, categoria e duração. Depois ajuste preço e tempo do seu negócio.',
+                'Use uma sugestão pronta ou ignore a lista e preencha os campos manualmente. O dono pode cadastrar qualquer experiência vendida no estabelecimento.',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
+              if (suggestions.isEmpty)
+                Card(
+                  child: ListTile(
+                    leading: const CircleAvatar(
+                      child: Icon(Icons.edit_note_outlined),
+                    ),
+                    title: const Text('Criar serviço fora da lista'),
+                    subtitle: Text(
+                      search.text.trim().isEmpty
+                          ? 'Digite nome, categoria, preço e duração abaixo.'
+                          : '“${search.text.trim()}” pode ser cadastrado manualmente abaixo.',
+                    ),
+                    onTap: () {
+                      final value = search.text.trim();
+                      if (value.isEmpty) return;
+                      setModalState(() {
+                        name.text = value;
+                        category.text = 'Experiências';
+                      });
+                    },
+                  ),
+                ),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -444,11 +466,18 @@ Future<void> _showServiceForm(
             ],
             TextField(
               controller: name,
-              decoration: const InputDecoration(labelText: 'Nome'),
+              decoration: const InputDecoration(
+                labelText: 'Nome',
+                helperText:
+                    'Pode ser um serviço tradicional ou uma experiência exclusiva.',
+              ),
             ),
             TextField(
               controller: category,
-              decoration: const InputDecoration(labelText: 'Categoria'),
+              decoration: const InputDecoration(
+                labelText: 'Categoria',
+                hintText: 'Ex.: Cabelo, Barba, Pacotes, Experiências',
+              ),
             ),
             Row(
               children: [
