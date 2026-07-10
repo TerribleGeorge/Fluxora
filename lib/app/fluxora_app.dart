@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/supported_locales.dart';
 import '../domain/auth_repository.dart';
 import '../domain/billing_repository.dart';
 import '../domain/business_repository.dart';
@@ -73,6 +75,12 @@ class FluxoraApp extends StatelessWidget {
         child: MaterialApp(
           title: 'Fluxora',
           debugShowCheckedModeBanner: false,
+          supportedLocales: FluxoraSupportedLocales.all,
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+          ],
           theme: FluxoraTheme.light,
           darkTheme: FluxoraTheme.dark,
           themeMode: ThemeMode.dark,
