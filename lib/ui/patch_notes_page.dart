@@ -4,7 +4,7 @@ class PatchNotesPage extends StatelessWidget {
   const PatchNotesPage({super.key});
 
   static const version = '1.0.0';
-  static const buildNumber = '14';
+  static const buildNumber = '15';
 
   @override
   Widget build(BuildContext context) {
@@ -16,81 +16,53 @@ class PatchNotesPage extends StatelessWidget {
           _ReleaseHeader(),
           SizedBox(height: 16),
           _ReleaseSection(
-            icon: Icons.workspace_premium_outlined,
-            title: 'Fidelidade configurável por estabelecimento',
+            icon: Icons.language_outlined,
+            title: 'Preparação para usuários de outros países',
             items: [
-              'O dono agora pode ativar ou desativar o módulo de fidelidade no próprio app.',
-              'Cada estabelecimento define seus descontos para Standard, Gold e Premium.',
-              'A regra não fica engessada: cada negócio decide a própria estratégia de fidelização.',
-              'O prazo de inatividade também pode ser ajustado para proteger a margem do negócio.',
+              'O Fluxora agora tem a base técnica de internacionalização configurada.',
+              'O app foi preparado para reconhecer idiomas e regiões de vários mercados.',
+              'Componentes do sistema, como calendários, seletores e direção de texto, passam a respeitar melhor o idioma do aparelho.',
+              'Português do Brasil segue como idioma principal enquanto os textos próprios do app são traduzidos por etapas.',
             ],
           ),
           _ReleaseSection(
-            icon: Icons.verified_user_outlined,
-            title: 'Base antifraude para agendamento público',
+            icon: Icons.public_outlined,
+            title: 'Expansão internacional com segurança',
             items: [
-              'O Supabase foi preparado para identificar clientes por e-mail ou por telefone + nome.',
-              'O cliente não escolhe nível de fidelidade no site, reduzindo tentativa de fraude.',
-              'O preço aplicado fica travado no agendamento para preservar o histórico financeiro.',
-              'A base de correção “Associar a Cliente Fiel” foi preparada no banco.',
-            ],
-          ),
-          _ReleaseSection(
-            icon: Icons.inventory_2_outlined,
-            title: 'Produtos, estoque e custo de venda',
-            items: [
-              'A aba Cadastros agora tem área de Produtos.',
-              'O dono pode registrar preço de venda, custo unitário, estoque e estoque mínimo.',
-              'As sugestões de produtos respeitam o nicho do estabelecimento.',
-              'O relatório mensal passa a descontar custo dos produtos vendidos no lucro real.',
-            ],
-          ),
-          _ReleaseSection(
-            icon: Icons.add_business_outlined,
-            title: 'Serviços personalizados sem prender o dono',
-            items: [
-              'A lista de serviços por nicho continua disponível como sugestão rápida.',
-              'O dono também pode criar serviços ou experiências fora da lista.',
-              'Exemplos como experiência de realidade virtual, pacotes VIP ou combos próprios podem ser cadastrados manualmente.',
-              'Nome, categoria, preço, duração e comissão continuam totalmente ajustáveis.',
-            ],
-          ),
-          _ReleaseSection(
-            icon: Icons.point_of_sale_outlined,
-            title: 'Checkout financeiro preparado',
-            items: [
-              'O banco foi preparado para fechar atendimento com serviço, produtos e forma de pagamento.',
-              'O checkout já considera desconto de fidelidade, taxa de pagamento, comissão e custo de produto.',
-              'A baixa automática de estoque foi preparada no Supabase.',
-              'Funcionários só poderão atuar nos próprios atendimentos.',
-            ],
-          ),
-          _ReleaseSection(
-            icon: Icons.security_outlined,
-            title: 'Permissões mais seguras',
-            items: [
-              'As políticas do Supabase foram reforçadas para separar dono, gestor e funcionário.',
-              'Funcionários não acessam relatórios financeiros completos.',
-              'Vendas e dados sensíveis foram preparados para visualização restrita.',
-              'Produtos vendáveis podem ser exibidos sem expor custo interno ao funcionário.',
+              'Foram adicionados idiomas e variações regionais usados em mercados prioritários.',
+              'A estrutura evita espalhar configurações de idioma pelo código, facilitando futuras traduções.',
+              'A base já considera idiomas com leitura da direita para a esquerda, como árabe e hebraico.',
+              'Textos ligados a dinheiro, assinatura, privacidade e exclusão de dados terão revisão mais cuidadosa antes de tradução pública.',
             ],
           ),
           _ReleaseSection(
             icon: Icons.description_outlined,
-            title: 'Documentação de regra de negócio',
+            title: 'Documentação de internacionalização',
             items: [
-              'A arquitetura foi atualizada para refletir o foco exclusivo em beleza e bem-estar.',
-              'As regras de fidelidade, antifraude, produto, checkout e permissões foram documentadas.',
-              'A base técnica ficou mais fácil de explicar, revisar e evoluir.',
+              'Foi criada uma documentação própria explicando como o Fluxora será traduzido.',
+              'A estratégia recomenda começar por inglês, espanhol e português de Portugal.',
+              'A documentação separa localização do sistema de tradução dos textos próprios do produto.',
+              'Isso ajuda a evoluir o app sem publicar traduções automáticas ruins em telas sensíveis.',
             ],
           ),
           _ReleaseSection(
-            icon: Icons.cloud_sync_outlined,
-            title: 'Continuidade da versão anterior',
+            icon: Icons.verified_outlined,
+            title: 'Qualidade validada por testes',
             items: [
-              'Agenda, vendas, caixa, serviços, profissionais, assinatura e sincronização continuam disponíveis.',
-              'O Fluxora segue preparado para teste grátis de 14 dias e assinatura pela Google Play.',
-              'Exportação de dados, exclusão de conta e recuperação de senha seguem preservadas.',
+              'Foi adicionado teste automático para garantir mercados prioritários na lista de idiomas.',
+              'O teste também impede idiomas duplicados na configuração central.',
+              'A análise do Flutter permanece sem erros.',
+              'A suíte de testes confirma que as regras financeiras, assinatura, fidelidade, catálogo, checkout e agenda continuam preservadas.',
+            ],
+          ),
+          _ReleaseSection(
+            icon: Icons.workspace_premium_outlined,
+            title: 'Continuidade da gestão de beleza',
+            items: [
+              'Agenda, vendas, caixa, serviços, profissionais, produtos e assinatura continuam disponíveis.',
+              'Fidelidade configurável, permissões por perfil e checkout financeiro seguem preservados.',
+              'O Fluxora continua focado em beleza e bem-estar, com cálculo de lucro real para o dono.',
+              'A base internacional foi adicionada sem alterar o fluxo principal já validado.',
             ],
           ),
           SizedBox(height: 8),
@@ -127,8 +99,9 @@ class _ReleaseHeader extends StatelessWidget {
             const SizedBox(height: 12),
             const Text(
               'A primeira versão reúne as ferramentas essenciais para negócios '
-              'de beleza acompanharem fidelidade, produtos, vendas, equipe, '
-              'caixa e lucro real.',
+              'de beleza acompanharem vendas, equipe, fidelidade, produtos, '
+              'caixa e lucro real, agora com base preparada para expansão '
+              'internacional.',
             ),
           ],
         ),

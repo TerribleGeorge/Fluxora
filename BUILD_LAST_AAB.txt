@@ -1,33 +1,40 @@
-Fluxora 1.0.0 (build 14)
+Fluxora 1.0.0 (build 15)
 Pacote: dev.devvoid.fluxora
 Empresa: DevVoid.dev
 Artefato: build/app/outputs/bundle/release/app-release.aab
-Tamanho: 48362983 bytes
-SHA-256: 0021EB4244778FED8561670F2A6C072643CC072B5C28335730EC11EC93446AD7
+Tamanho: 49302564 bytes
+SHA-256: 8E4DEF0803AD6B5A355E4EB6674E8FC17C87615EEFCD2D87AFA71BD4B92BC9C7
 Assinatura: verificada
 Certificado de upload: CN=DevVoid.dev, OU=Mobile, O=DevVoid.dev, L=Brasilia, ST=DF, C=BR
 Gerado em: 2026-07-10
 Backend: Supabase nqcoxxbzwzcuwprbzpdb
-Google Play Billing: com.android.vending.BILLING presente no manifest final
+Supabase: SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY passados via --dart-define
+Google Play Billing: dependência in_app_purchase preservada
 Produto Google Play: fluxora_pro
 Plano básico ativo: mensal
 Oferta ativa: teste-14-dias (teste gratuito de 2 semanas)
-Supabase: SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY passados via --dart-define
 
-Principais mudanças da build 14:
-- Fidelidade configurável por estabelecimento, com chave liga/desliga e
-  descontos próprios para Standard, Gold e Premium.
-- Base Supabase antifraude para identificar clientes por e-mail ou por
-  telefone + nome no agendamento público.
-- Produtos por nicho, cadastro de estoque, custo unitário, preço de venda e
-  estoque mínimo.
-- Relatório mensal passa a separar custo dos produtos vendidos para fortalecer
-  o cálculo de lucro real.
-- Serviços personalizados ficam explícitos no cadastro, permitindo experiências
-  fora das sugestões padrão, como realidade virtual, combos e pacotes próprios.
-- Checkout financeiro preparado no Supabase para serviço, produtos, baixa de
-  estoque, forma de pagamento, comissão e lucro estimado.
-- Regras de permissão reforçadas para separar dono, gestor e funcionário.
+Validações executadas:
+- flutter analyze: sem problemas
+- flutter test: 57 testes aprovados
+- flutter build appbundle --release via scripts/build_play_release.ps1: concluído
+- jarsigner -verify: jar verified
+
+Principais mudanças da build 15:
+- Base de internacionalização adicionada com flutter_localizations.
+- MaterialApp configurado com delegates globais do Flutter.
+- Lista central de idiomas e variações regionais criada para expansão internacional.
+- Suporte preparado para componentes de sistema em vários idiomas, calendários,
+  seletores e direção de texto.
+- Documentação docs/INTERNATIONALIZATION.md criada com estratégia de tradução.
+- Testes automáticos adicionados para validar mercados prioritários e evitar
+  locales duplicados.
+- Patch notes internos e notas da Play Store atualizados para a build 15.
+
+Observação de produto:
+- Português do Brasil segue como idioma principal nesta etapa.
+- Os textos próprios do Fluxora devem migrar gradualmente para uma camada de
+  tradução antes de prometer interface 100% traduzida em outros países.
 
 A chave e as senhas de upload permanecem somente em android/key.properties e
 android/upload-keystore.jks, ambos ignorados pelo Git. Faça backup privado dos
