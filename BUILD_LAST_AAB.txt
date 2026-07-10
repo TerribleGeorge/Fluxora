@@ -1,27 +1,34 @@
-Fluxora 1.0.0 (build 13)
+Fluxora 1.0.0 (build 14)
 Pacote: dev.devvoid.fluxora
 Empresa: DevVoid.dev
 Artefato: build/app/outputs/bundle/release/app-release.aab
-Tamanho: 48295767 bytes
-SHA-256: 05AD388CADC8DBF04A8B807429780462F8E65F40FAF492FF48E5178D168028F5
+Tamanho: 48362983 bytes
+SHA-256: 0021EB4244778FED8561670F2A6C072643CC072B5C28335730EC11EC93446AD7
 Assinatura: verificada
 Certificado de upload: CN=DevVoid.dev, OU=Mobile, O=DevVoid.dev, L=Brasilia, ST=DF, C=BR
-Gerado em: 2026-07-09
-Backend: Supabase nqcoxxbzwzcuwprbzpdb (São Paulo)
+Gerado em: 2026-07-10
+Backend: Supabase nqcoxxbzwzcuwprbzpdb
 Google Play Billing: com.android.vending.BILLING presente no manifest final
 Produto Google Play: fluxora_pro
 Plano básico ativo: mensal
 Oferta ativa: teste-14-dias (teste gratuito de 2 semanas)
 Supabase: SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY passados via --dart-define
-Agenda: navegação, criação de atendimentos, bloqueio de conflito, status e
-sincronização offline-first com Supabase.
-Serviços: sugestões por segmento com busca rápida no cadastro.
-Horários: cálculo local de horários livres por profissional, serviço e duração.
-Onboarding: checklist inicial para configurar equipe, serviços, agenda, vendas
-e planos.
-Equipe: vínculo de profissional ao usuário logado para agenda própria.
-Marca: ícone Android e imagens da Play Store redesenhados.
+
+Principais mudanças da build 14:
+- Fidelidade configurável por estabelecimento, com chave liga/desliga e
+  descontos próprios para Standard, Gold e Premium.
+- Base Supabase antifraude para identificar clientes por e-mail ou por
+  telefone + nome no agendamento público.
+- Produtos por nicho, cadastro de estoque, custo unitário, preço de venda e
+  estoque mínimo.
+- Relatório mensal passa a separar custo dos produtos vendidos para fortalecer
+  o cálculo de lucro real.
+- Serviços personalizados ficam explícitos no cadastro, permitindo experiências
+  fora das sugestões padrão, como realidade virtual, combos e pacotes próprios.
+- Checkout financeiro preparado no Supabase para serviço, produtos, baixa de
+  estoque, forma de pagamento, comissão e lucro estimado.
+- Regras de permissão reforçadas para separar dono, gestor e funcionário.
 
 A chave e as senhas de upload permanecem somente em android/key.properties e
 android/upload-keystore.jks, ambos ignorados pelo Git. Faça backup privado dos
-dois arquivos antes de publicar a primeira versão na Google Play.
+dois arquivos antes de publicar versões na Google Play.

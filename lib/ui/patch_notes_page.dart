@@ -4,7 +4,7 @@ class PatchNotesPage extends StatelessWidget {
   const PatchNotesPage({super.key});
 
   static const version = '1.0.0';
-  static const buildNumber = '13';
+  static const buildNumber = '14';
 
   @override
   Widget build(BuildContext context) {
@@ -16,115 +16,81 @@ class PatchNotesPage extends StatelessWidget {
           _ReleaseHeader(),
           SizedBox(height: 16),
           _ReleaseSection(
-            icon: Icons.rocket_launch_outlined,
-            title: 'Primeiros passos mais claros',
+            icon: Icons.workspace_premium_outlined,
+            title: 'Fidelidade configurável por estabelecimento',
             items: [
-              'A tela inicial agora mostra o que falta configurar no negócio.',
-              'Atalhos levam direto para equipe, serviços, agenda, vendas e planos.',
-              'O cadastro de profissional pode ser vinculado ao usuário logado.',
+              'O dono agora pode ativar ou desativar o módulo de fidelidade no próprio app.',
+              'Cada estabelecimento define seus descontos para Standard, Gold e Premium.',
+              'A regra não fica engessada: cada negócio decide a própria estratégia de fidelização.',
+              'O prazo de inatividade também pode ser ajustado para proteger a margem do negócio.',
             ],
           ),
           _ReleaseSection(
-            icon: Icons.brush_outlined,
-            title: 'Identidade visual revisada',
+            icon: Icons.verified_user_outlined,
+            title: 'Base antifraude para agendamento público',
             items: [
-              'Ícone do app e imagem de destaque foram redesenhados.',
-              'A nova identidade destaca agenda, vendas, caixa, comissões e lucro real.',
-              'Materiais da Play Store foram atualizados para DevVoid.dev.',
+              'O Supabase foi preparado para identificar clientes por e-mail ou por telefone + nome.',
+              'O cliente não escolhe nível de fidelidade no site, reduzindo tentativa de fraude.',
+              'O preço aplicado fica travado no agendamento para preservar o histórico financeiro.',
+              'A base de correção “Associar a Cliente Fiel” foi preparada no banco.',
             ],
           ),
           _ReleaseSection(
-            icon: Icons.search_outlined,
-            title: 'Serviços prontos por segmento',
+            icon: Icons.inventory_2_outlined,
+            title: 'Produtos, estoque e custo de venda',
             items: [
-              'O cadastro de serviços agora sugere opções por tipo de estabelecimento.',
-              'Barbearia, salão, esmalteria, cílios e sobrancelhas, maquiagem, spa e estética têm listas próprias.',
-              'Busque por algumas letras, toque no serviço e ajuste preço, duração e comissão.',
+              'A aba Cadastros agora tem área de Produtos.',
+              'O dono pode registrar preço de venda, custo unitário, estoque e estoque mínimo.',
+              'As sugestões de produtos respeitam o nicho do estabelecimento.',
+              'O relatório mensal passa a descontar custo dos produtos vendidos no lucro real.',
             ],
           ),
           _ReleaseSection(
-            icon: Icons.schedule_outlined,
-            title: 'Horários disponíveis no agendamento',
+            icon: Icons.add_business_outlined,
+            title: 'Serviços personalizados sem prender o dono',
             items: [
-              'Ao escolher profissional e serviço, o Fluxora calcula horários livres conforme a duração.',
-              'Horários que batem com atendimentos existentes deixam de aparecer como sugestão.',
-              'A proteção contra conflito continua ativa ao salvar o agendamento.',
-            ],
-          ),
-          _ReleaseSection(
-            icon: Icons.event_available_outlined,
-            title: 'Agenda integrada ao negócio',
-            items: [
-              'Crie agendamentos escolhendo cliente, WhatsApp, profissional, serviço, data e horário.',
-              'O Fluxora bloqueia conflito quando o mesmo profissional já possui atendimento no horário.',
-              'Confirme, conclua ou cancele atendimentos sem perder o histórico.',
-              'Profissionais acessam a área Minha agenda para acompanhar os próprios atendimentos.',
-            ],
-          ),
-          _ReleaseSection(
-            icon: Icons.insights_outlined,
-            title: 'Entenda o que realmente sobra',
-            items: [
-              'Acompanhe faturamento, lucro real, margem e ticket médio.',
-              'Separe despesas operacionais, impostos e retiradas do proprietário.',
-              'Consulte resultados por período, profissional e serviço.',
+              'A lista de serviços por nicho continua disponível como sugestão rápida.',
+              'O dono também pode criar serviços ou experiências fora da lista.',
+              'Exemplos como experiência de realidade virtual, pacotes VIP ou combos próprios podem ser cadastrados manualmente.',
+              'Nome, categoria, preço, duração e comissão continuam totalmente ajustáveis.',
             ],
           ),
           _ReleaseSection(
             icon: Icons.point_of_sale_outlined,
-            title: 'Vendas e recebimentos',
+            title: 'Checkout financeiro preparado',
             items: [
-              'Registre serviços e produtos em um único atendimento.',
-              'Informe dinheiro, Pix, cartão, parcelas e taxas de pagamento.',
-              'Cancele vendas preservando o histórico do negócio.',
+              'O banco foi preparado para fechar atendimento com serviço, produtos e forma de pagamento.',
+              'O checkout já considera desconto de fidelidade, taxa de pagamento, comissão e custo de produto.',
+              'A baixa automática de estoque foi preparada no Supabase.',
+              'Funcionários só poderão atuar nos próprios atendimentos.',
             ],
           ),
           _ReleaseSection(
-            icon: Icons.groups_outlined,
-            title: 'Equipe, serviços e comissões',
+            icon: Icons.security_outlined,
+            title: 'Permissões mais seguras',
             items: [
-              'Cadastre profissionais, serviços e regras de comissão.',
-              'O cadastro de serviços agora orienta o usuário antes de fechar o formulário.',
-              'Calcule automaticamente o valor devido a cada profissional.',
-              'Registre repasses e acompanhe os saldos pendentes.',
+              'As políticas do Supabase foram reforçadas para separar dono, gestor e funcionário.',
+              'Funcionários não acessam relatórios financeiros completos.',
+              'Vendas e dados sensíveis foram preparados para visualização restrita.',
+              'Produtos vendáveis podem ser exibidos sem expor custo interno ao funcionário.',
             ],
           ),
           _ReleaseSection(
-            icon: Icons.palette_outlined,
-            title: 'Identidade por tipo de negócio',
+            icon: Icons.description_outlined,
+            title: 'Documentação de regra de negócio',
             items: [
-              'Barbearias, esmalterias, salões, spas e estúdios agora têm paletas próprias.',
-              'A personalização começa após a escolha do tipo de estabelecimento.',
-              'A base visual foi preparada para temas mais ricos por segmento.',
-            ],
-          ),
-          _ReleaseSection(
-            icon: Icons.account_balance_wallet_outlined,
-            title: 'Caixa organizado',
-            items: [
-              'Abra, confira e feche o caixa com segurança.',
-              'Compare o dinheiro esperado com o valor contado.',
-              'Mantenha as movimentações financeiras organizadas.',
-            ],
-          ),
-          _ReleaseSection(
-            icon: Icons.workspace_premium_outlined,
-            title: 'Plano fundador preparado',
-            items: [
-              'A tela de planos agora apresenta o Fluxora Pro Fundador.',
-              'O preço fundador aparece com valor real após o teste grátis.',
-              'O app foi preparado para assinaturas pela Google Play.',
-              'A condição fundadora comunica preço justo para os primeiros usuários.',
+              'A arquitetura foi atualizada para refletir o foco exclusivo em beleza e bem-estar.',
+              'As regras de fidelidade, antifraude, produto, checkout e permissões foram documentadas.',
+              'A base técnica ficou mais fácil de explicar, revisar e evoluir.',
             ],
           ),
           _ReleaseSection(
             icon: Icons.cloud_sync_outlined,
-            title: 'Continuidade e segurança',
+            title: 'Continuidade da versão anterior',
             items: [
-              'Continue trabalhando quando a conexão estiver instável.',
-              'Exporte seus dados e solicite a exclusão da conta pelo app.',
-              'Controle o acesso de proprietário, gestor e profissional.',
-              'A configuração Android do link de recuperação de senha foi revisada.',
+              'Agenda, vendas, caixa, serviços, profissionais, assinatura e sincronização continuam disponíveis.',
+              'O Fluxora segue preparado para teste grátis de 14 dias e assinatura pela Google Play.',
+              'Exportação de dados, exclusão de conta e recuperação de senha seguem preservadas.',
             ],
           ),
           SizedBox(height: 8),
@@ -161,7 +127,8 @@ class _ReleaseHeader extends StatelessWidget {
             const SizedBox(height: 12),
             const Text(
               'A primeira versão reúne as ferramentas essenciais para negócios '
-              'de beleza acompanharem vendas, equipe, caixa e lucro real.',
+              'de beleza acompanharem fidelidade, produtos, vendas, equipe, '
+              'caixa e lucro real.',
             ),
           ],
         ),
