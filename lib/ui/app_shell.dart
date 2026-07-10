@@ -5,6 +5,7 @@ import 'appointments_page.dart';
 import 'catalog_page.dart';
 import 'sales_page.dart';
 import 'operations_page.dart';
+import 'plans_page.dart';
 import 'settings_page.dart';
 import 'transactions_page.dart';
 
@@ -21,7 +22,14 @@ class _AppShellState extends State<AppShell> {
   @override
   Widget build(BuildContext context) {
     final pages = [
-      const DashboardPage(),
+      DashboardPage(
+        onOpenCatalog: () => setState(() => _index = 3),
+        onOpenSales: () => setState(() => _index = 4),
+        onOpenAppointments: () => setState(() => _index = 1),
+        onOpenPlans: () => Navigator.of(
+          context,
+        ).push(MaterialPageRoute<void>(builder: (_) => const PlansPage())),
+      ),
       const AppointmentsPage(),
       const TransactionsPage(),
       const CatalogPage(),

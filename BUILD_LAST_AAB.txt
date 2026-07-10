@@ -1,9 +1,9 @@
-Fluxora 1.0.0 (build 12)
+Fluxora 1.0.0 (build 13)
 Pacote: dev.devvoid.fluxora
 Empresa: DevVoid.dev
 Artefato: build/app/outputs/bundle/release/app-release.aab
-Tamanho: 48262092 bytes
-SHA-256: 1627948E03BE310A46E25F8D650C6C135B3BD937D69BDACA4306C6BBF34C8491
+Tamanho: 48295767 bytes
+SHA-256: 05AD388CADC8DBF04A8B807429780462F8E65F40FAF492FF48E5178D168028F5
 Assinatura: verificada
 Certificado de upload: CN=DevVoid.dev, OU=Mobile, O=DevVoid.dev, L=Brasilia, ST=DF, C=BR
 Gerado em: 2026-07-09
@@ -17,6 +17,10 @@ Agenda: navegação, criação de atendimentos, bloqueio de conflito, status e
 sincronização offline-first com Supabase.
 Serviços: sugestões por segmento com busca rápida no cadastro.
 Horários: cálculo local de horários livres por profissional, serviço e duração.
+Onboarding: checklist inicial para configurar equipe, serviços, agenda, vendas
+e planos.
+Equipe: vínculo de profissional ao usuário logado para agenda própria.
+Marca: ícone Android e imagens da Play Store redesenhados.
 
 A chave e as senhas de upload permanecem somente em android/key.properties e
 android/upload-keystore.jks, ambos ignorados pelo Git. Faça backup privado dos

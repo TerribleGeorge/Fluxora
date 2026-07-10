@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../domain/business_metrics.dart';
 import '../domain/business_repository.dart';
+import '../state/appointment_bloc.dart';
 import '../state/catalog_bloc.dart';
 import '../state/catalog_event.dart';
 import '../state/finance_bloc.dart';
@@ -14,7 +15,18 @@ import 'money.dart';
 import 'reports_page.dart';
 
 class DashboardPage extends StatelessWidget {
-  const DashboardPage({super.key});
+  const DashboardPage({
+    super.key,
+    this.onOpenCatalog,
+    this.onOpenSales,
+    this.onOpenAppointments,
+    this.onOpenPlans,
+  });
+
+  final VoidCallback? onOpenCatalog;
+  final VoidCallback? onOpenSales;
+  final VoidCallback? onOpenAppointments;
+  final VoidCallback? onOpenPlans;
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +68,13 @@ class DashboardPage extends StatelessWidget {
             Text(
               'Resultado deste mês',
               style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 12),
+            _SetupProgressCard(
+              onOpenCatalog: onOpenCatalog,
+              onOpenSales: onOpenSales,
+              onOpenAppointments: onOpenAppointments,
+              onOpenPlans: onOpenPlans,
             ),
             const SizedBox(height: 12),
             _ProfitCard(metrics: metrics),
@@ -150,6 +169,127 @@ class DashboardPage extends StatelessWidget {
       ),
     );
   }
+}
+
+class _SetupProgressCard extends StatelessWidget {
+  const _SetupProgressCard({
+    this.onOpenCatalog,
+    this.onOpenSales,
+    this.onOpenAppointments,
+    this.onOpenPlans,
+  });
+
+  final VoidCallback? onOpenCatalog;
+  final VoidCallback? onOpenSales;
+  final VoidCallback? onOpenAppointments;
+  final VoidCallback? onOpenPlans;
+
+  @override
+  Widget build(BuildContext context) {
+    final catalog = context.watch<CatalogBloc>().state;
+    final sales = context.watch<SalesBloc>().state.sales;
+    final appointments = context.watch<AppointmentBloc>().state.appointments;
+    final steps = [
+      _SetupStep(
+        title: 'Cadastrar profissional',
+        done: catalog.professionals.isNotEmpty,
+        actionLabel: 'Equipe',
+        onPressed: onOpenCatalog,
+      ),
+      _SetupStep(
+        title: 'Cadastrar serviço',
+        done: catalog.services.isNotEmpty,
+        actionLabel: 'Serviços',
+        onPressed: onOpenCatalog,
+      ),
+      _SetupStep(
+        title: 'Criar primeiro agendamento',
+        done: appointments.isNotEmpty,
+        actionLabel: 'Agenda',
+        onPressed: onOpenAppointments,
+      ),
+      _SetupStep(
+        title: 'Registrar primeira venda',
+        done: sales.isNotEmpty,
+        actionLabel: 'Vendas',
+        onPressed: onOpenSales,
+      ),
+      _SetupStep(
+        title: 'Conferir plano fundador',
+        done: false,
+        actionLabel: 'Planos',
+        onPressed: onOpenPlans,
+        optional: true,
+      ),
+    ];
+    final requiredSteps = steps.where((item) => !item.optional).toList();
+    final completed = requiredSteps.where((item) => item.done).length;
+    if (completed == requiredSteps.length) {
+      return const SizedBox.shrink();
+    }
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.rocket_launch_outlined),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Deixe seu negócio pronto',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                Text('$completed/${requiredSteps.length}'),
+              ],
+            ),
+            const SizedBox(height: 12),
+            LinearProgressIndicator(
+              value: completed / requiredSteps.length,
+              minHeight: 6,
+              borderRadius: BorderRadius.circular(999),
+            ),
+            const SizedBox(height: 12),
+            for (final step in steps)
+              if (!step.done)
+                ListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(
+                    step.optional
+                        ? Icons.lightbulb_outline
+                        : Icons.radio_button_unchecked,
+                  ),
+                  title: Text(step.title),
+                  trailing: TextButton(
+                    onPressed: step.onPressed,
+                    child: Text(step.actionLabel),
+                  ),
+                ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SetupStep {
+  const _SetupStep({
+    required this.title,
+    required this.done,
+    required this.actionLabel,
+    required this.onPressed,
+    this.optional = false,
+  });
+
+  final String title;
+  final bool done;
+  final String actionLabel;
+  final VoidCallback? onPressed;
+  final bool optional;
 }
 
 BusinessMetrics currentMonthMetrics(BuildContext context) {

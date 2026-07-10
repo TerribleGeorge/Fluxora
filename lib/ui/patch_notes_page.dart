@@ -4,7 +4,7 @@ class PatchNotesPage extends StatelessWidget {
   const PatchNotesPage({super.key});
 
   static const version = '1.0.0';
-  static const buildNumber = '12';
+  static const buildNumber = '13';
 
   @override
   Widget build(BuildContext context) {
@@ -15,6 +15,24 @@ class PatchNotesPage extends StatelessWidget {
         children: const [
           _ReleaseHeader(),
           SizedBox(height: 16),
+          _ReleaseSection(
+            icon: Icons.rocket_launch_outlined,
+            title: 'Primeiros passos mais claros',
+            items: [
+              'A tela inicial agora mostra o que falta configurar no negócio.',
+              'Atalhos levam direto para equipe, serviços, agenda, vendas e planos.',
+              'O cadastro de profissional pode ser vinculado ao usuário logado.',
+            ],
+          ),
+          _ReleaseSection(
+            icon: Icons.brush_outlined,
+            title: 'Identidade visual revisada',
+            items: [
+              'Ícone do app e imagem de destaque foram redesenhados.',
+              'A nova identidade destaca agenda, vendas, caixa, comissões e lucro real.',
+              'Materiais da Play Store foram atualizados para DevVoid.dev.',
+            ],
+          ),
           _ReleaseSection(
             icon: Icons.search_outlined,
             title: 'Serviços prontos por segmento',

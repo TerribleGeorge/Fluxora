@@ -98,4 +98,24 @@ void main() {
 
     expect((await repository.getProfessionals()).single.active, isFalse);
   });
+
+  test('vincula profissional ao usuário do login', () async {
+    final bloc = CatalogBloc(repository, 'business-1');
+    addTearDown(bloc.close);
+
+    bloc.add(
+      const ProfessionalSaved(
+        name: 'Ana Souza',
+        phone: '11988887777',
+        email: 'ana@example.com',
+        commissionPercent: 35,
+        userId: 'user-1',
+      ),
+    );
+    final state = await bloc.stream.firstWhere(
+      (item) => item.status == CatalogStatus.success,
+    );
+
+    expect(state.professionals.single.userId, 'user-1');
+  });
 }

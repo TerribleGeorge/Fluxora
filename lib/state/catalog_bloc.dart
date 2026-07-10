@@ -54,7 +54,7 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
       email: event.email.trim(),
       defaultCommissionPercent: event.commissionPercent,
       active: existing?.active ?? true,
-      userId: existing?.userId,
+      userId: event.userId,
       createdAt: existing?.createdAt ?? now,
       updatedAt: now,
     );

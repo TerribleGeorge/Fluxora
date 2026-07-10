@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../domain/catalog.dart';
 import '../domain/business_repository.dart';
 import '../domain/service_template.dart';
+import '../state/auth_bloc.dart';
 import '../state/catalog_bloc.dart';
 import '../state/catalog_event.dart';
 import '../state/catalog_state.dart';
@@ -78,7 +79,8 @@ class _ProfessionalsList extends StatelessWidget {
                       ),
                       title: Text(item.name),
                       subtitle: Text(
-                        '${item.defaultCommissionPercent.toStringAsFixed(1)}% de comissão padrão',
+                        '${item.defaultCommissionPercent.toStringAsFixed(1)}% de comissão padrão'
+                        '${item.userId == null ? '' : ' • usuário vinculado'}',
                       ),
                       onTap: () => _showProfessionalForm(context, item),
                       trailing: Switch(
@@ -211,47 +213,79 @@ Future<void> _showProfessionalForm(
   final commission = TextEditingController(
     text: item?.defaultCommissionPercent.toStringAsFixed(1) ?? '0',
   );
+  final identity = context.read<AuthBloc>().state.identity;
+  var linkToCurrentUser =
+      item?.userId == identity?.id ||
+      (item == null &&
+          identity != null &&
+          identity.email.trim().toLowerCase() ==
+              email.text.trim().toLowerCase());
   await showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    builder: (sheetContext) => _FormSheet(
-      title: item == null ? 'Novo profissional' : 'Editar profissional',
-      children: [
-        TextField(
-          controller: name,
-          decoration: const InputDecoration(labelText: 'Nome'),
-        ),
-        TextField(
-          controller: phone,
-          keyboardType: TextInputType.phone,
-          decoration: const InputDecoration(labelText: 'Telefone'),
-        ),
-        TextField(
-          controller: email,
-          keyboardType: TextInputType.emailAddress,
-          decoration: const InputDecoration(labelText: 'E-mail (opcional)'),
-        ),
-        TextField(
-          controller: commission,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: const InputDecoration(labelText: 'Comissão padrão (%)'),
-        ),
-        FilledButton(
-          onPressed: () {
-            bloc.add(
-              ProfessionalSaved(
-                id: item?.id,
-                name: name.text,
-                phone: phone.text,
-                email: email.text,
-                commissionPercent: _number(commission.text),
+    builder: (sheetContext) => StatefulBuilder(
+      builder: (context, setModalState) => _FormSheet(
+        title: item == null ? 'Novo profissional' : 'Editar profissional',
+        children: [
+          TextField(
+            controller: name,
+            decoration: const InputDecoration(labelText: 'Nome'),
+          ),
+          TextField(
+            controller: phone,
+            keyboardType: TextInputType.phone,
+            decoration: const InputDecoration(labelText: 'Telefone'),
+          ),
+          TextField(
+            controller: email,
+            keyboardType: TextInputType.emailAddress,
+            decoration: const InputDecoration(labelText: 'E-mail (opcional)'),
+            onChanged: (value) {
+              if (identity == null) return;
+              final sameEmail =
+                  value.trim().toLowerCase() ==
+                  identity.email.trim().toLowerCase();
+              if (sameEmail != linkToCurrentUser) {
+                setModalState(() => linkToCurrentUser = sameEmail);
+              }
+            },
+          ),
+          if (identity != null)
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              value: linkToCurrentUser,
+              title: const Text('Vincular este profissional ao meu usuário'),
+              subtitle: Text(
+                linkToCurrentUser
+                    ? 'Este login verá a própria agenda e comissões.'
+                    : 'Use quando este cadastro representa a pessoa logada.',
               ),
-            );
-            Navigator.pop(sheetContext);
-          },
-          child: const Text('Salvar profissional'),
-        ),
-      ],
+              onChanged: (value) =>
+                  setModalState(() => linkToCurrentUser = value),
+            ),
+          TextField(
+            controller: commission,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(labelText: 'Comissão padrão (%)'),
+          ),
+          FilledButton(
+            onPressed: () {
+              bloc.add(
+                ProfessionalSaved(
+                  id: item?.id,
+                  name: name.text,
+                  phone: phone.text,
+                  email: email.text,
+                  commissionPercent: _number(commission.text),
+                  userId: linkToCurrentUser ? identity?.id : item?.userId,
+                ),
+              );
+              Navigator.pop(sheetContext);
+            },
+            child: const Text('Salvar profissional'),
+          ),
+        ],
+      ),
     ),
   );
   name.dispose();

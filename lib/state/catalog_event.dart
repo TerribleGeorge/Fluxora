@@ -15,12 +15,14 @@ final class ProfessionalSaved extends CatalogEvent {
     required this.phone,
     required this.email,
     required this.commissionPercent,
+    this.userId,
   });
   final String? id;
   final String name;
   final String phone;
   final String email;
   final double commissionPercent;
+  final String? userId;
 }
 
 final class ProfessionalActiveChanged extends CatalogEvent {
