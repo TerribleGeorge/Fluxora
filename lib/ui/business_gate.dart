@@ -9,6 +9,7 @@ import '../domain/catalog_repository.dart';
 import '../domain/customer_repository.dart';
 import '../domain/finance_repository.dart';
 import '../domain/product_repository.dart';
+import '../domain/checkout_repository.dart';
 import '../domain/sales_repository.dart';
 import '../domain/operations_repository.dart';
 import '../domain/subscription_repository.dart';
@@ -44,6 +45,7 @@ class BusinessGate extends StatelessWidget {
     required this.catalogRepositoryFactory,
     required this.customerRepositoryFactory,
     required this.productRepositoryFactory,
+    required this.checkoutRepositoryFactory,
     required this.salesRepositoryFactory,
     required this.operationsRepositoryFactory,
     required this.subscriptionRepositoryFactory,
@@ -59,6 +61,8 @@ class BusinessGate extends StatelessWidget {
   final CustomerRepository Function(BusinessAccess access)
   customerRepositoryFactory;
   final ProductRepository Function(BusinessAccess access) productRepositoryFactory;
+  final CheckoutRepository Function(BusinessAccess access)
+  checkoutRepositoryFactory;
   final SalesRepository Function(BusinessAccess access) salesRepositoryFactory;
   final OperationsRepository Function(BusinessAccess access)
   operationsRepositoryFactory;
@@ -97,6 +101,7 @@ class BusinessGate extends StatelessWidget {
             catalogRepository: catalogRepositoryFactory(state.selected!),
             customerRepository: customerRepositoryFactory(state.selected!),
             productRepository: productRepositoryFactory(state.selected!),
+            checkoutRepository: checkoutRepositoryFactory(state.selected!),
             salesRepository: salesRepositoryFactory(state.selected!),
             operationsRepository: operationsRepositoryFactory(state.selected!),
             subscriptionRepository: subscriptionRepositoryFactory(
@@ -118,6 +123,7 @@ class _BusinessWorkspace extends StatelessWidget {
     required this.catalogRepository,
     required this.customerRepository,
     required this.productRepository,
+    required this.checkoutRepository,
     required this.salesRepository,
     required this.operationsRepository,
     required this.subscriptionRepository,
@@ -129,6 +135,7 @@ class _BusinessWorkspace extends StatelessWidget {
   final CatalogRepository catalogRepository;
   final CustomerRepository customerRepository;
   final ProductRepository productRepository;
+  final CheckoutRepository checkoutRepository;
   final SalesRepository salesRepository;
   final OperationsRepository operationsRepository;
   final SubscriptionRepository subscriptionRepository;
@@ -137,8 +144,11 @@ class _BusinessWorkspace extends StatelessWidget {
   Widget build(BuildContext context) {
     return Provider<BusinessAccess>.value(
       value: access,
-      child: Provider<FinanceRepository>.value(
-        value: repository,
+      child: MultiProvider(
+        providers: [
+          Provider<FinanceRepository>.value(value: repository),
+          Provider<CheckoutRepository>.value(value: checkoutRepository),
+        ],
         child: MultiBlocProvider(
           providers: [
             BlocProvider(

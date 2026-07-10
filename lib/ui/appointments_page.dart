@@ -5,11 +5,20 @@ import '../domain/account.dart';
 import '../domain/appointment.dart';
 import '../domain/appointment_availability.dart';
 import '../domain/business_repository.dart';
+import '../domain/checkout_repository.dart';
+import '../domain/product.dart';
+import '../domain/sale.dart';
 import '../state/auth_bloc.dart';
 import '../state/appointment_bloc.dart';
 import '../state/appointment_event.dart';
 import '../state/appointment_state.dart';
 import '../state/catalog_bloc.dart';
+import '../state/operations_bloc.dart';
+import '../state/operations_event.dart';
+import '../state/product_bloc.dart';
+import '../state/product_event.dart';
+import '../state/sales_bloc.dart';
+import '../state/sales_event.dart';
 import 'money.dart';
 
 class AppointmentsPage extends StatelessWidget {
@@ -111,6 +120,11 @@ class AppointmentsPage extends StatelessWidget {
                             serviceName: service?.name ?? 'Serviço',
                             servicePrice: service?.price,
                             canManage: !professionalMode,
+                            canCheckout:
+                                !cancelledOrCompleted(item) &&
+                                (!professionalMode ||
+                                    item.professionalId ==
+                                        linkedProfessionalId),
                           );
                         },
                       ),
@@ -142,6 +156,11 @@ class AppointmentsPage extends StatelessWidget {
     }
   }
 }
+
+bool cancelledOrCompleted(Appointment item) =>
+    item.status == AppointmentStatus.cancelled ||
+    item.status == AppointmentStatus.completed ||
+    item.status == AppointmentStatus.noShow;
 
 class _DayHeader extends StatelessWidget {
   const _DayHeader({required this.day});
@@ -197,6 +216,7 @@ class _AppointmentCard extends StatelessWidget {
     required this.professionalName,
     required this.serviceName,
     required this.canManage,
+    required this.canCheckout,
     this.servicePrice,
   });
 
@@ -205,6 +225,7 @@ class _AppointmentCard extends StatelessWidget {
   final String serviceName;
   final double? servicePrice;
   final bool canManage;
+  final bool canCheckout;
 
   @override
   Widget build(BuildContext context) {
@@ -221,28 +242,38 @@ class _AppointmentCard extends StatelessWidget {
           '${appointment.customerPhone.isEmpty ? '' : '\n${appointment.customerPhone}'}',
         ),
         isThreeLine: appointment.customerPhone.isNotEmpty,
-        trailing: canManage && !cancelled
-            ? PopupMenuButton<AppointmentStatus>(
-                onSelected: (status) => context.read<AppointmentBloc>().add(
-                  AppointmentStatusChanged(appointment.id, status),
-                ),
-                itemBuilder: (_) => const [
-                  PopupMenuItem(
-                    value: AppointmentStatus.confirmed,
-                    child: Text('Confirmar'),
-                  ),
-                  PopupMenuItem(
-                    value: AppointmentStatus.completed,
-                    child: Text('Concluir'),
-                  ),
-                  PopupMenuItem(
-                    value: AppointmentStatus.cancelled,
-                    child: Text('Cancelar'),
-                  ),
-                ],
-              )
-            : Text(_statusLabel),
+        trailing: _trailing(context, cancelled),
       ),
+    );
+  }
+
+  Widget _trailing(BuildContext context, bool cancelled) {
+    if (cancelled || (!canManage && !canCheckout)) return Text(_statusLabel);
+    return PopupMenuButton<String>(
+      onSelected: (action) {
+        if (action == 'checkout') {
+          _showCheckoutSheet(context, appointment);
+          return;
+        }
+        final status = switch (action) {
+          'confirm' => AppointmentStatus.confirmed,
+          'cancel' => AppointmentStatus.cancelled,
+          _ => null,
+        };
+        if (status != null) {
+          context.read<AppointmentBloc>().add(
+            AppointmentStatusChanged(appointment.id, status),
+          );
+        }
+      },
+      itemBuilder: (_) => [
+        if (canManage)
+          const PopupMenuItem(value: 'confirm', child: Text('Confirmar')),
+        if (canCheckout)
+          const PopupMenuItem(value: 'checkout', child: Text('Concluir')),
+        if (canManage)
+          const PopupMenuItem(value: 'cancel', child: Text('Cancelar')),
+      ],
     );
   }
 
@@ -264,6 +295,312 @@ class _AppointmentCard extends StatelessWidget {
 
   String _time(DateTime value) =>
       '${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}';
+}
+
+Future<void> _showCheckoutSheet(
+  BuildContext context,
+  Appointment appointment,
+) async {
+  final checkoutRepository = context.read<CheckoutRepository>();
+  final catalog = context.read<CatalogBloc>().state;
+  final productBloc = context.read<ProductBloc>();
+  final messenger = ScaffoldMessenger.of(context);
+  final service = catalog.services
+      .where((item) => item.id == appointment.serviceId)
+      .firstOrNull;
+  final serviceBase = appointment.serviceBasePrice > 0
+      ? appointment.serviceBasePrice
+      : service?.price ?? 0;
+  final serviceFinal = appointment.serviceFinalPrice > 0
+      ? appointment.serviceFinalPrice
+      : serviceBase - appointment.discountAmount;
+  final feePercent = TextEditingController(text: '0');
+  final notes = TextEditingController();
+  var method = PaymentMethod.pix;
+  var selectedProducts = <String, int>{};
+  var saving = false;
+
+  await showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    builder: (sheetContext) => StatefulBuilder(
+      builder: (context, setModalState) {
+        final products = productBloc.state.products
+            .where((item) => item.active && item.stockQuantity > 0)
+            .toList();
+        final productTotal = selectedProducts.entries.fold<double>(0, (
+          sum,
+          entry,
+        ) {
+          final product = products
+              .where((item) => item.id == entry.key)
+              .firstOrNull;
+          return sum + (product == null ? 0 : product.salePrice * entry.value);
+        });
+        final total = serviceFinal + productTotal;
+        final fee = total * _number(feePercent.text) / 100;
+        return SafeArea(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              20,
+              20,
+              20,
+              20 + MediaQuery.viewInsetsOf(context).bottom,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Fechar atendimento',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${appointment.customerName} • ${service?.name ?? 'Serviço'}',
+                  ),
+                  const SizedBox(height: 16),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          _CheckoutLine('Preço do serviço', serviceBase),
+                          if (appointment.discountAmount > 0)
+                            _CheckoutLine(
+                              'Desconto de fidelidade',
+                              -appointment.discountAmount,
+                            ),
+                          _CheckoutLine(
+                            'Serviço a receber',
+                            serviceFinal,
+                            bold: true,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Produtos vendidos',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  if (products.isEmpty)
+                    const Text('Nenhum produto ativo com estoque disponível.')
+                  else
+                    for (final product in products)
+                      Card(
+                        child: ListTile(
+                          leading: const CircleAvatar(
+                            child: Icon(Icons.inventory_2_outlined),
+                          ),
+                          title: Text(product.name),
+                          subtitle: Text(
+                            '${money(product.salePrice)} • estoque ${product.stockQuantity}',
+                          ),
+                          trailing: _QuantityStepper(
+                            value: selectedProducts[product.id] ?? 0,
+                            max: product.stockQuantity,
+                            onChanged: (value) => setModalState(() {
+                              selectedProducts = Map.of(selectedProducts);
+                              if (value <= 0) {
+                                selectedProducts.remove(product.id);
+                              } else {
+                                selectedProducts[product.id] = value;
+                              }
+                            }),
+                          ),
+                        ),
+                      ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<PaymentMethod>(
+                    initialValue: method,
+                    decoration: const InputDecoration(
+                      labelText: 'Forma de pagamento',
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: PaymentMethod.cash,
+                        child: Text('Dinheiro'),
+                      ),
+                      DropdownMenuItem(
+                        value: PaymentMethod.pix,
+                        child: Text('Pix'),
+                      ),
+                      DropdownMenuItem(
+                        value: PaymentMethod.debitCard,
+                        child: Text('Cartão de débito'),
+                      ),
+                      DropdownMenuItem(
+                        value: PaymentMethod.creditCard,
+                        child: Text('Cartão de crédito'),
+                      ),
+                    ],
+                    onChanged: (value) =>
+                        setModalState(() => method = value ?? method),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: feePercent,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: 'Taxa do pagamento (%)',
+                      helperText: 'Use 0 para dinheiro ou Pix sem taxa.',
+                    ),
+                    onChanged: (_) => setModalState(() {}),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: notes,
+                    decoration: const InputDecoration(
+                      labelText: 'Observações do fechamento',
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          _CheckoutLine('Serviço', serviceFinal),
+                          _CheckoutLine('Produtos', productTotal),
+                          if (fee > 0) _CheckoutLine('Taxa estimada', -fee),
+                          const Divider(),
+                          _CheckoutLine('Total recebido', total, bold: true),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  FilledButton.icon(
+                    onPressed: saving
+                        ? null
+                        : () async {
+                            setModalState(() => saving = true);
+                            try {
+                              await checkoutRepository
+                                  .completeAppointmentCheckout(
+                                    appointmentId: appointment.id,
+                                    paymentMethod: method,
+                                    paymentFeePercent: _number(
+                                      feePercent.text,
+                                    ),
+                                    products: [
+                                      for (final entry
+                                          in selectedProducts.entries)
+                                        CheckoutProductLine(
+                                          productId: entry.key,
+                                          quantity: entry.value,
+                                        ),
+                                    ],
+                                    notes: notes.text,
+                                  );
+                              if (!context.mounted) return;
+                              context.read<AppointmentBloc>().add(
+                                const AppointmentsStarted(),
+                              );
+                              context.read<SalesBloc>().add(
+                                const SalesStarted(),
+                              );
+                              context.read<ProductBloc>().add(
+                                const ProductStarted(),
+                              );
+                              context.read<OperationsBloc>().add(
+                                const OperationsStarted(),
+                              );
+                              Navigator.pop(sheetContext);
+                              messenger.showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Atendimento fechado e caixa atualizado.',
+                                  ),
+                                ),
+                              );
+                            } on Exception catch (error) {
+                              setModalState(() => saving = false);
+                              messenger.showSnackBar(
+                                SnackBar(content: Text(error.toString())),
+                              );
+                            }
+                          },
+                    icon: saving
+                        ? const SizedBox.square(
+                            dimension: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.check_circle_outline),
+                    label: const Text('Confirmar fechamento'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    ),
+  );
+
+  feePercent.dispose();
+  notes.dispose();
+}
+
+class _CheckoutLine extends StatelessWidget {
+  const _CheckoutLine(this.label, this.value, {this.bold = false});
+
+  final String label;
+  final double value;
+  final bool bold;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = TextStyle(
+      fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+    );
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Expanded(child: Text(label, style: style)),
+          Text(money(value), style: style),
+        ],
+      ),
+    );
+  }
+}
+
+class _QuantityStepper extends StatelessWidget {
+  const _QuantityStepper({
+    required this.value,
+    required this.max,
+    required this.onChanged,
+  });
+
+  final int value;
+  final int max;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          tooltip: 'Remover',
+          onPressed: value <= 0 ? null : () => onChanged(value - 1),
+          icon: const Icon(Icons.remove_circle_outline),
+        ),
+        Text('$value'),
+        IconButton(
+          tooltip: 'Adicionar',
+          onPressed: value >= max ? null : () => onChanged(value + 1),
+          icon: const Icon(Icons.add_circle_outline),
+        ),
+      ],
+    );
+  }
 }
 
 Future<void> _showAppointmentForm(BuildContext context) async {
@@ -489,3 +826,7 @@ Future<void> _showAppointmentForm(BuildContext context) async {
 
 String _timeLabel(DateTime value) =>
     '${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}';
+
+double _number(String value) {
+  return double.tryParse(value.trim().replaceAll(',', '.')) ?? 0;
+}

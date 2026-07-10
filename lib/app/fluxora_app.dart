@@ -10,6 +10,7 @@ import '../domain/catalog_repository.dart';
 import '../domain/customer_repository.dart';
 import '../domain/finance_repository.dart';
 import '../domain/product_repository.dart';
+import '../domain/checkout_repository.dart';
 import '../domain/sales_repository.dart';
 import '../domain/operations_repository.dart';
 import '../domain/subscription_repository.dart';
@@ -29,6 +30,7 @@ class FluxoraApp extends StatelessWidget {
     required this.catalogRepositoryFactory,
     required this.customerRepositoryFactory,
     required this.productRepositoryFactory,
+    required this.checkoutRepositoryFactory,
     required this.salesRepositoryFactory,
     required this.operationsRepositoryFactory,
     required this.subscriptionRepositoryFactory,
@@ -47,6 +49,8 @@ class FluxoraApp extends StatelessWidget {
   final CustomerRepository Function(BusinessAccess access)?
   customerRepositoryFactory;
   final ProductRepository Function(BusinessAccess access)? productRepositoryFactory;
+  final CheckoutRepository Function(BusinessAccess access)?
+  checkoutRepositoryFactory;
   final SalesRepository Function(BusinessAccess access)? salesRepositoryFactory;
   final OperationsRepository Function(BusinessAccess access)?
   operationsRepositoryFactory;
@@ -80,6 +84,7 @@ class FluxoraApp extends StatelessWidget {
               catalogRepositoryFactory: catalogRepositoryFactory,
               customerRepositoryFactory: customerRepositoryFactory,
               productRepositoryFactory: productRepositoryFactory,
+              checkoutRepositoryFactory: checkoutRepositoryFactory,
               salesRepositoryFactory: salesRepositoryFactory,
               operationsRepositoryFactory: operationsRepositoryFactory,
               subscriptionRepositoryFactory: subscriptionRepositoryFactory,
