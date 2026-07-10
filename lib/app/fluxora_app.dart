@@ -7,7 +7,9 @@ import '../domain/billing_repository.dart';
 import '../domain/business_repository.dart';
 import '../domain/appointment_repository.dart';
 import '../domain/catalog_repository.dart';
+import '../domain/customer_repository.dart';
 import '../domain/finance_repository.dart';
+import '../domain/product_repository.dart';
 import '../domain/sales_repository.dart';
 import '../domain/operations_repository.dart';
 import '../domain/subscription_repository.dart';
@@ -25,6 +27,8 @@ class FluxoraApp extends StatelessWidget {
     required this.financeRepositoryFactory,
     required this.appointmentRepositoryFactory,
     required this.catalogRepositoryFactory,
+    required this.customerRepositoryFactory,
+    required this.productRepositoryFactory,
     required this.salesRepositoryFactory,
     required this.operationsRepositoryFactory,
     required this.subscriptionRepositoryFactory,
@@ -40,6 +44,9 @@ class FluxoraApp extends StatelessWidget {
   appointmentRepositoryFactory;
   final CatalogRepository Function(BusinessAccess access)?
   catalogRepositoryFactory;
+  final CustomerRepository Function(BusinessAccess access)?
+  customerRepositoryFactory;
+  final ProductRepository Function(BusinessAccess access)? productRepositoryFactory;
   final SalesRepository Function(BusinessAccess access)? salesRepositoryFactory;
   final OperationsRepository Function(BusinessAccess access)?
   operationsRepositoryFactory;
@@ -71,6 +78,8 @@ class FluxoraApp extends StatelessWidget {
               financeRepositoryFactory: financeRepositoryFactory,
               appointmentRepositoryFactory: appointmentRepositoryFactory,
               catalogRepositoryFactory: catalogRepositoryFactory,
+              customerRepositoryFactory: customerRepositoryFactory,
+              productRepositoryFactory: productRepositoryFactory,
               salesRepositoryFactory: salesRepositoryFactory,
               operationsRepositoryFactory: operationsRepositoryFactory,
               subscriptionRepositoryFactory: subscriptionRepositoryFactory,

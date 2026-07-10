@@ -19,6 +19,7 @@ import 'plans_page.dart';
 import 'patch_notes_page.dart';
 import 'privacy_page.dart';
 import 'transactions_page.dart';
+import 'loyalty_settings_page.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -57,6 +58,23 @@ class SettingsPage extends StatelessWidget {
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(
                   builder: (_) => const TransactionsPage(),
+                ),
+              ),
+            ),
+          ),
+          Card(
+            child: ListTile(
+              leading: const CircleAvatar(
+                child: Icon(Icons.workspace_premium_outlined),
+              ),
+              title: const Text('Fidelidade de clientes'),
+              subtitle: const Text(
+                'Ative níveis, descontos e antifraude no agendamento',
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const LoyaltySettingsPage(),
                 ),
               ),
             ),

@@ -45,6 +45,29 @@ class Product {
 
   bool get lowStock => stockQuantity <= minStockQuantity;
 
+  Product copyWith({
+    String? name,
+    String? category,
+    double? salePrice,
+    double? unitCost,
+    int? stockQuantity,
+    int? minStockQuantity,
+    bool? active,
+    DateTime? updatedAt,
+  }) => Product(
+    id: id,
+    businessId: businessId,
+    businessType: businessType,
+    name: name ?? this.name,
+    category: category ?? this.category,
+    salePrice: salePrice ?? this.salePrice,
+    unitCost: unitCost ?? this.unitCost,
+    stockQuantity: stockQuantity ?? this.stockQuantity,
+    minStockQuantity: minStockQuantity ?? this.minStockQuantity,
+    active: active ?? this.active,
+    updatedAt: updatedAt ?? DateTime.now(),
+  );
+
   Map<String, Object?> toJson() => {
     'id': id,
     'businessId': businessId,

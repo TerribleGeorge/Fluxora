@@ -3,11 +3,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../domain/catalog.dart';
 import '../domain/business_repository.dart';
+import '../domain/product.dart';
 import '../domain/service_template.dart';
 import '../state/auth_bloc.dart';
 import '../state/catalog_bloc.dart';
 import '../state/catalog_event.dart';
 import '../state/catalog_state.dart';
+import '../state/product_bloc.dart';
+import '../state/product_event.dart';
+import '../state/product_state.dart';
 import 'money.dart';
 
 class CatalogPage extends StatelessWidget {
@@ -16,7 +20,7 @@ class CatalogPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Equipe e serviços'),
@@ -24,6 +28,7 @@ class CatalogPage extends StatelessWidget {
             tabs: [
               Tab(text: 'Profissionais', icon: Icon(Icons.groups_outlined)),
               Tab(text: 'Serviços', icon: Icon(Icons.content_cut_outlined)),
+              Tab(text: 'Produtos', icon: Icon(Icons.inventory_2_outlined)),
             ],
           ),
         ),
@@ -43,11 +48,84 @@ class CatalogPage extends StatelessWidget {
               children: [
                 _ProfessionalsList(items: state.professionals),
                 _ServicesList(items: state.services),
+                const _ProductsTab(),
               ],
             );
           },
         ),
       ),
+    );
+  }
+}
+
+class _ProductsTab extends StatelessWidget {
+  const _ProductsTab();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<ProductBloc, ProductState>(
+      listenWhen: (before, after) =>
+          after.message != null && before.message != after.message,
+      listener: (context, state) => ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(state.message!))),
+      builder: (context, state) {
+        if (state.loading && state.products.isEmpty) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        return Stack(
+          children: [
+            state.products.isEmpty
+                ? const _EmptyCatalog(
+                    icon: Icons.inventory_2_outlined,
+                    title: 'Cadastre produtos de revenda',
+                    message:
+                        'Use sugestões do nicho para controlar preço, custo e estoque.',
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+                    itemCount: state.products.length,
+                    itemBuilder: (context, index) {
+                      final item = state.products[index];
+                      return Card(
+                        child: ListTile(
+                          enabled: item.active,
+                          leading: CircleAvatar(
+                            child: Icon(
+                              item.lowStock
+                                  ? Icons.warning_amber_rounded
+                                  : Icons.inventory_2_outlined,
+                            ),
+                          ),
+                          title: Text(item.name),
+                          subtitle: Text(
+                            '${money(item.salePrice)} • custo ${money(item.unitCost)} • estoque ${item.stockQuantity}',
+                          ),
+                          onTap: () => _showProductForm(context, item),
+                          trailing: Switch(
+                            value: item.active,
+                            onChanged: (active) =>
+                                context.read<ProductBloc>().add(
+                                  ProductActiveChanged(item, active),
+                                ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+            Positioned(
+              right: 20,
+              bottom: 20,
+              child: FloatingActionButton.extended(
+                heroTag: 'new-product',
+                onPressed: () => _showProductForm(context),
+                icon: const Icon(Icons.add_shopping_cart_outlined),
+                label: const Text('Produto'),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -476,6 +554,187 @@ Future<void> _showServiceForm(
   price.dispose();
   duration.dispose();
   commission.dispose();
+  search.dispose();
+}
+
+Future<void> _showProductForm(BuildContext context, [Product? item]) async {
+  final bloc = context.read<ProductBloc>();
+  final templates = bloc.state.templates;
+  final messenger = ScaffoldMessenger.of(context);
+  final name = TextEditingController(text: item?.name);
+  final category = TextEditingController(text: item?.category ?? 'Produtos');
+  final salePrice = TextEditingController(
+    text: item?.salePrice.toStringAsFixed(2),
+  );
+  final unitCost = TextEditingController(
+    text: item?.unitCost.toStringAsFixed(2) ?? '0',
+  );
+  final stock = TextEditingController(
+    text: item?.stockQuantity.toString() ?? '0',
+  );
+  final minStock = TextEditingController(
+    text: item?.minStockQuantity.toString() ?? '0',
+  );
+  final search = TextEditingController();
+
+  await showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    builder: (sheetContext) => StatefulBuilder(
+      builder: (context, setModalState) {
+        final query = search.text.trim().toLowerCase();
+        final suggestions = templates
+            .where((template) {
+              if (query.isEmpty) return true;
+              return template.name.toLowerCase().contains(query) ||
+                  template.category.toLowerCase().contains(query);
+            })
+            .take(18)
+            .toList(growable: false);
+        return _FormSheet(
+          title: item == null ? 'Novo produto' : 'Editar produto',
+          children: [
+            if (item == null) ...[
+              TextField(
+                controller: search,
+                decoration: const InputDecoration(
+                  labelText: 'Buscar produto do nicho',
+                  hintText: 'Ex.: pomada, esmalte, óleo, sérum...',
+                  prefixIcon: Icon(Icons.search),
+                ),
+                onChanged: (_) => setModalState(() {}),
+              ),
+              Text(
+                'As sugestões respeitam o tipo de estabelecimento cadastrado.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final template in suggestions)
+                    ActionChip(
+                      label: Text('${template.name} • ${template.category}'),
+                      onPressed: () {
+                        setModalState(() {
+                          name.text = template.name;
+                          category.text = template.category;
+                          if (template.suggestedSalePrice > 0) {
+                            salePrice.text = template.suggestedSalePrice
+                                .toStringAsFixed(2);
+                          }
+                        });
+                      },
+                    ),
+                ],
+              ),
+            ],
+            TextField(
+              controller: name,
+              decoration: const InputDecoration(labelText: 'Nome'),
+            ),
+            TextField(
+              controller: category,
+              decoration: const InputDecoration(labelText: 'Categoria'),
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: salePrice,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: 'Preço de venda (R\$)',
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextField(
+                    controller: unitCost,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: 'Custo unitário (R\$)',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: stock,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'Estoque'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextField(
+                    controller: minStock,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Estoque mínimo',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            FilledButton(
+              onPressed: () {
+                final parsedSalePrice = _number(salePrice.text);
+                final parsedUnitCost = _number(unitCost.text);
+                final parsedStock = int.tryParse(stock.text.trim()) ?? -1;
+                final parsedMinStock = int.tryParse(minStock.text.trim()) ?? -1;
+                if (name.text.trim().length < 2 ||
+                    parsedSalePrice < 0 ||
+                    parsedUnitCost < 0 ||
+                    parsedStock < 0 ||
+                    parsedMinStock < 0) {
+                  messenger
+                    ..hideCurrentSnackBar()
+                    ..showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Revise nome, preço, custo e estoque do produto.',
+                        ),
+                      ),
+                    );
+                  return;
+                }
+                bloc.add(
+                  ProductSaved(
+                    id: item?.id,
+                    name: name.text,
+                    category: category.text,
+                    salePrice: parsedSalePrice,
+                    unitCost: parsedUnitCost,
+                    stockQuantity: parsedStock,
+                    minStockQuantity: parsedMinStock,
+                    active: item?.active ?? true,
+                  ),
+                );
+                Navigator.pop(sheetContext);
+              },
+              child: const Text('Salvar produto'),
+            ),
+          ],
+        );
+      },
+    ),
+  );
+
+  name.dispose();
+  category.dispose();
+  salePrice.dispose();
+  unitCost.dispose();
+  stock.dispose();
+  minStock.dispose();
   search.dispose();
 }
 

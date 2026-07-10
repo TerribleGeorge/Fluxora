@@ -6,7 +6,9 @@ import '../app/theme.dart';
 import '../domain/appointment_repository.dart';
 import '../domain/business_repository.dart';
 import '../domain/catalog_repository.dart';
+import '../domain/customer_repository.dart';
 import '../domain/finance_repository.dart';
+import '../domain/product_repository.dart';
 import '../domain/sales_repository.dart';
 import '../domain/operations_repository.dart';
 import '../domain/subscription_repository.dart';
@@ -20,10 +22,14 @@ import '../state/catalog_bloc.dart';
 import '../state/catalog_event.dart';
 import '../state/finance_bloc.dart';
 import '../state/finance_event.dart';
+import '../state/customer_bloc.dart';
+import '../state/customer_event.dart';
 import '../state/sales_bloc.dart';
 import '../state/sales_event.dart';
 import '../state/operations_bloc.dart';
 import '../state/operations_event.dart';
+import '../state/product_bloc.dart';
+import '../state/product_event.dart';
 import '../state/subscription_bloc.dart';
 import '../state/subscription_event.dart';
 import 'subscription_shell.dart';
@@ -36,6 +42,8 @@ class BusinessGate extends StatelessWidget {
     required this.financeRepositoryFactory,
     required this.appointmentRepositoryFactory,
     required this.catalogRepositoryFactory,
+    required this.customerRepositoryFactory,
+    required this.productRepositoryFactory,
     required this.salesRepositoryFactory,
     required this.operationsRepositoryFactory,
     required this.subscriptionRepositoryFactory,
@@ -48,6 +56,9 @@ class BusinessGate extends StatelessWidget {
   appointmentRepositoryFactory;
   final CatalogRepository Function(BusinessAccess access)
   catalogRepositoryFactory;
+  final CustomerRepository Function(BusinessAccess access)
+  customerRepositoryFactory;
+  final ProductRepository Function(BusinessAccess access) productRepositoryFactory;
   final SalesRepository Function(BusinessAccess access) salesRepositoryFactory;
   final OperationsRepository Function(BusinessAccess access)
   operationsRepositoryFactory;
@@ -84,6 +95,8 @@ class BusinessGate extends StatelessWidget {
               state.selected!,
             ),
             catalogRepository: catalogRepositoryFactory(state.selected!),
+            customerRepository: customerRepositoryFactory(state.selected!),
+            productRepository: productRepositoryFactory(state.selected!),
             salesRepository: salesRepositoryFactory(state.selected!),
             operationsRepository: operationsRepositoryFactory(state.selected!),
             subscriptionRepository: subscriptionRepositoryFactory(
@@ -103,6 +116,8 @@ class _BusinessWorkspace extends StatelessWidget {
     required this.repository,
     required this.appointmentRepository,
     required this.catalogRepository,
+    required this.customerRepository,
+    required this.productRepository,
     required this.salesRepository,
     required this.operationsRepository,
     required this.subscriptionRepository,
@@ -112,6 +127,8 @@ class _BusinessWorkspace extends StatelessWidget {
   final FinanceRepository repository;
   final AppointmentRepository appointmentRepository;
   final CatalogRepository catalogRepository;
+  final CustomerRepository customerRepository;
+  final ProductRepository productRepository;
   final SalesRepository salesRepository;
   final OperationsRepository operationsRepository;
   final SubscriptionRepository subscriptionRepository;
@@ -132,6 +149,17 @@ class _BusinessWorkspace extends StatelessWidget {
               create: (_) =>
                   CatalogBloc(catalogRepository, access.business.id)
                     ..add(const CatalogStarted()),
+            ),
+            BlocProvider(
+              create: (_) =>
+                  CustomerBloc(customerRepository)..add(const CustomerStarted()),
+            ),
+            BlocProvider(
+              create: (_) => ProductBloc(
+                productRepository,
+                businessId: access.business.id,
+                businessType: access.business.type,
+              )..add(const ProductStarted()),
             ),
             BlocProvider(
               create: (context) {

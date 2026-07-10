@@ -18,7 +18,9 @@ import 'data/supabase_auth_repository.dart';
 import 'data/supabase_business_repository.dart';
 import 'data/supabase_catalog_repository.dart';
 import 'data/supabase_appointment_repository.dart';
+import 'data/supabase_customer_repository.dart';
 import 'data/supabase_finance_repository.dart';
+import 'data/supabase_product_repository.dart';
 import 'data/supabase_sales_repository.dart';
 import 'data/supabase_operations_repository.dart';
 import 'data/cached_subscription_repository.dart';
@@ -31,7 +33,9 @@ import 'domain/appointment_repository.dart';
 import 'domain/billing_repository.dart';
 import 'domain/business_repository.dart';
 import 'domain/catalog_repository.dart';
+import 'domain/customer_repository.dart';
 import 'domain/finance_repository.dart';
+import 'domain/product_repository.dart';
 import 'domain/sales_repository.dart';
 import 'domain/operations_repository.dart';
 import 'domain/subscription_repository.dart';
@@ -47,6 +51,8 @@ Future<void> main() async {
       financeRepositoryFactory: dependencies.financeFactory,
       appointmentRepositoryFactory: dependencies.appointmentFactory,
       catalogRepositoryFactory: dependencies.catalogFactory,
+      customerRepositoryFactory: dependencies.customerFactory,
+      productRepositoryFactory: dependencies.productFactory,
       salesRepositoryFactory: dependencies.salesFactory,
       operationsRepositoryFactory: dependencies.operationsFactory,
       subscriptionRepositoryFactory: dependencies.subscriptionFactory,
@@ -62,6 +68,8 @@ typedef _Dependencies = ({
   FinanceRepository Function(BusinessAccess access)? financeFactory,
   AppointmentRepository Function(BusinessAccess access)? appointmentFactory,
   CatalogRepository Function(BusinessAccess access)? catalogFactory,
+  CustomerRepository Function(BusinessAccess access)? customerFactory,
+  ProductRepository Function(BusinessAccess access)? productFactory,
   SalesRepository Function(BusinessAccess access)? salesFactory,
   OperationsRepository Function(BusinessAccess access)? operationsFactory,
   SubscriptionRepository Function(BusinessAccess access)? subscriptionFactory,
@@ -79,6 +87,8 @@ Future<_Dependencies> _createDependencies() async {
       financeFactory: null,
       appointmentFactory: null,
       catalogFactory: null,
+      customerFactory: null,
+      productFactory: null,
       salesFactory: null,
       operationsFactory: null,
       subscriptionFactory: null,
@@ -117,6 +127,16 @@ Future<_Dependencies> _createDependencies() async {
         remote: SupabaseCatalogRepository(client, businessId),
         preferences: preferences,
         businessId: businessId,
+      );
+    },
+    customerFactory: (access) {
+      return SupabaseCustomerRepository(client, access.business.id);
+    },
+    productFactory: (access) {
+      return SupabaseProductRepository(
+        client,
+        access.business.id,
+        access.business.type,
       );
     },
     appointmentFactory: (access) {

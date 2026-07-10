@@ -82,7 +82,7 @@ class SupabaseCustomerRepository implements CustomerRepository {
     required String email,
     required String phone,
   }) async {
-    final row = await _client.rpc<Map<String, dynamic>>(
+    final response = await _client.rpc<dynamic>(
       'resolve_booking_price',
       params: {
         'target_business_id': businessId,
@@ -92,6 +92,12 @@ class SupabaseCustomerRepository implements CustomerRepository {
         'raw_phone': phone,
       },
     );
+    final row = switch (response) {
+      final List<dynamic> rows when rows.isNotEmpty =>
+        rows.first as Map<String, dynamic>,
+      final Map<String, dynamic> value => value,
+      _ => throw const FormatException('Cotação de fidelidade inválida.'),
+    };
     return BookingPriceQuote(
       customerId: row['customer_id'] as String,
       tier: CustomerLoyaltyTierStorage.fromStorage(
