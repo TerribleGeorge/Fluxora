@@ -42,6 +42,7 @@ class _ResultTable extends StatelessWidget {
       ('(-) Taxas de pagamento', -metrics.cardFees),
       ('(+) Outras receitas', metrics.otherIncome),
       ('(-) Comissões', -metrics.commissions),
+      ('(-) Custo dos produtos vendidos', -metrics.productCosts),
       ('(-) Despesas operacionais', -metrics.operatingExpenses),
       ('(-) Impostos', -metrics.taxes),
       ('Lucro antes das retiradas', metrics.profitBeforeWithdrawal),

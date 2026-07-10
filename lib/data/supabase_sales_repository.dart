@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../domain/customer.dart';
 import '../domain/sale.dart';
 import '../domain/sales_repository.dart';
 
@@ -27,6 +28,8 @@ class SupabaseSalesRepository implements SalesRepository {
       'id': sale.id,
       'business_id': businessId,
       'professional_id': sale.professionalId,
+      'appointment_id': sale.appointmentId,
+      'customer_id': sale.customerId,
       'items': sale.items.map((item) => item.toJson()).toList(),
       'payment': sale.payment.toJson(),
       'gross_total': sale.grossTotal,
@@ -36,6 +39,12 @@ class SupabaseSalesRepository implements SalesRepository {
       'customer_name': sale.customerName,
       'notes': sale.notes,
       'status': sale.status.name,
+      'loyalty_tier_applied': sale.loyaltyTierApplied.storageName,
+      'service_gross_total': sale.serviceGrossTotal,
+      'service_discount_total': sale.serviceDiscountTotal,
+      'product_gross_total': sale.productGrossTotal,
+      'product_cost_total': sale.productCostTotal,
+      'estimated_profit': sale.estimatedProfit,
     });
   }
 
@@ -66,9 +75,20 @@ class SupabaseSalesRepository implements SalesRepository {
       occurredAt: DateTime.parse(row['occurred_at'] as String).toLocal(),
       createdBy: row['created_by'] as String,
       createdAt: DateTime.parse(row['created_at'] as String),
+      appointmentId: row['appointment_id'] as String?,
+      customerId: row['customer_id'] as String?,
       customerName: row['customer_name'] as String? ?? '',
       notes: row['notes'] as String? ?? '',
       status: SaleStatus.values.byName(row['status'] as String),
+      loyaltyTierApplied: CustomerLoyaltyTierStorage.fromStorage(
+        row['loyalty_tier_applied'] as String?,
+      ),
+      serviceGrossTotal: (row['service_gross_total'] as num?)?.toDouble() ?? 0,
+      serviceDiscountTotal:
+          (row['service_discount_total'] as num?)?.toDouble() ?? 0,
+      productGrossTotal: (row['product_gross_total'] as num?)?.toDouble() ?? 0,
+      productCostTotal: (row['product_cost_total'] as num?)?.toDouble() ?? 0,
+      estimatedProfit: (row['estimated_profit'] as num?)?.toDouble() ?? 0,
       updatedAt: DateTime.parse(row['updated_at'] as String),
     );
   }

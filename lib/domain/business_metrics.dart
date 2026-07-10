@@ -16,6 +16,7 @@ class BusinessMetrics {
     required this.grossRevenue,
     required this.cardFees,
     required this.commissions,
+    required this.productCosts,
     required this.operatingExpenses,
     required this.taxes,
     required this.otherIncome,
@@ -31,6 +32,7 @@ class BusinessMetrics {
   final double grossRevenue;
   final double cardFees;
   final double commissions;
+  final double productCosts;
   final double operatingExpenses;
   final double taxes;
   final double otherIncome;
@@ -42,7 +44,12 @@ class BusinessMetrics {
 
   double get netRevenue => grossRevenue - cardFees;
   double get profitBeforeWithdrawal =>
-      netRevenue + otherIncome - commissions - operatingExpenses - taxes;
+      netRevenue +
+      otherIncome -
+      commissions -
+      productCosts -
+      operatingExpenses -
+      taxes;
   double get availableAfterWithdrawals =>
       profitBeforeWithdrawal - ownerWithdrawals;
   double get marginPercent =>
@@ -123,6 +130,14 @@ class BusinessMetrics {
       grossRevenue: completed.fold(0, (sum, sale) => sum + sale.grossTotal),
       cardFees: completed.fold(0, (sum, sale) => sum + sale.payment.feeAmount),
       commissions: completed.fold(0, (sum, sale) => sum + sale.commissionTotal),
+      productCosts: completed.fold(
+        0,
+        (sum, sale) =>
+            sum +
+            (sale.productCostTotal == 0
+                ? sale.productCostFromItems
+                : sale.productCostTotal),
+      ),
       operatingExpenses:
           sumKind(FinancialEntryKind.operatingExpense) +
           sumKind(FinancialEntryKind.otherExpense),

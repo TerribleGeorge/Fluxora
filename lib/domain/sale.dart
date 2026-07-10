@@ -1,3 +1,5 @@
+import 'customer.dart';
+
 enum SaleItemType { service, product }
 
 enum PaymentMethod { cash, pix, debitCard, creditCard, other }
@@ -12,7 +14,12 @@ class SaleItem {
     required this.quantity,
     required this.unitPrice,
     this.serviceId,
+    this.productId,
     this.commissionAmount = 0,
+    this.unitCost = 0,
+    this.basePrice,
+    this.discountAmount = 0,
+    this.loyaltyTier,
   });
 
   final String id;
@@ -21,9 +28,15 @@ class SaleItem {
   final int quantity;
   final double unitPrice;
   final String? serviceId;
+  final String? productId;
   final double commissionAmount;
+  final double unitCost;
+  final double? basePrice;
+  final double discountAmount;
+  final CustomerLoyaltyTier? loyaltyTier;
 
   double get total => quantity * unitPrice;
+  double get costTotal => quantity * unitCost;
 
   Map<String, Object?> toJson() => {
     'id': id,
@@ -32,7 +45,12 @@ class SaleItem {
     'quantity': quantity,
     'unitPrice': unitPrice,
     'serviceId': serviceId,
+    'productId': productId,
     'commissionAmount': commissionAmount,
+    'unitCost': unitCost,
+    'basePrice': basePrice,
+    'discountAmount': discountAmount,
+    'loyaltyTier': loyaltyTier?.storageName,
   };
 
   factory SaleItem.fromJson(Map<String, dynamic> json) => SaleItem(
@@ -42,7 +60,16 @@ class SaleItem {
     quantity: json['quantity'] as int,
     unitPrice: (json['unitPrice'] as num).toDouble(),
     serviceId: json['serviceId'] as String?,
+    productId: json['productId'] as String?,
     commissionAmount: (json['commissionAmount'] as num?)?.toDouble() ?? 0,
+    unitCost: (json['unitCost'] as num?)?.toDouble() ?? 0,
+    basePrice: (json['basePrice'] as num?)?.toDouble(),
+    discountAmount: (json['discountAmount'] as num?)?.toDouble() ?? 0,
+    loyaltyTier: json['loyaltyTier'] == null
+        ? null
+        : CustomerLoyaltyTierStorage.fromStorage(
+            json['loyaltyTier'] as String?,
+          ),
   );
 
   SaleItem withCommission(double value) => SaleItem(
@@ -52,7 +79,12 @@ class SaleItem {
     quantity: quantity,
     unitPrice: unitPrice,
     serviceId: serviceId,
+    productId: productId,
     commissionAmount: value,
+    unitCost: unitCost,
+    basePrice: basePrice,
+    discountAmount: discountAmount,
+    loyaltyTier: loyaltyTier,
   );
 }
 
@@ -97,9 +129,17 @@ class Sale {
     required this.occurredAt,
     required this.createdBy,
     required this.createdAt,
+    this.appointmentId,
+    this.customerId,
     this.customerName = '',
     this.notes = '',
     this.status = SaleStatus.completed,
+    this.loyaltyTierApplied = CustomerLoyaltyTier.newCustomer,
+    this.serviceGrossTotal = 0,
+    this.serviceDiscountTotal = 0,
+    this.productGrossTotal = 0,
+    this.productCostTotal = 0,
+    this.estimatedProfit = 0,
     this.updatedAt,
   });
 
@@ -111,15 +151,29 @@ class Sale {
   final DateTime occurredAt;
   final String createdBy;
   final DateTime createdAt;
+  final String? appointmentId;
+  final String? customerId;
   final String customerName;
   final String notes;
   final SaleStatus status;
+  final CustomerLoyaltyTier loyaltyTierApplied;
+  final double serviceGrossTotal;
+  final double serviceDiscountTotal;
+  final double productGrossTotal;
+  final double productCostTotal;
+  final double estimatedProfit;
   final DateTime? updatedAt;
 
   double get grossTotal => items.fold(0, (sum, item) => sum + item.total);
   double get netTotal => grossTotal - payment.feeAmount;
   double get commissionTotal =>
       items.fold(0, (sum, item) => sum + item.commissionAmount);
+  double get productCostFromItems =>
+      items.fold(0, (sum, item) => sum + item.costTotal);
+  double get realProfit =>
+      estimatedProfit == 0
+          ? netTotal - commissionTotal - productCostFromItems
+          : estimatedProfit;
 
   Sale copyWith({SaleStatus? status}) => Sale(
     id: id,
@@ -130,9 +184,17 @@ class Sale {
     occurredAt: occurredAt,
     createdBy: createdBy,
     createdAt: createdAt,
+    appointmentId: appointmentId,
+    customerId: customerId,
     customerName: customerName,
     notes: notes,
     status: status ?? this.status,
+    loyaltyTierApplied: loyaltyTierApplied,
+    serviceGrossTotal: serviceGrossTotal,
+    serviceDiscountTotal: serviceDiscountTotal,
+    productGrossTotal: productGrossTotal,
+    productCostTotal: productCostTotal,
+    estimatedProfit: estimatedProfit,
     updatedAt: DateTime.now(),
   );
 
@@ -145,9 +207,17 @@ class Sale {
     'occurredAt': occurredAt.toIso8601String(),
     'createdBy': createdBy,
     'createdAt': createdAt.toIso8601String(),
+    'appointmentId': appointmentId,
+    'customerId': customerId,
     'customerName': customerName,
     'notes': notes,
     'status': status.name,
+    'loyaltyTierApplied': loyaltyTierApplied.storageName,
+    'serviceGrossTotal': serviceGrossTotal,
+    'serviceDiscountTotal': serviceDiscountTotal,
+    'productGrossTotal': productGrossTotal,
+    'productCostTotal': productCostTotal,
+    'estimatedProfit': estimatedProfit,
     'updatedAt': updatedAt?.toIso8601String(),
   };
 
@@ -162,11 +232,22 @@ class Sale {
     occurredAt: DateTime.parse(json['occurredAt'] as String),
     createdBy: json['createdBy'] as String,
     createdAt: DateTime.parse(json['createdAt'] as String),
+    appointmentId: json['appointmentId'] as String?,
+    customerId: json['customerId'] as String?,
     customerName: json['customerName'] as String? ?? '',
     notes: json['notes'] as String? ?? '',
     status: SaleStatus.values.byName(
       json['status'] as String? ?? SaleStatus.completed.name,
     ),
+    loyaltyTierApplied: CustomerLoyaltyTierStorage.fromStorage(
+      json['loyaltyTierApplied'] as String?,
+    ),
+    serviceGrossTotal: (json['serviceGrossTotal'] as num?)?.toDouble() ?? 0,
+    serviceDiscountTotal:
+        (json['serviceDiscountTotal'] as num?)?.toDouble() ?? 0,
+    productGrossTotal: (json['productGrossTotal'] as num?)?.toDouble() ?? 0,
+    productCostTotal: (json['productCostTotal'] as num?)?.toDouble() ?? 0,
+    estimatedProfit: (json['estimatedProfit'] as num?)?.toDouble() ?? 0,
     updatedAt: DateTime.tryParse(json['updatedAt'] as String? ?? ''),
   );
 }

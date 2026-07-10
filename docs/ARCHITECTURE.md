@@ -2,9 +2,13 @@
 
 ## Direção de produto
 
-O Fluxora será um sistema financeiro híbrido para pessoas, profissionais
-autônomos e pequenos negócios. O mesmo núcleo financeiro atenderá espaços
-pessoais e empresariais sem misturar seus dados.
+O Fluxora será um sistema operacional e financeiro para negócios de beleza e
+bem-estar: barbearias, salões, esmalterias, spas, estúdios de
+sobrancelhas/cílios, maquiagem e clínicas de estética não médicas.
+
+O núcleo do produto é o lucro real do dono: agenda, serviços, produtos,
+comissões, taxas, despesas, estoque e caixa existem para responder quanto
+realmente sobrou no estabelecimento.
 
 ## Estado e dependências
 
@@ -24,3 +28,19 @@ pessoais e empresariais sem misturar seus dados.
 
 Transações financeiras terão uma única fonte de verdade. Sincronização será
 idempotente, auditável e protegida contra duplicidade.
+
+## Regras sensíveis no Supabase
+
+Regras que afetam dinheiro ou permissão não devem depender apenas da interface.
+O Supabase é a autoridade para:
+
+- identificação antifraude do cliente no link público de agendamento;
+- cálculo de nível de fidelidade;
+- snapshots de preço e desconto no agendamento;
+- fechamento de atendimento com produtos;
+- baixa de estoque;
+- criação de venda;
+- restrição de funcionário a agenda e vendas próprias.
+
+As regras detalhadas estão em
+[`docs/BEAUTY_BUSINESS_RULES.md`](BEAUTY_BUSINESS_RULES.md).
