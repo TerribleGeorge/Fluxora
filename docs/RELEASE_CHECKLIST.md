@@ -3,16 +3,16 @@
 ## Dependências externas pendentes
 
 - [x] Criar o projeto Supabase na região de São Paulo.
-- [ ] Aplicar todas as migrações em `supabase/migrations/`.
-  - Pendentes no remoto em 16/07/2026: portal público e agenda individual,
-    arquivos `20260716190000` e `20260716210000`.
+- [x] Aplicar todas as migrações em `supabase/migrations/`.
+  - `npx supabase db push --linked` retornou `Remote database is up to date`
+    em 17/07/2026.
 - [x] Implantar a função `delete-account` no Supabase remoto.
   - Código atualizado e validado pelo Flutter em 08/07/2026.
   - Deploy realizado no projeto `nqcoxxbzwzcuwprbzpdb` em 08/07/2026.
 - [x] Configurar URL e publishable key no build.
 - [x] Separar callbacks de confirmação/recuperação para Web e aplicativo.
 - [x] Corrigir deep links Android/iOS e preservar o fluxo PKCE por plataforma.
-- [ ] Confirmar no painel as quatro URLs de autenticação documentadas.
+- [ ] Confirmar no painel as seis URLs de autenticação documentadas.
 - [ ] Configurar SMTP próprio para entregar e-mails a usuários externos.
 - [ ] Definir e publicar e-mail oficial de suporte.
 - [x] Publicar `privacy.html` e `delete-account.html` em endereço público.
@@ -46,12 +46,24 @@
   interna auditável antes do checkout.
 - [x] Gerar o build web de produção localmente.
 - [x] Preparar workflow de CI/CD para publicação no GitHub Pages.
-- [ ] Aplicar as RPCs no Supabase remoto.
+- [x] Aplicar as RPCs no Supabase remoto.
 - [x] Escolher hospedagem inicial e configurar `PUBLIC_BOOKING_BASE_URL`.
   - Publicado: https://terriblegeorge.github.io/fluxora-agendamento/
   - GitHub Pages ativo com HTTPS; resposta HTTP 200 validada em 17/07/2026.
 - [ ] Configurar prova de posse por OTP ou proteção anti-bot.
 - [ ] Validar um agendamento completo em janela anônima no endereço publicado.
+
+## Painel web administrativo
+
+- [x] Publicar versão web administrativa para donos e gestores.
+  - Publicado: https://terriblegeorge.github.io/fluxora-admin/
+  - Repositório de artefatos: https://github.com/TerribleGeorge/fluxora-admin
+  - GitHub Pages ativo com HTTPS; resposta HTTP 200 validada em 17/07/2026.
+- [ ] Confirmar no Supabase os redirects do painel administrativo:
+  - `https://terriblegeorge.github.io/fluxora-admin/?auth-action=password-recovery`
+  - `https://terriblegeorge.github.io/fluxora-admin/?auth-action=email-confirmation`
+- [ ] Testar login, cadastro, confirmação de e-mail e recuperação de senha no
+  painel web publicado.
 
 ## Validação de produto
 

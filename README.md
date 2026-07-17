@@ -180,7 +180,7 @@ A UI e os BLoCs dependem de contratos em `domain/`, não de Supabase diretamente
 | In App Purchase | Preparação para assinaturas via Google Play Billing. |
 | App Links | Deep links de confirmação e recuperação de senha. |
 | GitHub Actions | Pipeline de análise, testes e deploy web. |
-| GitHub Pages | Hospedagem inicial do portal público de agendamento. |
+| GitHub Pages | Hospedagem inicial do portal público de agendamento e do painel web administrativo. |
 
 ---
 
@@ -310,16 +310,25 @@ No painel do Supabase, configure:
 
 ```text
 Site URL:
-https://terriblegeorge.github.io/fluxora-agendamento/
+https://terriblegeorge.github.io/fluxora-admin/
 
 Redirect URLs:
 dev.devvoid.fluxora://reset-password
 dev.devvoid.fluxora://auth-confirmation
+https://terriblegeorge.github.io/fluxora-admin/?auth-action=password-recovery
+https://terriblegeorge.github.io/fluxora-admin/?auth-action=email-confirmation
 https://terriblegeorge.github.io/fluxora-agendamento/?auth-action=password-recovery
 https://terriblegeorge.github.io/fluxora-agendamento/?auth-action=email-confirmation
 ```
 
 Também é necessário habilitar e-mail/senha, confirmação de e-mail e SMTP próprio antes de convidar usuários externos.
+
+### URLs Publicadas
+
+| Público | URL | Finalidade |
+| --- | --- | --- |
+| Dono/admin | https://terriblegeorge.github.io/fluxora-admin/ | Acesso web ao painel administrativo do estabelecimento. |
+| Cliente | https://terriblegeorge.github.io/fluxora-agendamento/ | Busca pública de estabelecimentos e agendamento sem login. |
 
 ### Release Android
 

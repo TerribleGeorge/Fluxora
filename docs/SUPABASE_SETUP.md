@@ -15,10 +15,12 @@ No painel do Supabase:
 1. habilite autenticação por e-mail e senha;
 2. mantenha confirmação de e-mail ativa para produção;
 3. em **Authentication > URL Configuration**, defina a Site URL como
-   `https://terriblegeorge.github.io/fluxora-agendamento/`;
+   `https://terriblegeorge.github.io/fluxora-admin/`;
 4. adicione exatamente estas URLs à lista de redirecionamentos permitidos:
    - `dev.devvoid.fluxora://reset-password`
    - `dev.devvoid.fluxora://auth-confirmation`
+   - `https://terriblegeorge.github.io/fluxora-admin/?auth-action=password-recovery`
+   - `https://terriblegeorge.github.io/fluxora-admin/?auth-action=email-confirmation`
    - `https://terriblegeorge.github.io/fluxora-agendamento/?auth-action=password-recovery`
    - `https://terriblegeorge.github.io/fluxora-agendamento/?auth-action=email-confirmation`
 5. no template **Reset Password**, mantenha o botão usando
@@ -60,6 +62,13 @@ consiga copiar e compartilhar o endereço correto pelo aplicativo.
 `AUTH_WEB_REDIRECT_BASE_URL` informa a raiz Web usada pela confirmação de conta
 e pela recuperação de senha. Ela precisa corresponder à URL permitida no
 Supabase.
+
+## URLs web publicadas
+
+| URL | Uso |
+| --- | --- |
+| `https://terriblegeorge.github.io/fluxora-admin/` | Painel web do dono/administrador. |
+| `https://terriblegeorge.github.io/fluxora-agendamento/` | Site público para clientes encontrarem estabelecimentos e agendarem sem login. |
 
 Não use `flutter build appbundle --release` sozinho para releases da Play
 Store, porque o app será gerado sem autenticação Supabase.
