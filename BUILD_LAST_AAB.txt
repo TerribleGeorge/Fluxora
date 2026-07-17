@@ -34,12 +34,12 @@ Principais mudanças da build 16:
 - Fluxo “Associar a Cliente Fiel” antes do checkout, com recálculo auditável.
 - Busca limitada ao atendimento permitido, com e-mail e telefone mascarados.
 - RPCs anônimas reduzidas ao conjunto mínimo necessário.
-- Build web e automação de publicação no GitHub Pages preparados.
+- Build web publicado e automação do GitHub Pages ativa.
 - Patch notes internos e notas da Play Store atualizados para a build 16.
 
 Pendências externas conhecidas:
 - Aplicar as migrações 20260716190000 e 20260716210000 no Supabase remoto.
-- Ativar a publicação do GitHub Pages após o primeiro push do workflow.
+- Site publicado em https://terriblegeorge.github.io/fluxora-agendamento/.
 - Configurar OTP ou proteção anti-bot antes de tráfego público amplo.
 - Fazer upload manual do AAB na Play Console e validar o teste fechado.
 

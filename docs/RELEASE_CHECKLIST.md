@@ -45,8 +45,8 @@
 - [x] Preparar workflow de CI/CD para publicação no GitHub Pages.
 - [ ] Aplicar as RPCs no Supabase remoto.
 - [x] Escolher hospedagem inicial e configurar `PUBLIC_BOOKING_BASE_URL`.
-  - Endereço preparado: https://terriblegeorge.github.io/fluxora-agendamento
-  - Ativação do Pages e primeiro deploy ainda pendentes.
+  - Publicado: https://terriblegeorge.github.io/fluxora-agendamento/
+  - GitHub Pages ativo com HTTPS; resposta HTTP 200 validada em 17/07/2026.
 - [ ] Configurar prova de posse por OTP ou proteção anti-bot.
 - [ ] Validar um agendamento completo em janela anônima no endereço publicado.
 

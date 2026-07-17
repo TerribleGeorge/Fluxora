@@ -6,6 +6,13 @@ on:
     branches:
       - main
       - codex/build-fluxora-v1
+    paths:
+      - .github/workflows/deploy-booking-web.yml
+      - assets/**
+      - lib/**
+      - pubspec.lock
+      - pubspec.yaml
+      - web/**
 
 permissions:
   contents: read

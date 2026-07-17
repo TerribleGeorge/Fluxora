@@ -81,6 +81,17 @@ A chave usada no navegador deve ser a chave publicável/anon. Nunca inclua a
 `service_role` no app ou na hospedagem web. Como a rota compartilhada usa `#`,
 ela funciona em hospedagem estática sem regra especial de reescrita.
 
+## Hospedagem atual
+
+- Site compilado: `https://terriblegeorge.github.io/fluxora-agendamento/`
+- Repositório público de artefatos: `TerribleGeorge/fluxora-agendamento`
+- Código-fonte: permanece no repositório privado `TerribleGeorge/Fluxora`
+- Deploy: automatizado pelo workflow `Deploy Fluxora Web`
+
+O repositório público contém somente o resultado compilado. Uma deploy key com
+escrita limitada a esse repositório permite a publicação sem expor um token
+geral da conta.
+
 ## Critérios de validação
 
 - `flutter analyze --no-pub`
@@ -95,6 +106,5 @@ ela funciona em hospedagem estática sem regra especial de reescrita.
 ## Pendências externas para publicação
 
 - executar as duas migrações no projeto Supabase de produção;
-- escolher domínio/hospedagem e definir `PUBLIC_BOOKING_BASE_URL`;
 - configurar OTP ou proteção anti-bot antes de tráfego público amplo;
 - realizar um agendamento ponta a ponta com um estabelecimento real.
