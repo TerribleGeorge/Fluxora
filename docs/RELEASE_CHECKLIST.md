@@ -45,7 +45,7 @@
 - [x] Preparar workflow de CI/CD para publicação no GitHub Pages.
 - [ ] Aplicar as RPCs no Supabase remoto.
 - [x] Escolher hospedagem inicial e configurar `PUBLIC_BOOKING_BASE_URL`.
-  - Endereço preparado: https://terriblegeorge.github.io/Fluxora
+  - Endereço preparado: https://terriblegeorge.github.io/fluxora-agendamento
   - Ativação do Pages e primeiro deploy ainda pendentes.
 - [ ] Configurar prova de posse por OTP ou proteção anti-bot.
 - [ ] Validar um agendamento completo em janela anônima no endereço publicado.

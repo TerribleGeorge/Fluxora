@@ -71,9 +71,10 @@ Exemplo de build para produção:
 
 ```powershell
 flutter build web --release `
+  --base-href /fluxora-agendamento/ `
   --dart-define=SUPABASE_URL=https://SEU-PROJETO.supabase.co `
   --dart-define=SUPABASE_PUBLISHABLE_KEY=SUA_CHAVE_PUBLICAVEL `
-  --dart-define=PUBLIC_BOOKING_BASE_URL=https://agenda.seudominio.com
+  --dart-define=PUBLIC_BOOKING_BASE_URL=https://terriblegeorge.github.io/fluxora-agendamento
 ```
 
 A chave usada no navegador deve ser a chave publicável/anon. Nunca inclua a

@@ -2,14 +2,15 @@ Fluxora 1.0.0 (build 16)
 Pacote: dev.devvoid.fluxora
 Empresa: DevVoid.dev
 Artefato: build/app/outputs/bundle/release/app-release.aab
-Tamanho: 49544397 bytes
-SHA-256: 01BFFB93D76DB9742428C2761F67EAF071E780CB7F208322DE5680C93CD28E55
+Tamanho: 49544544 bytes
+SHA-256: DA3C4E4BA65957698FF554C3C7E112ADC8D7FBBE644F6963799E05D3E21BB1D5
 Assinatura: verificada (jar verified)
 Certificado de upload: CN=DevVoid.dev, OU=Mobile, O=DevVoid.dev, L=Brasilia, ST=DF, C=BR
 Certificado SHA-256: 72:1F:1E:0F:F8:E7:4A:38:B9:E2:57:C1:28:08:64:8E:F1:D6:3C:4C:2A:CC:0D:C6:1C:C3:87:31:24:E1:96:AC
 Gerado em: 2026-07-17
 Backend: Supabase nqcoxxbzwzcuwprbzpdb
 Supabase: SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY passados via --dart-define
+Portal público: https://terriblegeorge.github.io/fluxora-agendamento
 Google Play Billing: dependência in_app_purchase preservada
 Produto Google Play: fluxora_pro
 Plano básico configurado: mensal

@@ -1,5 +1,6 @@
 param(
-  [string]$EnvFile = ".env"
+  [string]$EnvFile = ".env",
+  [string]$PublicBookingBaseUrl = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -34,9 +35,14 @@ $buildArguments = @(
   "--dart-define=SUPABASE_PUBLISHABLE_KEY=$($vars["SUPABASE_PUBLISHABLE_KEY"])"
 )
 
-if ($vars.ContainsKey("PUBLIC_BOOKING_BASE_URL") -and
-    -not [string]::IsNullOrWhiteSpace($vars["PUBLIC_BOOKING_BASE_URL"])) {
-  $buildArguments += "--dart-define=PUBLIC_BOOKING_BASE_URL=$($vars["PUBLIC_BOOKING_BASE_URL"])"
+$resolvedPublicBookingBaseUrl = $PublicBookingBaseUrl
+if ([string]::IsNullOrWhiteSpace($resolvedPublicBookingBaseUrl) -and
+    $vars.ContainsKey("PUBLIC_BOOKING_BASE_URL")) {
+  $resolvedPublicBookingBaseUrl = $vars["PUBLIC_BOOKING_BASE_URL"]
+}
+
+if (-not [string]::IsNullOrWhiteSpace($resolvedPublicBookingBaseUrl)) {
+  $buildArguments += "--dart-define=PUBLIC_BOOKING_BASE_URL=$resolvedPublicBookingBaseUrl"
 }
 
 flutter @buildArguments
