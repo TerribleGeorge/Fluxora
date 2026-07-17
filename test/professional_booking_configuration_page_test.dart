@@ -267,6 +267,16 @@ class _BookingConfigurationRepository implements PublicBookingRepository {
   }
 
   @override
+  Future<List<PublicBookingBusiness>> searchBusinesses({
+    String query = '',
+    String city = '',
+    String state = '',
+    String postalCode = '',
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
   Future<List<PublicBookingSlot>> getAvailableSlots({
     required String slug,
     required String professionalId,

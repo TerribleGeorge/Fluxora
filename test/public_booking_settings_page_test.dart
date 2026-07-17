@@ -33,6 +33,8 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Regras gerais do portal'), findsOneWidget);
+    expect(find.text('Aparecer na busca pública'), findsOneWidget);
+    expect(find.text('Localização pública'), findsOneWidget);
     expect(
       find.textContaining('valem para todos os profissionais'),
       findsOneWidget,
@@ -40,7 +42,11 @@ void main() {
 
     await tester.tap(find.text('Aceitar agendamentos pelo link'));
     final saveButton = find.text('Salvar configurações');
-    await tester.ensureVisible(saveButton);
+    await tester.scrollUntilVisible(
+      saveButton,
+      400,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.tap(saveButton);
     await tester.pumpAndSettle();
 
@@ -69,6 +75,16 @@ class _SettingsRepository implements PublicBookingRepository {
 
   @override
   Future<PublicBookingCatalog> getCatalog(String slug) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<PublicBookingBusiness>> searchBusinesses({
+    String query = '',
+    String city = '',
+    String state = '',
+    String postalCode = '',
+  }) {
     throw UnimplementedError();
   }
 

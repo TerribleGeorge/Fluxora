@@ -10,14 +10,17 @@ bloqueios.
 
 ## Fluxo entregue
 
-1. O cliente abre `/#/agendar/<slug>`.
-2. O portal carrega somente serviços e profissionais habilitados para o link.
-3. Depois de escolher o serviço, aparecem apenas profissionais vinculados a ele.
-4. Os horários respeitam expediente individual, duração do serviço, almoço,
+1. O cliente pode abrir `/#/agendar` para buscar estabelecimentos públicos por
+   nome, serviço, cidade, estado ou CEP.
+2. O cliente escolhe um estabelecimento listado e entra no fluxo
+   `/#/agendar/<slug>`.
+3. O portal carrega somente serviços e profissionais habilitados para o link.
+4. Depois de escolher o serviço, aparecem apenas profissionais vinculados a ele.
+5. Os horários respeitam expediente individual, duração do serviço, almoço,
    folgas, bloqueios gerais e agendamentos existentes.
-5. Nome, e-mail e telefone são enviados ao servidor, mas o portal mantém o
+6. Nome, e-mail e telefone são enviados ao servidor, mas o portal mantém o
    preço cheio enquanto não existe prova de posse da identidade.
-6. A confirmação reutiliza uma chave idempotente: repetir a mesma tentativa não
+7. A confirmação reutiliza uma chave idempotente: repetir a mesma tentativa não
    cria dois agendamentos.
 
 ## Configuração pelo proprietário
@@ -28,10 +31,15 @@ bloqueios.
    representar manhã e tarde com intervalo de almoço.
 4. Salve a agenda e, quando necessário, crie bloqueios gerais ou individuais.
 5. Volte, defina o endereço do estabelecimento e ative o link público.
+6. Para aparecer na busca pública, marque **Aparecer na busca pública** e
+   preencha pelo menos CEP, cidade e UF.
 
 O servidor impede a ativação quando não existe pelo menos um profissional
 ativo com serviço ativo e expediente configurado. Um profissional sem serviços
 marcados fica intencionalmente oculto do portal.
+
+A busca pública é opt-in. Um estabelecimento pode usar apenas o link direto sem
+aparecer na vitrine de localidade.
 
 ## Banco e segurança
 
@@ -43,6 +51,9 @@ As migrações são aplicadas nesta ordem:
 Controles implementados:
 
 - o cliente anônimo não acessa tabelas internas diretamente;
+- a vitrine pública usa somente a RPC `search_public_booking_businesses`;
+- apenas estabelecimentos com agendamento ativo, opt-in de listagem, localização
+  mínima e agenda configurada aparecem na busca;
 - RLS separa os estabelecimentos e limita a configuração a proprietário/gestor;
 - serviços e profissionais precisam pertencer ao mesmo estabelecimento;
 - horários são recalculados e bloqueados novamente no momento da confirmação;

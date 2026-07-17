@@ -28,6 +28,20 @@ void main() {
       );
     });
 
+    test('reconhece vitrine pública sem slug de estabelecimento', () {
+      expect(
+        publicBookingDirectoryRouteFromLocation(
+          Uri.parse('https://fluxora.dev/#/agendar'),
+        ),
+        '/agendar',
+      );
+      expect(publicBookingDirectoryRouteFromRoute('/agendar'), isTrue);
+      expect(
+        publicBookingDirectoryRouteFromRoute('/agendar/studio-ana'),
+        isFalse,
+      );
+    });
+
     test('rejeita slug que poderia alterar a rota', () {
       expect(publicBookingSlugFromRoute('/agendar/../admin'), isNull);
       expect(publicBookingSlugFromRoute('/agendar/Studio Ana'), isNull);

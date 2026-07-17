@@ -46,7 +46,13 @@ class SupabasePublicBookingRepository implements PublicBookingRepository {
           params: {
             'target_business_id': settings.businessId,
             'target_enabled': settings.enabled,
+            'target_listed_in_directory': settings.listedInDirectory,
             'target_public_slug': settings.slug.trim(),
+            'target_postal_code': settings.postalCode.trim(),
+            'target_address_line': settings.addressLine.trim(),
+            'target_address_district': settings.addressDistrict.trim(),
+            'target_address_city': settings.addressCity.trim(),
+            'target_address_state': settings.addressState.trim(),
             'target_time_zone': settings.timeZone.trim(),
             'target_working_days': workingDays,
             'target_opening_time': _storageTime(settings.openingMinutes),
@@ -60,6 +66,30 @@ class SupabasePublicBookingRepository implements PublicBookingRepository {
           response,
           fallback: settings,
         );
+      },
+    );
+  }
+
+  @override
+  Future<List<PublicBookingBusiness>> searchBusinesses({
+    String query = '',
+    String city = '',
+    String state = '',
+    String postalCode = '',
+  }) {
+    return _guard(
+      fallbackMessage: 'Não foi possível carregar os estabelecimentos.',
+      action: () async {
+        final response = await _client.rpc<dynamic>(
+          'search_public_booking_businesses',
+          params: {
+            'raw_query': query.trim(),
+            'raw_city': city.trim(),
+            'raw_state': state.trim(),
+            'raw_postal_code': postalCode.trim(),
+          },
+        );
+        return SupabasePublicBookingResponseParser.businesses(response);
       },
     );
   }
@@ -397,6 +427,15 @@ class SupabasePublicBookingResponseParser {
         row['time_zone'],
         fallback: 'America/Sao_Paulo',
       ),
+      listedInDirectory: _optionalBool(
+        row['listed_in_directory'],
+        fallback: false,
+      ),
+      postalCode: _optionalString(row['postal_code']),
+      addressLine: _optionalString(row['address_line']),
+      addressDistrict: _optionalString(row['address_district']),
+      addressCity: _optionalString(row['address_city']),
+      addressState: _optionalString(row['address_state']),
       workingDays: _intSet(
         row['working_days'],
         fallback: const {1, 2, 3, 4, 5, 6},
@@ -430,6 +469,30 @@ class SupabasePublicBookingResponseParser {
       ),
       slug: _optionalString(row['public_slug'], fallback: fallback.slug),
       enabled: _optionalBool(row['enabled'], fallback: fallback.enabled),
+      listedInDirectory: _optionalBool(
+        row['listed_in_directory'],
+        fallback: fallback.listedInDirectory,
+      ),
+      postalCode: _optionalString(
+        row['postal_code'],
+        fallback: fallback.postalCode,
+      ),
+      addressLine: _optionalString(
+        row['address_line'],
+        fallback: fallback.addressLine,
+      ),
+      addressDistrict: _optionalString(
+        row['address_district'],
+        fallback: fallback.addressDistrict,
+      ),
+      addressCity: _optionalString(
+        row['address_city'],
+        fallback: fallback.addressCity,
+      ),
+      addressState: _optionalString(
+        row['address_state'],
+        fallback: fallback.addressState,
+      ),
       timeZone: _optionalString(row['time_zone'], fallback: fallback.timeZone),
       workingDays: _intSet(row['working_days'], fallback: fallback.workingDays),
       openingMinutes: _timeMinutes(
@@ -460,6 +523,28 @@ class SupabasePublicBookingResponseParser {
       response,
       'profissionais',
     ).map(_professional).toList(growable: false);
+  }
+
+  static List<PublicBookingBusiness> businesses(Object? response) {
+    return _mapList(response, 'estabelecimentos')
+        .map(
+          (row) => PublicBookingBusiness(
+            name: _requiredString(row['business_name'], 'business_name'),
+            businessType: _businessType(row['business_type']),
+            slug: _requiredString(row['slug'], 'slug'),
+            city: _optionalString(row['city']),
+            state: _optionalString(row['state']),
+            district: _optionalString(row['district']),
+            addressLine: _optionalString(row['address_line']),
+            postalCode: _optionalString(row['postal_code']),
+            serviceCount: _optionalInt(row['service_count'], fallback: 0),
+            professionalCount: _optionalInt(
+              row['professional_count'],
+              fallback: 0,
+            ),
+          ),
+        )
+        .toList(growable: false);
   }
 
   static ProfessionalBookingConfiguration professionalConfiguration(

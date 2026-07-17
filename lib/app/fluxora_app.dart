@@ -22,6 +22,7 @@ import '../domain/account_lifecycle_repository.dart';
 import '../state/auth_bloc.dart';
 import '../state/auth_state.dart';
 import '../ui/auth_gate.dart';
+import '../ui/public_booking_directory_page.dart';
 import '../ui/public_booking_page.dart';
 import '../ui/startup_splash_page.dart';
 import 'theme.dart';
@@ -100,19 +101,31 @@ class FluxoraApp extends StatelessWidget {
           theme: FluxoraTheme.light,
           darkTheme: FluxoraTheme.dark,
           themeMode: ThemeMode.dark,
-          initialRoute: publicBookingRouteFromLocation(Uri.base) ?? '/',
+          initialRoute:
+              publicBookingRouteFromLocation(Uri.base) ??
+              publicBookingDirectoryRouteFromLocation(Uri.base) ??
+              '/',
           onGenerateRoute: (settings) {
             final slug = publicBookingSlugFromRoute(settings.name);
+            final directory = publicBookingDirectoryRouteFromRoute(
+              settings.name,
+            );
             return MaterialPageRoute<void>(
               settings: settings,
-              builder: (_) => slug == null
-                  ? _buildAuthenticatedHome(initialPasswordRecovery)
-                  : publicBookingRepository == null
-                  ? const _PublicBookingConfigurationError()
-                  : PublicBookingPage(
-                      slug: slug,
-                      repository: publicBookingRepository!,
-                    ),
+              builder: (_) => slug != null
+                  ? publicBookingRepository == null
+                        ? const _PublicBookingConfigurationError()
+                        : PublicBookingPage(
+                            slug: slug,
+                            repository: publicBookingRepository!,
+                          )
+                  : directory
+                  ? publicBookingRepository == null
+                        ? const _PublicBookingConfigurationError()
+                        : PublicBookingDirectoryPage(
+                            repository: publicBookingRepository!,
+                          )
+                  : _buildAuthenticatedHome(initialPasswordRecovery),
             );
           },
         ),
@@ -198,6 +211,27 @@ String? publicBookingRouteFromLocation(Uri location) {
   final fromQuery = location.queryParameters['agendar']?.trim();
   if (fromQuery == null || fromQuery.isEmpty) return null;
   return '/agendar/${Uri.encodeComponent(fromQuery)}';
+}
+
+String? publicBookingDirectoryRouteFromLocation(Uri location) {
+  if (publicBookingDirectoryRouteFromRoute(location.fragment)) {
+    return '/agendar';
+  }
+  if (publicBookingDirectoryRouteFromRoute(location.path)) return '/agendar';
+  return null;
+}
+
+bool publicBookingDirectoryRouteFromRoute(String? routeName) {
+  if (routeName == null || routeName.isEmpty) return false;
+  final normalized = routeName.startsWith('#')
+      ? routeName.substring(1)
+      : routeName;
+  final uri = Uri.tryParse(normalized);
+  if (uri == null) return false;
+  final segments = uri.pathSegments
+      .where((segment) => segment.isNotEmpty)
+      .toList();
+  return segments.length == 1 && segments.first == 'agendar';
 }
 
 String? publicBookingSlugFromRoute(String? routeName) {

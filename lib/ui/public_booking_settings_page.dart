@@ -22,6 +22,11 @@ class PublicBookingSettingsPage extends StatefulWidget {
 
 class _PublicBookingSettingsPageState extends State<PublicBookingSettingsPage> {
   final _slugController = TextEditingController();
+  final _postalCodeController = TextEditingController();
+  final _addressLineController = TextEditingController();
+  final _districtController = TextEditingController();
+  final _cityController = TextEditingController();
+  final _stateController = TextEditingController();
   final _noticeController = TextEditingController();
   final _advanceController = TextEditingController();
   PublicBookingSettings? _settings;
@@ -38,6 +43,11 @@ class _PublicBookingSettingsPageState extends State<PublicBookingSettingsPage> {
   @override
   void dispose() {
     _slugController.dispose();
+    _postalCodeController.dispose();
+    _addressLineController.dispose();
+    _districtController.dispose();
+    _cityController.dispose();
+    _stateController.dispose();
     _noticeController.dispose();
     _advanceController.dispose();
     super.dispose();
@@ -50,6 +60,11 @@ class _PublicBookingSettingsPageState extends State<PublicBookingSettingsPage> {
       setState(() {
         _settings = settings;
         _slugController.text = settings.slug;
+        _postalCodeController.text = settings.postalCode;
+        _addressLineController.text = settings.addressLine;
+        _districtController.text = settings.addressDistrict;
+        _cityController.text = settings.addressCity;
+        _stateController.text = settings.addressState;
         _noticeController.text = settings.minimumNoticeMinutes.toString();
         _advanceController.text = settings.maximumAdvanceDays.toString();
         _loading = false;
@@ -80,6 +95,8 @@ class _PublicBookingSettingsPageState extends State<PublicBookingSettingsPage> {
                     padding: const EdgeInsets.all(20),
                     children: [
                       _introCard(context),
+                      const SizedBox(height: 16),
+                      _directoryCard(context),
                       const SizedBox(height: 16),
                       _newProfessionalDefaultsCard(context),
                       const SizedBox(height: 16),
@@ -179,6 +196,88 @@ class _PublicBookingSettingsPageState extends State<PublicBookingSettingsPage> {
                   : () => _copyLink(link),
               icon: const Icon(Icons.copy_outlined),
               label: const Text('Copiar link'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _directoryCard(BuildContext context) {
+    final settings = _settings!;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SwitchListTile.adaptive(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Aparecer na busca pública'),
+              subtitle: const Text(
+                'Permite que clientes encontrem o estabelecimento por cidade, estado, CEP e nome.',
+              ),
+              value: settings.listedInDirectory,
+              onChanged: (value) => setState(
+                () => _settings = settings.copyWith(listedInDirectory: value),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Localização pública',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'O CEP ajuda o cliente a encontrar atendimentos próximos. O endereço pode ser resumido se você preferir divulgar só bairro e cidade.',
+            ),
+            const SizedBox(height: 18),
+            TextField(
+              controller: _postalCodeController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'CEP',
+                prefixIcon: Icon(Icons.pin_drop_outlined),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _addressLineController,
+              textCapitalization: TextCapitalization.words,
+              decoration: const InputDecoration(
+                labelText: 'Endereço público',
+                prefixIcon: Icon(Icons.place_outlined),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _districtController,
+                    textCapitalization: TextCapitalization.words,
+                    decoration: const InputDecoration(labelText: 'Bairro'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextField(
+                    controller: _cityController,
+                    textCapitalization: TextCapitalization.words,
+                    decoration: const InputDecoration(labelText: 'Cidade'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _stateController,
+              textCapitalization: TextCapitalization.characters,
+              decoration: const InputDecoration(
+                labelText: 'Estado',
+                helperText: 'Use a sigla, por exemplo SP, RJ, MG.',
+              ),
+              maxLength: 2,
             ),
           ],
         ),
@@ -376,6 +475,12 @@ class _PublicBookingSettingsPageState extends State<PublicBookingSettingsPage> {
     }
     final updated = current.copyWith(
       slug: slug,
+      listedInDirectory: current.listedInDirectory,
+      postalCode: _postalCodeController.text.trim(),
+      addressLine: _addressLineController.text.trim(),
+      addressDistrict: _districtController.text.trim(),
+      addressCity: _cityController.text.trim(),
+      addressState: _stateController.text.trim().toUpperCase(),
       minimumNoticeMinutes: notice,
       maximumAdvanceDays: advance,
     );
@@ -413,6 +518,19 @@ class _PublicBookingSettingsPageState extends State<PublicBookingSettingsPage> {
     }
     if (settings.closingMinutes <= settings.openingMinutes) {
       return 'O horário de fechamento precisa ser posterior à abertura.';
+    }
+    if (settings.listedInDirectory) {
+      final postalDigits = _postalCodeController.text.replaceAll(
+        RegExp(r'\D'),
+        '',
+      );
+      if (postalDigits.length < 8) {
+        return 'Informe um CEP válido para aparecer na busca pública.';
+      }
+      if (_cityController.text.trim().length < 2 ||
+          _stateController.text.trim().length != 2) {
+        return 'Informe cidade e UF para aparecer na busca pública.';
+      }
     }
     if (notice == null || notice < 0 || notice > 10080) {
       return 'Informe uma antecedência mínima válida.';

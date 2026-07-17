@@ -80,6 +80,52 @@ void main() {
       expect(slots.last.endsAt, DateTime.utc(2026, 7, 15, 13, 45));
     });
 
+    test('converte estabelecimentos da busca pública', () {
+      final businesses = SupabasePublicBookingResponseParser.businesses([
+        {
+          'business_name': 'Barbearia Central',
+          'business_type': 'barbershop',
+          'slug': 'barbearia-central',
+          'city': 'São Paulo',
+          'state': 'SP',
+          'district': 'Centro',
+          'address_line': 'Rua das Flores',
+          'postal_code': '01001000',
+          'service_count': 8,
+          'professional_count': 3,
+        },
+      ]);
+
+      expect(businesses.single.name, 'Barbearia Central');
+      expect(businesses.single.businessType, BusinessType.barbershop);
+      expect(businesses.single.slug, 'barbearia-central');
+      expect(businesses.single.locationLabel, 'Centro, São Paulo, SP');
+      expect(businesses.single.serviceCount, 8);
+      expect(businesses.single.professionalCount, 3);
+    });
+
+    test('combina localização pública com configuração autenticada', () {
+      final settings = SupabasePublicBookingResponseParser.settings(
+        businessId: 'business-1',
+        businessResponse: {'id': 'business-1', 'public_slug': 'studio-aurora'},
+        settingsResponse: {
+          'business_id': 'business-1',
+          'enabled': true,
+          'listed_in_directory': true,
+          'postal_code': '01001000',
+          'address_line': 'Rua das Flores, 100',
+          'address_district': 'Centro',
+          'address_city': 'São Paulo',
+          'address_state': 'SP',
+        },
+      );
+
+      expect(settings.listedInDirectory, isTrue);
+      expect(settings.postalCode, '01001000');
+      expect(settings.addressCity, 'São Paulo');
+      expect(settings.addressState, 'SP');
+    });
+
     test('converte cotação como mapa ou lista de uma linha', () {
       final mapQuote = SupabasePublicBookingResponseParser.quote({
         'base_price': 100,

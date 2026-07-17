@@ -34,6 +34,7 @@ para o estabelecimento:
 - [x] 13. Agenda interna do estabelecimento — **Concluído no código; validação remota pendente**
 - [x] 14. Acesso limitado do profissional — **Concluído no código; teste com contas reais pendente**
 - [x] 15. Página pública de agendamento para clientes — **Código e hospedagem concluídos; implantação Supabase pendente**
+- [x] 15.1. Vitrine pública por localidade e CEP — **Concluído no código; implantação Supabase pendente**
 - [x] 16. Eventos para automações externas — **Concluído no código; provedor de destino pendente**
 - [ ] 17. Integração n8n + WhatsApp
 - [ ] 18. Painel web para uso no PC

@@ -5,6 +5,12 @@ class PublicBookingSettings {
     required this.businessId,
     required this.slug,
     this.enabled = false,
+    this.listedInDirectory = false,
+    this.postalCode = '',
+    this.addressLine = '',
+    this.addressDistrict = '',
+    this.addressCity = '',
+    this.addressState = '',
     this.timeZone = 'America/Sao_Paulo',
     this.workingDays = const {1, 2, 3, 4, 5, 6},
     this.openingMinutes = 8 * 60,
@@ -17,6 +23,12 @@ class PublicBookingSettings {
   final String businessId;
   final String slug;
   final bool enabled;
+  final bool listedInDirectory;
+  final String postalCode;
+  final String addressLine;
+  final String addressDistrict;
+  final String addressCity;
+  final String addressState;
   final String timeZone;
   final Set<int> workingDays;
   final int openingMinutes;
@@ -28,6 +40,12 @@ class PublicBookingSettings {
   PublicBookingSettings copyWith({
     String? slug,
     bool? enabled,
+    bool? listedInDirectory,
+    String? postalCode,
+    String? addressLine,
+    String? addressDistrict,
+    String? addressCity,
+    String? addressState,
     String? timeZone,
     Set<int>? workingDays,
     int? openingMinutes,
@@ -40,6 +58,12 @@ class PublicBookingSettings {
       businessId: businessId,
       slug: slug ?? this.slug,
       enabled: enabled ?? this.enabled,
+      listedInDirectory: listedInDirectory ?? this.listedInDirectory,
+      postalCode: postalCode ?? this.postalCode,
+      addressLine: addressLine ?? this.addressLine,
+      addressDistrict: addressDistrict ?? this.addressDistrict,
+      addressCity: addressCity ?? this.addressCity,
+      addressState: addressState ?? this.addressState,
       timeZone: timeZone ?? this.timeZone,
       workingDays: workingDays ?? this.workingDays,
       openingMinutes: openingMinutes ?? this.openingMinutes,
@@ -57,6 +81,41 @@ class PublicBookingSettings {
     final hour = (minutes ~/ 60).toString().padLeft(2, '0');
     final minute = (minutes % 60).toString().padLeft(2, '0');
     return '$hour:$minute';
+  }
+}
+
+class PublicBookingBusiness {
+  const PublicBookingBusiness({
+    required this.name,
+    required this.businessType,
+    required this.slug,
+    required this.city,
+    required this.state,
+    this.district = '',
+    this.addressLine = '',
+    this.postalCode = '',
+    this.serviceCount = 0,
+    this.professionalCount = 0,
+  });
+
+  final String name;
+  final BusinessType businessType;
+  final String slug;
+  final String city;
+  final String state;
+  final String district;
+  final String addressLine;
+  final String postalCode;
+  final int serviceCount;
+  final int professionalCount;
+
+  String get locationLabel {
+    final parts = [
+      if (district.isNotEmpty) district,
+      if (city.isNotEmpty) city,
+      if (state.isNotEmpty) state,
+    ];
+    return parts.join(', ');
   }
 }
 
@@ -297,6 +356,13 @@ abstract interface class PublicBookingRepository {
   Future<void> deleteAvailabilityBlock(String blockId);
 
   Future<PublicBookingCatalog> getCatalog(String slug);
+
+  Future<List<PublicBookingBusiness>> searchBusinesses({
+    String query = '',
+    String city = '',
+    String state = '',
+    String postalCode = '',
+  });
 
   Future<List<PublicBookingSlot>> getAvailableSlots({
     required String slug,
