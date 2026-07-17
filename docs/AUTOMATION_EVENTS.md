@@ -190,12 +190,17 @@ Cloud API oficial da Meta. Para produção, configure os secrets abaixo no
 Supabase:
 
 ```powershell
+npx supabase secrets set WHATSAPP_NOTIFICATIONS_ENABLED="true" --project-ref nqcoxxbzwzcuwprbzpdb
 npx supabase secrets set WHATSAPP_ACCESS_TOKEN="TOKEN_DA_META" --project-ref nqcoxxbzwzcuwprbzpdb
 npx supabase secrets set WHATSAPP_PHONE_NUMBER_ID="PHONE_NUMBER_ID" --project-ref nqcoxxbzwzcuwprbzpdb
 npx supabase secrets set WHATSAPP_TEMPLATE_LANGUAGE="pt_BR" --project-ref nqcoxxbzwzcuwprbzpdb
 npx supabase secrets set WHATSAPP_TEMPLATE_APPOINTMENT_CREATED="fluxora_novo_agendamento" --project-ref nqcoxxbzwzcuwprbzpdb
 npx supabase secrets set WHATSAPP_TEMPLATE_APPOINTMENT_REMINDER="fluxora_lembrete_agendamento" --project-ref nqcoxxbzwzcuwprbzpdb
 ```
+
+Sem `WHATSAPP_NOTIFICATIONS_ENABLED="true"`, o WhatsApp fica preparado, mas
+desligado. Isso permite operar o Fluxora por e-mail enquanto a integração
+oficial de WhatsApp não entra em produção.
 
 Para mensagens automáticas iniciadas pelo estabelecimento, use templates
 aprovados na Meta. O modo de texto livre só deve ser usado em testes ou em
@@ -205,6 +210,42 @@ janelas permitidas pela plataforma:
 npx supabase secrets set WHATSAPP_ALLOW_FREEFORM_TEXT="true" --project-ref nqcoxxbzwzcuwprbzpdb
 ```
 
+### Webhook da Meta
+
+O webhook `whatsapp-webhook` recebe eventos de status enviados pela Meta, como
+mensagem enviada, entregue, lida ou falha. Ele precisa ser público, pois a
+chamada vem da Meta, não do aplicativo.
+
+Callback URL:
+
+```text
+https://nqcoxxbzwzcuwprbzpdb.supabase.co/functions/v1/whatsapp-webhook
+```
+
+Verify token configurado no Supabase:
+
+```text
+fluxora-devvoid-webhook-2026
+```
+
+Deploy:
+
+```powershell
+npx supabase functions deploy whatsapp-webhook --project-ref nqcoxxbzwzcuwprbzpdb --no-verify-jwt
+```
+
+Os eventos recebidos ficam registrados na tabela:
+
+```text
+public.whatsapp_webhook_events
+```
+
+Para verificar os eventos recentes:
+
+```powershell
+npx supabase db query --linked "select event_kind,message_id,status,received_at from public.whatsapp_webhook_events order by received_at desc limit 20;"
+```
+
 ### E-mail
 
 O envio de e-mail está preparado para Resend:
@@ -212,6 +253,22 @@ O envio de e-mail está preparado para Resend:
 ```powershell
 npx supabase secrets set RESEND_API_KEY="SUA_CHAVE_RESEND" --project-ref nqcoxxbzwzcuwprbzpdb
 npx supabase secrets set EMAIL_FROM="Fluxora <agenda@seudominio.com>" --project-ref nqcoxxbzwzcuwprbzpdb
+```
+
+Para agendamentos, os e-mails incluem um anexo `.ics` quando o evento possui
+horário de início e fim. Esse arquivo é reconhecido por Google Agenda, Apple
+Calendar, Outlook e outros calendários sem exigir integração paga com API
+externa.
+
+Fluxo aplicado:
+
+```text
+appointment.created
+  -> e-mail para o profissional com convite de calendário
+  -> e-mail para o dono/gerente com resumo do agendamento
+
+appointment.reminder
+  -> e-mail para o cliente com lembrete e convite de calendário
 ```
 
 ## Processamento automático

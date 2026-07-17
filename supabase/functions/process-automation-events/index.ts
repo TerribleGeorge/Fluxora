@@ -22,6 +22,8 @@ type NotificationResult = {
   recipient: string
   status: 'sent' | 'skipped'
   reason?: string
+  providerMessageId?: string
+  providerResponse?: unknown
 }
 
 type AppointmentPayload = {
@@ -30,14 +32,21 @@ type AppointmentPayload = {
   professionalPhone?: string
   professionalEmail?: string
   serviceName?: string
+  servicePrice?: number
   customerName?: string
   customerPhone?: string
   customerEmail?: string
+  startsAt?: string
+  endsAt?: string
+  localStartsAt?: string
+  localEndsAt?: string
   localDate?: string
   localStartTime?: string
   localEndTime?: string
+  timeZone?: string
   publicReference?: string
   reminderMinutesBefore?: number
+  ownerContacts?: Array<{ name?: string; email?: string }>
 }
 
 type ProductPayload = {
@@ -164,9 +173,9 @@ async function processNotification(
   const results: NotificationResult[] = []
 
   if (event.event_type === 'appointment.created') {
-    results.push(
-      await sendProfessionalAppointmentCreated(payload),
-    )
+    results.push(await sendProfessionalAppointmentCreated(payload))
+    results.push(await sendProfessionalAppointmentCreatedEmail(payload))
+    results.push(...await sendOwnerAppointmentCreatedEmails(payload))
     return results
   }
 
@@ -270,6 +279,15 @@ async function sendOwnerProductEmail({
 async function sendProfessionalAppointmentCreated(
   payload: AppointmentPayload,
 ): Promise<NotificationResult> {
+  if (!whatsAppNotificationsEnabled()) {
+    return {
+      channel: 'whatsapp',
+      recipient: 'professional',
+      status: 'skipped',
+      reason: 'WhatsApp notifications are disabled',
+    }
+  }
+
   const phone = normalizePhone(payload.professionalPhone)
   if (!phone) {
     return {
@@ -303,6 +321,84 @@ async function sendProfessionalAppointmentCreated(
   })
 }
 
+async function sendProfessionalAppointmentCreatedEmail(
+  payload: AppointmentPayload,
+): Promise<NotificationResult> {
+  const email = normalizeEmail(payload.professionalEmail)
+  if (!email) {
+    return {
+      channel: 'email',
+      recipient: 'professional',
+      status: 'skipped',
+      reason: 'Professional email is empty',
+    }
+  }
+
+  const text = [
+    `Novo agendamento no ${payload.businessName ?? 'Fluxora'}`,
+    '',
+    `Cliente: ${payload.customerName ?? '-'}`,
+    `Serviço: ${payload.serviceName ?? '-'}`,
+    `Data: ${payload.localDate ?? '-'} às ${payload.localStartTime ?? '-'}`,
+    `Referência: ${payload.publicReference ?? '-'}`,
+    '',
+    'Anexamos um convite de calendário para você adicionar este atendimento à sua agenda.',
+  ].join('\n')
+
+  return sendEmail({
+    to: email,
+    subject: `Novo agendamento: ${payload.serviceName ?? 'atendimento'}`,
+    text,
+    recipientLabel: 'professional',
+    calendar: buildAppointmentCalendarInvite(payload, 'professional'),
+  })
+}
+
+async function sendOwnerAppointmentCreatedEmails(
+  payload: AppointmentPayload,
+): Promise<NotificationResult[]> {
+  const emails = (payload.ownerContacts ?? [])
+    .map((contact) => normalizeEmail(contact.email))
+    .filter((email) => email.length > 0)
+
+  if (emails.length === 0) {
+    return [
+      {
+        channel: 'email',
+        recipient: 'owner',
+        status: 'skipped',
+        reason: 'Owner email is empty',
+      },
+    ]
+  }
+
+  const text = [
+    `Novo agendamento no ${payload.businessName ?? 'Fluxora'}`,
+    '',
+    `Cliente: ${payload.customerName ?? '-'}`,
+    `Profissional: ${payload.professionalName ?? '-'}`,
+    `Serviço: ${payload.serviceName ?? '-'}`,
+    `Data: ${payload.localDate ?? '-'} às ${payload.localStartTime ?? '-'}`,
+    `Valor do serviço: ${formatMoney(payload.servicePrice ?? 0)}`,
+    `Referência: ${payload.publicReference ?? '-'}`,
+  ].join('\n')
+
+  const results: NotificationResult[] = []
+  for (const email of emails) {
+    results.push(
+      await sendEmail({
+        to: email,
+        subject: `Novo agendamento: ${payload.serviceName ?? 'atendimento'}`,
+        text,
+        recipientLabel: 'owner',
+        calendar: buildAppointmentCalendarInvite(payload, 'owner'),
+      }),
+    )
+  }
+
+  return results
+}
+
 async function sendCustomerAppointmentReminder(
   payload: AppointmentPayload,
   channel: 'whatsapp' | 'email',
@@ -317,6 +413,15 @@ async function sendCustomerAppointmentReminder(
   ].join('\n')
 
   if (channel === 'whatsapp') {
+    if (!whatsAppNotificationsEnabled()) {
+      return {
+        channel: 'whatsapp',
+        recipient: 'customer',
+        status: 'skipped',
+        reason: 'WhatsApp notifications are disabled',
+      }
+    }
+
     const phone = normalizePhone(payload.customerPhone)
     if (!phone) {
       return {
@@ -357,6 +462,7 @@ async function sendCustomerAppointmentReminder(
     subject: `Lembrete: atendimento em ${minutes} minutos`,
     text,
     recipientLabel: 'customer',
+    calendar: buildAppointmentCalendarInvite(payload, 'customer'),
   })
 }
 
@@ -437,11 +543,28 @@ async function sendWhatsApp({
     },
   )
 
+  const responseBody = await response.json().catch(async () => ({
+    raw: await response.text(),
+  }))
+
   if (!response.ok) {
-    throw new Error(`WhatsApp send failed: ${response.status} ${await response.text()}`)
+    throw new Error(
+      `WhatsApp send failed: ${response.status} ${JSON.stringify(responseBody)}`,
+    )
   }
 
-  return { channel: 'whatsapp', recipient: recipientLabel, status: 'sent' }
+  const messageId =
+    Array.isArray(responseBody?.messages) && responseBody.messages.length > 0
+      ? responseBody.messages[0]?.id
+      : undefined
+
+  return {
+    channel: 'whatsapp',
+    recipient: recipientLabel,
+    status: 'sent',
+    providerMessageId: typeof messageId === 'string' ? messageId : undefined,
+    providerResponse: responseBody,
+  }
 }
 
 async function sendEmail({
@@ -449,11 +572,13 @@ async function sendEmail({
   subject,
   text,
   recipientLabel = 'recipient',
+  calendar,
 }: {
   to: string
   subject: string
   text: string
   recipientLabel?: string
+  calendar?: CalendarInvite | null
 }): Promise<NotificationResult> {
   const apiKey = Deno.env.get('RESEND_API_KEY')
   const from = Deno.env.get('EMAIL_FROM')
@@ -467,20 +592,123 @@ async function sendEmail({
     }
   }
 
+  const attachments = calendar
+    ? [
+        {
+          filename: calendar.filename,
+          content: base64Encode(calendar.content),
+        },
+      ]
+    : undefined
+
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ from, to, subject, text }),
+    body: JSON.stringify({ from, to, subject, text, attachments }),
   })
 
+  const responseBody = await response.json().catch(async () => ({
+    raw: await response.text(),
+  }))
+
   if (!response.ok) {
-    throw new Error(`Email send failed: ${response.status} ${await response.text()}`)
+    throw new Error(`Email send failed: ${response.status} ${JSON.stringify(responseBody)}`)
   }
 
-  return { channel: 'email', recipient: recipientLabel, status: 'sent' }
+  return {
+    channel: 'email',
+    recipient: recipientLabel,
+    status: 'sent',
+    providerResponse: responseBody,
+  }
+}
+
+type CalendarInvite = {
+  filename: string
+  content: string
+}
+
+function buildAppointmentCalendarInvite(
+  payload: AppointmentPayload,
+  recipient: 'customer' | 'professional' | 'owner',
+): CalendarInvite | null {
+  const startsAt = parseDate(payload.startsAt)
+  const endsAt = parseDate(payload.endsAt)
+  if (!startsAt || !endsAt) return null
+
+  const summary =
+    recipient === 'customer'
+      ? `Atendimento: ${payload.serviceName ?? 'Fluxora'}`
+      : `Fluxora: ${payload.customerName ?? 'cliente'} - ${payload.serviceName ?? 'atendimento'}`
+
+  const description = [
+    `Estabelecimento: ${payload.businessName ?? '-'}`,
+    `Cliente: ${payload.customerName ?? '-'}`,
+    `Profissional: ${payload.professionalName ?? '-'}`,
+    `Serviço: ${payload.serviceName ?? '-'}`,
+    `Data local: ${payload.localDate ?? '-'} ${payload.localStartTime ?? '-'}`,
+    `Referência: ${payload.publicReference ?? '-'}`,
+  ].join('\\n')
+
+  const uid = `${payload.publicReference || crypto.randomUUID()}@fluxora.devvoid.dev`
+  const content = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//DevVoid.dev//Fluxora//PT-BR',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'BEGIN:VEVENT',
+    `UID:${escapeIcs(uid)}`,
+    `DTSTAMP:${formatIcsDate(new Date())}`,
+    `DTSTART:${formatIcsDate(startsAt)}`,
+    `DTEND:${formatIcsDate(endsAt)}`,
+    `SUMMARY:${escapeIcs(summary)}`,
+    `DESCRIPTION:${escapeIcs(description)}`,
+    `LOCATION:${escapeIcs(payload.businessName ?? 'Fluxora')}`,
+    'BEGIN:VALARM',
+    'TRIGGER:-PT30M',
+    'ACTION:DISPLAY',
+    `DESCRIPTION:${escapeIcs(`Lembrete: ${summary}`)}`,
+    'END:VALARM',
+    'END:VEVENT',
+    'END:VCALENDAR',
+    '',
+  ].join('\r\n')
+
+  return {
+    filename: `fluxora-agendamento-${payload.publicReference || 'atendimento'}.ics`,
+    content,
+  }
+}
+
+function parseDate(value: unknown) {
+  if (typeof value !== 'string' || !value.trim()) return null
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? null : date
+}
+
+function formatIcsDate(date: Date) {
+  return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z')
+}
+
+function escapeIcs(value: string) {
+  return value
+    .replace(/\\/g, '\\\\')
+    .replace(/\n/g, '\\n')
+    .replace(/;/g, '\\;')
+    .replace(/,/g, '\\,')
+}
+
+function base64Encode(value: string) {
+  const bytes = new TextEncoder().encode(value)
+  let binary = ''
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte)
+  }
+  return btoa(binary)
 }
 
 async function markProcessing(
@@ -507,6 +735,10 @@ function normalizePhone(value: unknown) {
   const digits = String(value ?? '').replace(/\D/g, '')
   if (digits.length < 10) return ''
   return digits.startsWith('55') ? digits : `55${digits}`
+}
+
+function whatsAppNotificationsEnabled() {
+  return Deno.env.get('WHATSAPP_NOTIFICATIONS_ENABLED') === 'true'
 }
 
 function normalizeEmail(value: unknown) {

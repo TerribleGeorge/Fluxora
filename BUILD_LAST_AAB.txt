@@ -1,12 +1,11 @@
-Fluxora 1.0.0 (build 17)
+Fluxora 1.0.0 (build 18)
 Pacote: dev.devvoid.fluxora
 Empresa: DevVoid.dev
 Artefato: build/app/outputs/bundle/release/app-release.aab
-Tamanho: 49577976 bytes
-SHA-256: 1CF05BF55C1FA48891B70C0E61FDDA463FFE51A200A1B55C13E150D8342CCE1A
+Tamanho: 49684747 bytes
+SHA-256: 6C5F464C0EE892A26D3E90E428B2101C38B2B77FEAA32513D2D1DBEA8E6B3353
 Assinatura: verificada (jar verified)
 Certificado de upload: CN=DevVoid.dev, OU=Mobile, O=DevVoid.dev, L=Brasilia, ST=DF, C=BR
-Certificado SHA-256: 72:1F:1E:0F:F8:E7:4A:38:B9:E2:57:C1:28:08:64:8E:F1:D6:3C:4C:2A:CC:0D:C6:1C:C3:87:31:24:E1:96:AC
 Gerado em: 2026-07-17
 Backend: Supabase nqcoxxbzwzcuwprbzpdb
 Supabase: SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY passados via --dart-define
@@ -18,36 +17,36 @@ Oferta configurada: teste-14-dias (teste gratuito de 2 semanas)
 
 Validações executadas:
 - flutter analyze --no-pub: sem problemas
-- flutter test --no-pub: 99 testes aprovados
-- 10 migrações aplicadas em PostgreSQL isolado: aprovadas
-- cenário de antifraude, idempotência e associação fiel: aprovado
-- flutter build web --release: concluído
+- flutter test --no-pub: 105 testes aprovados
+- npx supabase db push --linked: migration whatsapp_webhook_events aplicada
+- npx supabase functions deploy process-automation-events: publicado
+- npx supabase functions deploy whatsapp-webhook --no-verify-jwt: publicado
+- Verificação GET do webhook da Meta: HTTP 200 com challenge correto
+- POST fake de status WhatsApp: gravado em public.whatsapp_webhook_events
+- Evento de automação com WhatsApp desligado: processado sem bloquear e-mail
 - flutter build appbundle --release: concluído
-- AndroidManifest: versionCode 17, versionName 1.0.0
-- AndroidManifest final: callbacks reset-password e auth-confirmation confirmados
-- flutter_deeplinking_enabled=false confirmado no pacote final
 - jarsigner -verify: jar verified
 
-Principais mudanças da build 17:
-- Recuperação de senha corrigida no aplicativo e no portal Web.
-- Callback retorna à mesma plataforma que iniciou o fluxo PKCE.
-- Confirmação de conta e recuperação agora usam endereços separados.
-- Evento inicial de recuperação preservado mesmo quando chega antes do BLoC.
-- Tela de nova senha ignora a splash de dez segundos.
-- Confirmação da nova senha e envio pelo botão Concluir do teclado.
-- Mensagens específicas para limite de envio, link expirado e app ou perfil de navegador incorreto.
-- A tela só libera a nova senha após validar o evento criptográfico do Supabase.
-- Trocas de sessão e atualizações de página não reutilizam uma recuperação antiga.
-- Deep links Android/iOS ajustados para o app_links usado pelo Supabase.
-- Portal público, agenda, fidelidade, checkout e cálculo financeiro preservados.
-- Patch notes internos e notas da Play Store atualizados para a build 17.
+Principais mudanças da build 18:
+- Patch notes internos atualizados para a versão 1.0.0 (18).
+- Notas da Google Play atualizadas para a build 18.
+- Automação de agendamento preparada para e-mail do profissional, dono/gerente e cliente.
+- E-mails de agendamento podem anexar convite .ics compatível com Google Agenda, Apple Calendar e Outlook.
+- Convite .ics inclui serviço, cliente, profissional, estabelecimento, referência e alarme de 30 minutos.
+- WhatsApp oficial foi colocado atrás da chave WHATSAPP_NOTIFICATIONS_ENABLED=true.
+- Com WhatsApp desligado, falhas da Meta não impedem o processamento por e-mail.
+- Retorno da Meta agora grava providerMessageId e providerResponse para auditoria futura.
+- Webhook whatsapp-webhook criado para receber status de mensagens da Meta quando a integração for ativada.
+- Tabela public.whatsapp_webhook_events criada para armazenar status de enviado, entregue, lido, falha ou mensagens recebidas.
+- Documentação docs/AUTOMATION_EVENTS.md atualizada com WhatsApp, webhook, e-mail e calendário.
+- Relatórios/alertas de produtos e estoque preservados.
+- Manual inicial e portal público de agendamento preservados.
 
 Pendências externas conhecidas:
-- Autorizar no Supabase os quatro callbacks listados em docs/SUPABASE_SETUP.md.
-- Configurar SMTP próprio para entregar recuperação a usuários externos.
-- Aplicar as migrações 20260716190000 e 20260716210000 no Supabase remoto.
-- Site publicado em https://terriblegeorge.github.io/fluxora-agendamento/.
-- Configurar OTP ou proteção anti-bot antes de tráfego público amplo.
+- Configurar RESEND_API_KEY e EMAIL_FROM no Supabase para envio real de e-mails.
+- Configurar SMTP/entrega transacional antes de convidar usuários externos em escala.
+- No painel da Meta, usar o webhook apenas quando WhatsApp oficial entrar em produção.
+- Para WhatsApp em produção, será necessário número dedicado, templates aprovados e política de custo definida.
 - Fazer upload manual do AAB na Play Console e validar o teste fechado.
 
 A chave e as senhas de upload permanecem somente em android/key.properties e
