@@ -27,6 +27,10 @@ final class AuthPasswordUpdated extends AuthEvent {
   final String password;
 }
 
+final class AuthRecoveryDismissed extends AuthEvent {
+  const AuthRecoveryDismissed();
+}
+
 final class AuthSignOutRequested extends AuthEvent {
   const AuthSignOutRequested();
 }

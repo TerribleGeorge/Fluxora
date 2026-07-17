@@ -41,7 +41,8 @@ class AuthGate extends StatelessWidget {
   catalogRepositoryFactory;
   final CustomerRepository Function(BusinessAccess access)?
   customerRepositoryFactory;
-  final ProductRepository Function(BusinessAccess access)? productRepositoryFactory;
+  final ProductRepository Function(BusinessAccess access)?
+  productRepositoryFactory;
   final CheckoutRepository Function(BusinessAccess access)?
   checkoutRepositoryFactory;
   final SalesRepository Function(BusinessAccess access)? salesRepositoryFactory;
@@ -79,6 +80,7 @@ class AuthGate extends StatelessWidget {
                   operationsRepositoryFactory: operationsRepositoryFactory!,
                   subscriptionRepositoryFactory: subscriptionRepositoryFactory!,
                 ),
+        AuthStatus.recoveryPending ||
         AuthStatus.recovery => const PasswordRecoveryPage(),
         AuthStatus.unauthenticated || AuthStatus.loading => const AuthPage(),
       },

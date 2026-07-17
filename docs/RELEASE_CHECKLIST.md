@@ -10,7 +10,10 @@
   - Código atualizado e validado pelo Flutter em 08/07/2026.
   - Deploy realizado no projeto `nqcoxxbzwzcuwprbzpdb` em 08/07/2026.
 - [x] Configurar URL e publishable key no build.
-- [x] Configurar URLs de confirmação/recuperação (SMTP próprio pendente).
+- [x] Separar callbacks de confirmação/recuperação para Web e aplicativo.
+- [x] Corrigir deep links Android/iOS e preservar o fluxo PKCE por plataforma.
+- [ ] Confirmar no painel as quatro URLs de autenticação documentadas.
+- [ ] Configurar SMTP próprio para entregar e-mails a usuários externos.
 - [ ] Definir e publicar e-mail oficial de suporte.
 - [x] Publicar `privacy.html` e `delete-account.html` em endereço público.
   - Política: https://terriblegeorge.github.io/fluxora-legal/privacy.html

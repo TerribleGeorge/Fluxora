@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
 import '../l10n/supported_locales.dart';
+import '../data/auth_redirect_configuration.dart';
 import '../domain/auth_repository.dart';
 import '../domain/billing_repository.dart';
 import '../domain/business_repository.dart';
@@ -19,6 +20,7 @@ import '../domain/public_booking.dart';
 import '../domain/subscription_repository.dart';
 import '../domain/account_lifecycle_repository.dart';
 import '../state/auth_bloc.dart';
+import '../state/auth_state.dart';
 import '../ui/auth_gate.dart';
 import '../ui/public_booking_page.dart';
 import '../ui/startup_splash_page.dart';
@@ -27,6 +29,7 @@ import 'theme.dart';
 class FluxoraApp extends StatelessWidget {
   const FluxoraApp({
     super.key,
+    required this.initialLocation,
     required this.authRepository,
     required this.businessRepository,
     required this.financeRepositoryFactory,
@@ -43,6 +46,7 @@ class FluxoraApp extends StatelessWidget {
     required this.publicBookingRepository,
   });
 
+  final Uri initialLocation;
   final AuthRepository authRepository;
   final BusinessRepository? businessRepository;
   final FinanceRepository Function(BusinessAccess access)?
@@ -68,6 +72,7 @@ class FluxoraApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final initialPasswordRecovery = isPasswordRecoveryLocation(initialLocation);
     return MultiProvider(
       providers: [
         Provider<AccountLifecycleRepository>.value(
@@ -79,7 +84,10 @@ class FluxoraApp extends StatelessWidget {
         ),
       ],
       child: BlocProvider(
-        create: (_) => AuthBloc(authRepository),
+        create: (_) => AuthBloc(
+          authRepository,
+          initialPasswordRecovery: initialPasswordRecovery,
+        ),
         child: MaterialApp(
           title: 'Fluxora',
           debugShowCheckedModeBanner: false,
@@ -98,7 +106,7 @@ class FluxoraApp extends StatelessWidget {
             return MaterialPageRoute<void>(
               settings: settings,
               builder: (_) => slug == null
-                  ? _buildAuthenticatedHome()
+                  ? _buildAuthenticatedHome(initialPasswordRecovery)
                   : publicBookingRepository == null
                   ? const _PublicBookingConfigurationError()
                   : PublicBookingPage(
@@ -112,8 +120,9 @@ class FluxoraApp extends StatelessWidget {
     );
   }
 
-  Widget _buildAuthenticatedHome() {
-    return StartupSplashPage(
+  Widget _buildAuthenticatedHome(bool initialPasswordRecovery) {
+    return _RecoveryAwareSplash(
+      skipInitially: initialPasswordRecovery,
       child: AuthGate(
         businessRepository: businessRepository,
         financeRepositoryFactory: financeRepositoryFactory,
@@ -127,6 +136,57 @@ class FluxoraApp extends StatelessWidget {
         subscriptionRepositoryFactory: subscriptionRepositoryFactory,
       ),
     );
+  }
+}
+
+class _RecoveryAwareSplash extends StatefulWidget {
+  const _RecoveryAwareSplash({
+    required this.child,
+    required this.skipInitially,
+  });
+
+  final Widget child;
+  final bool skipInitially;
+
+  @override
+  State<_RecoveryAwareSplash> createState() => _RecoveryAwareSplashState();
+}
+
+class _RecoveryAwareSplashState extends State<_RecoveryAwareSplash> {
+  late bool _skipSplash;
+
+  @override
+  void initState() {
+    super.initState();
+    _skipSplash = widget.skipInitially;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<AuthBloc, AuthState>(
+      listenWhen: (previous, current) =>
+          !_isRecoveryStatus(previous.status) &&
+          _isRecoveryStatus(current.status),
+      listener: (context, state) {
+        if (!_skipSplash) setState(() => _skipSplash = true);
+      },
+      child: BlocBuilder<AuthBloc, AuthState>(
+        buildWhen: (previous, current) =>
+            _isRecoveryStatus(previous.status) ||
+            _isRecoveryStatus(current.status),
+        builder: (context, state) {
+          if (_skipSplash || _isRecoveryStatus(state.status)) {
+            return widget.child;
+          }
+          return StartupSplashPage(child: widget.child);
+        },
+      ),
+    );
+  }
+
+  bool _isRecoveryStatus(AuthStatus status) {
+    return status == AuthStatus.recoveryPending ||
+        status == AuthStatus.recovery;
   }
 }
 

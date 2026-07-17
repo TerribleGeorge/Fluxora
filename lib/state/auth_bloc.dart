@@ -7,9 +7,11 @@ import 'auth_event.dart';
 import 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  AuthBloc(this._repository)
+  AuthBloc(this._repository, {bool initialPasswordRecovery = false})
     : super(
-        _repository.currentIdentity == null
+        initialPasswordRecovery
+            ? const AuthState(status: AuthStatus.recoveryPending)
+            : _repository.currentIdentity == null
             ? const AuthState()
             : AuthState(
                 status: AuthStatus.authenticated,
@@ -20,6 +22,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthSignUpRequested>(_onSignUp);
     on<AuthPasswordResetRequested>(_onResetRequested);
     on<AuthPasswordUpdated>(_onPasswordUpdated);
+    on<AuthRecoveryDismissed>(_onRecoveryDismissed);
     on<AuthSignOutRequested>(_onSignOut);
     on<AuthSessionChanged>(_onSessionChanged);
     _subscription = _repository.sessionChanges.listen(
@@ -105,6 +108,33 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthPasswordUpdated event,
     Emitter<AuthState> emit,
   ) async {
+    final recoveryIdentity = state.identity;
+    final currentIdentity = _repository.currentIdentity;
+    if (state.status != AuthStatus.recovery || recoveryIdentity == null) {
+      emit(
+        const AuthState(
+          status: AuthStatus.recoveryPending,
+          message: 'Aguarde a validação do link antes de alterar a senha.',
+        ),
+      );
+      return;
+    }
+    if (currentIdentity == null || currentIdentity.id != recoveryIdentity.id) {
+      emit(
+        currentIdentity == null
+            ? const AuthState(
+                message:
+                    'A sessão expirou. Solicite um novo link de recuperação.',
+              )
+            : AuthState(
+                status: AuthStatus.authenticated,
+                identity: currentIdentity,
+                message:
+                    'A sessão mudou. Solicite um novo link de recuperação.',
+              ),
+      );
+      return;
+    }
     if (event.password.length < 8) {
       emit(
         AuthState(
@@ -115,7 +145,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
       return;
     }
-    await _run(emit, () async {
+    emit(
+      AuthState(
+        status: AuthStatus.recovery,
+        identity: state.identity,
+        processing: true,
+      ),
+    );
+    try {
       await _repository.updatePassword(event.password);
       emit(
         AuthState(
@@ -124,7 +161,27 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           message: 'Senha alterada com sucesso.',
         ),
       );
-    });
+    } on AuthFailure catch (error) {
+      emit(
+        AuthState(
+          status: AuthStatus.recovery,
+          identity: state.identity,
+          message: error.message,
+        ),
+      );
+    }
+  }
+
+  void _onRecoveryDismissed(
+    AuthRecoveryDismissed event,
+    Emitter<AuthState> emit,
+  ) {
+    final identity = _repository.currentIdentity;
+    emit(
+      identity == null
+          ? const AuthState()
+          : AuthState(status: AuthStatus.authenticated, identity: identity),
+    );
   }
 
   Future<void> _onSignOut(
@@ -140,8 +197,43 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   void _onSessionChanged(AuthSessionChanged event, Emitter<AuthState> emit) {
     final change = event.change;
     if (change.event == AuthSessionEvent.passwordRecovery) {
-      emit(AuthState(status: AuthStatus.recovery, identity: change.identity));
-    } else if (change.identity != null) {
+      final currentIdentity = _repository.currentIdentity;
+      if (change.identity != null &&
+          currentIdentity?.id == change.identity!.id) {
+        emit(AuthState(status: AuthStatus.recovery, identity: change.identity));
+      }
+      return;
+    }
+    if (state.status == AuthStatus.recoveryPending) {
+      if (change.event == AuthSessionEvent.signedOut) emit(const AuthState());
+      return;
+    }
+    if (state.status == AuthStatus.recovery) {
+      if (change.event == AuthSessionEvent.signedOut) {
+        emit(const AuthState());
+        return;
+      }
+      final recoveryIdentity = state.identity;
+      final activeIdentity = change.identity ?? _repository.currentIdentity;
+      if (recoveryIdentity != null &&
+          activeIdentity != null &&
+          recoveryIdentity.id == activeIdentity.id) {
+        return;
+      }
+      if (activeIdentity != null) {
+        emit(
+          AuthState(
+            status: AuthStatus.authenticated,
+            identity: activeIdentity,
+            message: 'A sessão mudou. Solicite um novo link de recuperação.',
+          ),
+        );
+      } else {
+        emit(const AuthState());
+      }
+      return;
+    }
+    if (change.identity != null) {
       emit(
         AuthState(status: AuthStatus.authenticated, identity: change.identity),
       );
@@ -177,6 +269,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   @override
   Future<void> close() async {
     await _subscription.cancel();
+    await _repository.close();
     return super.close();
   }
 }

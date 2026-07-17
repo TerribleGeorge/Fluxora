@@ -1,13 +1,48 @@
+import 'dart:async';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../domain/auth_repository.dart';
+import 'auth_redirect_configuration.dart';
 
 class SupabaseAuthRepository implements AuthRepository {
-  SupabaseAuthRepository(this._client);
-
-  static const passwordResetRedirect = 'dev.devvoid.fluxora://reset-password';
+  SupabaseAuthRepository(
+    this._client, {
+    AuthRedirectConfiguration? redirects,
+    User? initialPasswordRecoveryUser,
+  }) : _redirects = redirects ?? AuthRedirectConfiguration.current() {
+    if (initialPasswordRecoveryUser != null) {
+      _pendingPasswordRecovery = AuthSessionChange(
+        AuthSessionEvent.passwordRecovery,
+        _identityFromUser(initialPasswordRecoveryUser),
+      );
+    }
+    _sessionChangesController = StreamController<AuthSessionChange>.broadcast(
+      sync: true,
+      onListen: _replayPendingPasswordRecovery,
+    );
+    _authSubscription = _client.auth.onAuthStateChange.listen(
+      (data) {
+        final change = _sessionChangeFromAuthState(data);
+        _invalidatePendingRecoveryWhenSessionChanges(change);
+        if (change.event == AuthSessionEvent.passwordRecovery &&
+            !_sessionChangesController.hasListener) {
+          _pendingPasswordRecovery = change;
+        }
+        _sessionChangesController.add(change);
+      },
+      onError: (Object error, StackTrace stackTrace) {
+        // Supabase already reports Auth stream errors. Keeping a handler here
+        // prevents an expired or invalid link from becoming unhandled.
+      },
+    );
+  }
 
   final SupabaseClient _client;
+  final AuthRedirectConfiguration _redirects;
+  late final StreamController<AuthSessionChange> _sessionChangesController;
+  late final StreamSubscription<AuthState> _authSubscription;
+  AuthSessionChange? _pendingPasswordRecovery;
 
   @override
   AuthIdentity? get currentIdentity =>
@@ -15,15 +50,7 @@ class SupabaseAuthRepository implements AuthRepository {
 
   @override
   Stream<AuthSessionChange> get sessionChanges {
-    return _client.auth.onAuthStateChange.map((data) {
-      final event = switch (data.event) {
-        AuthChangeEvent.signedIn => AuthSessionEvent.signedIn,
-        AuthChangeEvent.signedOut => AuthSessionEvent.signedOut,
-        AuthChangeEvent.passwordRecovery => AuthSessionEvent.passwordRecovery,
-        _ => AuthSessionEvent.initial,
-      };
-      return AuthSessionChange(event, _identityFromUser(data.session?.user));
-    });
+    return _sessionChangesController.stream;
   }
 
   @override
@@ -44,7 +71,7 @@ class SupabaseAuthRepository implements AuthRepository {
         email: email,
         password: password,
         data: {'name': name},
-        emailRedirectTo: passwordResetRedirect,
+        emailRedirectTo: _redirects.emailConfirmation,
       ),
     );
   }
@@ -54,7 +81,7 @@ class SupabaseAuthRepository implements AuthRepository {
     await _guard(
       () => _client.auth.resetPasswordForEmail(
         email,
-        redirectTo: passwordResetRedirect,
+        redirectTo: _redirects.passwordReset,
       ),
     );
   }
@@ -69,6 +96,12 @@ class SupabaseAuthRepository implements AuthRepository {
   @override
   Future<void> signOut() async {
     await _guard(_client.auth.signOut);
+  }
+
+  @override
+  Future<void> close() async {
+    await _authSubscription.cancel();
+    await _sessionChangesController.close();
   }
 
   Future<T> _guard<T>(Future<T> Function() operation) async {
@@ -91,8 +124,49 @@ class SupabaseAuthRepository implements AuthRepository {
       'weak_password' => 'Escolha uma senha mais segura.',
       'over_email_send_rate_limit' =>
         'Aguarde um pouco antes de solicitar outro e-mail.',
+      'email_address_not_authorized' =>
+        'O envio de recuperação ainda não está disponível para este e-mail. '
+            'Fale com o suporte do Fluxora.',
+      'otp_expired' || 'flow_state_expired' =>
+        'Este link expirou. Solicite outro e abra-o no mesmo app ou perfil de navegador.',
+      'bad_code_verifier' =>
+        'Abra o novo link no mesmo app ou perfil de navegador usado para solicitar a recuperação.',
+      'same_password' => 'Escolha uma senha diferente da senha atual.',
       _ => 'Não foi possível concluir o acesso. Tente novamente.',
     };
+  }
+
+  AuthSessionChange _sessionChangeFromAuthState(AuthState data) {
+    final event = switch (data.event) {
+      AuthChangeEvent.signedIn => AuthSessionEvent.signedIn,
+      AuthChangeEvent.signedOut => AuthSessionEvent.signedOut,
+      AuthChangeEvent.passwordRecovery => AuthSessionEvent.passwordRecovery,
+      _ => AuthSessionEvent.initial,
+    };
+    return AuthSessionChange(event, _identityFromUser(data.session?.user));
+  }
+
+  void _replayPendingPasswordRecovery() {
+    final pending = _pendingPasswordRecovery;
+    _pendingPasswordRecovery = null;
+    if (pending == null) return;
+    scheduleMicrotask(() {
+      if (_client.auth.currentUser?.id != pending.identity?.id ||
+          _sessionChangesController.isClosed) {
+        return;
+      }
+      _sessionChangesController.add(pending);
+    });
+  }
+
+  void _invalidatePendingRecoveryWhenSessionChanges(AuthSessionChange change) {
+    final pending = _pendingPasswordRecovery;
+    if (pending == null || change.event == AuthSessionEvent.passwordRecovery) {
+      return;
+    }
+    if (_client.auth.currentUser?.id != pending.identity?.id) {
+      _pendingPasswordRecovery = null;
+    }
   }
 
   AuthIdentity? _identityFromUser(User? user) {

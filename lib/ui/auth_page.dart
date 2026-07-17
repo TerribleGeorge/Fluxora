@@ -88,6 +88,9 @@ class _AuthPageState extends State<AuthPage> {
                                   ? TextInputAction.done
                                   : TextInputAction.next,
                               autofillHints: const [AutofillHints.email],
+                              onSubmitted: _mode == _AuthMode.reset
+                                  ? (_) => _submit()
+                                  : null,
                               decoration: const InputDecoration(
                                 labelText: 'E-mail',
                                 prefixIcon: Icon(Icons.mail_outline),

@@ -1,3 +1,5 @@
+import 'package:app_links/app_links.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -47,9 +49,11 @@ import 'domain/account_lifecycle_repository.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  final initialLocation = await _readInitialLocation();
   final dependencies = await _createDependencies();
   runApp(
     FluxoraApp(
+      initialLocation: initialLocation,
       authRepository: dependencies.auth,
       businessRepository: dependencies.business,
       financeRepositoryFactory: dependencies.financeFactory,
@@ -66,6 +70,15 @@ Future<void> main() async {
       publicBookingRepository: dependencies.publicBooking,
     ),
   );
+}
+
+Future<Uri> _readInitialLocation() async {
+  if (kIsWeb) return Uri.base;
+  try {
+    return await AppLinks().getInitialLink() ?? Uri.base;
+  } on Exception {
+    return Uri.base;
+  }
 }
 
 typedef _Dependencies = ({
@@ -106,11 +119,36 @@ Future<_Dependencies> _createDependencies() async {
       publicBooking: null,
     );
   }
-  await Supabase.initialize(url: url, publishableKey: publishableKey);
+  final initialization = Supabase.initialize(
+    url: url,
+    publishableKey: publishableKey,
+  );
   final client = Supabase.instance.client;
+  User? initialPasswordRecoveryUser;
+  final bootstrapAuthSubscription = client.auth.onAuthStateChange.listen(
+    (data) {
+      final user = data.session?.user;
+      if (data.event == AuthChangeEvent.passwordRecovery) {
+        initialPasswordRecoveryUser = user;
+      } else if (initialPasswordRecoveryUser != null &&
+          user?.id != initialPasswordRecoveryUser?.id) {
+        initialPasswordRecoveryUser = null;
+      }
+    },
+    onError: (Object error, StackTrace stackTrace) {
+      // The permanent repository listener handles the user-facing auth state.
+    },
+  );
+  await initialization;
+  await Future<void>.delayed(Duration.zero);
+  final authRepository = SupabaseAuthRepository(
+    client,
+    initialPasswordRecoveryUser: initialPasswordRecoveryUser,
+  );
+  await bootstrapAuthSubscription.cancel();
   final preferences = await SharedPreferences.getInstance();
   return (
-    auth: SupabaseAuthRepository(client),
+    auth: authRepository,
     business: SupabaseBusinessRepository(client),
     financeFactory: (access) {
       final businessId = access.business.id;
