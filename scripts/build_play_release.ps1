@@ -26,6 +26,17 @@ if (-not $vars.ContainsKey("SUPABASE_PUBLISHABLE_KEY") -or [string]::IsNullOrWhi
   throw "SUPABASE_PUBLISHABLE_KEY ausente em $EnvFile"
 }
 
-flutter build appbundle --release `
-  --dart-define=SUPABASE_URL=$($vars["SUPABASE_URL"]) `
-  --dart-define=SUPABASE_PUBLISHABLE_KEY=$($vars["SUPABASE_PUBLISHABLE_KEY"])
+$buildArguments = @(
+  "build",
+  "appbundle",
+  "--release",
+  "--dart-define=SUPABASE_URL=$($vars["SUPABASE_URL"])",
+  "--dart-define=SUPABASE_PUBLISHABLE_KEY=$($vars["SUPABASE_PUBLISHABLE_KEY"])"
+)
+
+if ($vars.ContainsKey("PUBLIC_BOOKING_BASE_URL") -and
+    -not [string]::IsNullOrWhiteSpace($vars["PUBLIC_BOOKING_BASE_URL"])) {
+  $buildArguments += "--dart-define=PUBLIC_BOOKING_BASE_URL=$($vars["PUBLIC_BOOKING_BASE_URL"])"
+}
+
+flutter @buildArguments

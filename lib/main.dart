@@ -21,6 +21,7 @@ import 'data/supabase_appointment_repository.dart';
 import 'data/supabase_customer_repository.dart';
 import 'data/supabase_finance_repository.dart';
 import 'data/supabase_product_repository.dart';
+import 'data/supabase_public_booking_repository.dart';
 import 'data/supabase_checkout_repository.dart';
 import 'data/supabase_sales_repository.dart';
 import 'data/supabase_operations_repository.dart';
@@ -37,6 +38,7 @@ import 'domain/catalog_repository.dart';
 import 'domain/customer_repository.dart';
 import 'domain/finance_repository.dart';
 import 'domain/product_repository.dart';
+import 'domain/public_booking.dart';
 import 'domain/checkout_repository.dart';
 import 'domain/sales_repository.dart';
 import 'domain/operations_repository.dart';
@@ -61,6 +63,7 @@ Future<void> main() async {
       subscriptionRepositoryFactory: dependencies.subscriptionFactory,
       accountLifecycleRepository: dependencies.accountLifecycle,
       billingRepository: dependencies.billing,
+      publicBookingRepository: dependencies.publicBooking,
     ),
   );
 }
@@ -79,6 +82,7 @@ typedef _Dependencies = ({
   SubscriptionRepository Function(BusinessAccess access)? subscriptionFactory,
   AccountLifecycleRepository accountLifecycle,
   BillingRepository billing,
+  PublicBookingRepository? publicBooking,
 });
 
 Future<_Dependencies> _createDependencies() async {
@@ -99,6 +103,7 @@ Future<_Dependencies> _createDependencies() async {
       subscriptionFactory: null,
       accountLifecycle: UnavailableAccountLifecycleRepository(),
       billing: const UnavailableBillingRepository(),
+      publicBooking: null,
     );
   }
   await Supabase.initialize(url: url, publishableKey: publishableKey);
@@ -186,5 +191,6 @@ Future<_Dependencies> _createDependencies() async {
     },
     accountLifecycle: SupabaseAccountLifecycleRepository(client),
     billing: GooglePlayBillingRepository(),
+    publicBooking: SupabasePublicBookingRepository(client),
   );
 }

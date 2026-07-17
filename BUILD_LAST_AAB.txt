@@ -1,40 +1,46 @@
-Fluxora 1.0.0 (build 15)
+Fluxora 1.0.0 (build 16)
 Pacote: dev.devvoid.fluxora
 Empresa: DevVoid.dev
 Artefato: build/app/outputs/bundle/release/app-release.aab
-Tamanho: 49302564 bytes
-SHA-256: 8E4DEF0803AD6B5A355E4EB6674E8FC17C87615EEFCD2D87AFA71BD4B92BC9C7
-Assinatura: verificada
+Tamanho: 49544397 bytes
+SHA-256: 01BFFB93D76DB9742428C2761F67EAF071E780CB7F208322DE5680C93CD28E55
+Assinatura: verificada (jar verified)
 Certificado de upload: CN=DevVoid.dev, OU=Mobile, O=DevVoid.dev, L=Brasilia, ST=DF, C=BR
-Gerado em: 2026-07-10
+Certificado SHA-256: 72:1F:1E:0F:F8:E7:4A:38:B9:E2:57:C1:28:08:64:8E:F1:D6:3C:4C:2A:CC:0D:C6:1C:C3:87:31:24:E1:96:AC
+Gerado em: 2026-07-17
 Backend: Supabase nqcoxxbzwzcuwprbzpdb
 Supabase: SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY passados via --dart-define
 Google Play Billing: dependência in_app_purchase preservada
 Produto Google Play: fluxora_pro
-Plano básico ativo: mensal
-Oferta ativa: teste-14-dias (teste gratuito de 2 semanas)
+Plano básico configurado: mensal
+Oferta configurada: teste-14-dias (teste gratuito de 2 semanas)
 
 Validações executadas:
-- flutter analyze: sem problemas
-- flutter test: 57 testes aprovados
-- flutter build appbundle --release via scripts/build_play_release.ps1: concluído
+- flutter analyze --no-pub: sem problemas
+- flutter test --no-pub: 84 testes aprovados
+- 10 migrações aplicadas em PostgreSQL isolado: aprovadas
+- cenário de antifraude, idempotência e associação fiel: aprovado
+- flutter build web --release: concluído
+- flutter build appbundle --release: concluído
+- AndroidManifest: versionCode 16, versionName 1.0.0
 - jarsigner -verify: jar verified
 
-Principais mudanças da build 15:
-- Base de internacionalização adicionada com flutter_localizations.
-- MaterialApp configurado com delegates globais do Flutter.
-- Lista central de idiomas e variações regionais criada para expansão internacional.
-- Suporte preparado para componentes de sistema em vários idiomas, calendários,
-  seletores e direção de texto.
-- Documentação docs/INTERNATIONALIZATION.md criada com estratégia de tradução.
-- Testes automáticos adicionados para validar mercados prioritários e evitar
-  locales duplicados.
-- Patch notes internos e notas da Play Store atualizados para a build 15.
+Principais mudanças da build 16:
+- Portal público para agendamento sem aplicativo do cliente.
+- Serviços, expediente, intervalos e bloqueios configuráveis por profissional.
+- Proteção contra duas reservas simultâneas e reenvios duplicados.
+- Identidade pública sem OTP permanece com preço cheio por segurança.
+- Fluxo “Associar a Cliente Fiel” antes do checkout, com recálculo auditável.
+- Busca limitada ao atendimento permitido, com e-mail e telefone mascarados.
+- RPCs anônimas reduzidas ao conjunto mínimo necessário.
+- Build web e automação de publicação no GitHub Pages preparados.
+- Patch notes internos e notas da Play Store atualizados para a build 16.
 
-Observação de produto:
-- Português do Brasil segue como idioma principal nesta etapa.
-- Os textos próprios do Fluxora devem migrar gradualmente para uma camada de
-  tradução antes de prometer interface 100% traduzida em outros países.
+Pendências externas conhecidas:
+- Aplicar as migrações 20260716190000 e 20260716210000 no Supabase remoto.
+- Ativar a publicação do GitHub Pages após o primeiro push do workflow.
+- Configurar OTP ou proteção anti-bot antes de tráfego público amplo.
+- Fazer upload manual do AAB na Play Console e validar o teste fechado.
 
 A chave e as senhas de upload permanecem somente em android/key.properties e
 android/upload-keystore.jks, ambos ignorados pelo Git. Faça backup privado dos

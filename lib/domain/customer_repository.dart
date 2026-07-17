@@ -15,4 +15,8 @@ abstract interface class CustomerRepository {
     required String appointmentId,
     required String customerId,
   });
+  Future<List<Customer>> searchLinkableCustomers({
+    required String appointmentId,
+    required String query,
+  });
 }

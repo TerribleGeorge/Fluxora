@@ -34,8 +34,13 @@ foreach ($line in $envLines) {
 
 flutter build appbundle --release `
   --dart-define=SUPABASE_URL=$env:SUPABASE_URL `
-  --dart-define=SUPABASE_PUBLISHABLE_KEY=$env:SUPABASE_PUBLISHABLE_KEY
+  --dart-define=SUPABASE_PUBLISHABLE_KEY=$env:SUPABASE_PUBLISHABLE_KEY `
+  --dart-define=PUBLIC_BOOKING_BASE_URL=$env:PUBLIC_BOOKING_BASE_URL
 ```
+
+`PUBLIC_BOOKING_BASE_URL` é opcional no desenvolvimento, mas deve apontar para
+o domínio do portal web na versão distribuída pela Play Store, para que o dono
+consiga copiar e compartilhar o endereço correto pelo aplicativo.
 
 Não use `flutter build appbundle --release` sozinho para releases da Play
 Store, porque o app será gerado sem autenticação Supabase.

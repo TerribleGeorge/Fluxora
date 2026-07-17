@@ -124,6 +124,27 @@ class SupabaseCustomerRepository implements CustomerRepository {
     );
   }
 
+  @override
+  Future<List<Customer>> searchLinkableCustomers({
+    required String appointmentId,
+    required String query,
+  }) async {
+    final response = await _client.rpc<dynamic>(
+      'search_linkable_customers',
+      params: {
+        'target_appointment_id': appointmentId,
+        'raw_query': query.trim(),
+      },
+    );
+    final rows = switch (response) {
+      final List<dynamic> values => values,
+      _ => throw const FormatException('Busca de clientes inválida.'),
+    };
+    return rows
+        .map((row) => _customerFromRow(row as Map<String, dynamic>))
+        .toList(growable: false);
+  }
+
   Customer _customerFromRow(Map<String, dynamic> row) => Customer(
     id: row['id'] as String,
     businessId: row['business_id'] as String,
@@ -139,12 +160,12 @@ class SupabaseCustomerRepository implements CustomerRepository {
             row['manual_tier_override'] as String?,
           ),
     manualTierReason: row['manual_tier_reason'] as String? ?? '',
-    relationshipStartedAt:
-        DateTime.tryParse(row['relationship_started_at'] as String? ?? '')
-            ?.toLocal(),
-    lastCompletedAt:
-        DateTime.tryParse(row['last_completed_at'] as String? ?? '')
-            ?.toLocal(),
+    relationshipStartedAt: DateTime.tryParse(
+      row['relationship_started_at'] as String? ?? '',
+    )?.toLocal(),
+    lastCompletedAt: DateTime.tryParse(
+      row['last_completed_at'] as String? ?? '',
+    )?.toLocal(),
     completedVisitsCount: row['completed_visits_count'] as int? ?? 0,
     createdAt: DateTime.parse(row['created_at'] as String).toLocal(),
     updatedAt: DateTime.tryParse(row['updated_at'] as String? ?? '')?.toLocal(),

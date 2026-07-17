@@ -31,10 +31,10 @@ clínicas de estética não médica.
 A partir da validação inicial, o Fluxora passa a mirar uma operação completa
 para o estabelecimento:
 
-- [ ] 13. Agenda interna do estabelecimento
-- [ ] 14. Acesso limitado do profissional
-- [ ] 15. Página pública de agendamento para clientes
-- [ ] 16. Eventos para automações externas
+- [x] 13. Agenda interna do estabelecimento — **Concluído no código; validação remota pendente**
+- [x] 14. Acesso limitado do profissional — **Concluído no código; teste com contas reais pendente**
+- [x] 15. Página pública de agendamento para clientes — **Concluído no código; implantação Supabase e hospedagem web pendentes**
+- [x] 16. Eventos para automações externas — **Concluído no código; provedor de destino pendente**
 - [ ] 17. Integração n8n + WhatsApp
 - [ ] 18. Painel web para uso no PC
 

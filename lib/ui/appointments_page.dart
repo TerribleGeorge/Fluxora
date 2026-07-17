@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -6,6 +8,7 @@ import '../domain/appointment.dart';
 import '../domain/appointment_availability.dart';
 import '../domain/business_repository.dart';
 import '../domain/checkout_repository.dart';
+import '../domain/customer.dart';
 import '../domain/product.dart';
 import '../domain/sale.dart';
 import '../state/auth_bloc.dart';
@@ -13,6 +16,9 @@ import '../state/appointment_bloc.dart';
 import '../state/appointment_event.dart';
 import '../state/appointment_state.dart';
 import '../state/catalog_bloc.dart';
+import '../state/customer_bloc.dart';
+import '../state/customer_event.dart';
+import '../state/customer_state.dart';
 import '../state/operations_bloc.dart';
 import '../state/operations_event.dart';
 import '../state/product_bloc.dart';
@@ -125,6 +131,13 @@ class AppointmentsPage extends StatelessWidget {
                                 (!professionalMode ||
                                     item.professionalId ==
                                         linkedProfessionalId),
+                            canLinkCustomer: canAssociateAppointmentCustomer(
+                              appointment: item,
+                              businessId: access.business.id,
+                              role: access.membership.role,
+                              membershipActive: access.membership.active,
+                              linkedProfessionalId: linkedProfessionalId,
+                            ),
                           );
                         },
                       ),
@@ -161,6 +174,25 @@ bool cancelledOrCompleted(Appointment item) =>
     item.status == AppointmentStatus.cancelled ||
     item.status == AppointmentStatus.completed ||
     item.status == AppointmentStatus.noShow;
+
+bool canAssociateAppointmentCustomer({
+  required Appointment appointment,
+  required String businessId,
+  required MembershipRole role,
+  required bool membershipActive,
+  String? linkedProfessionalId,
+}) {
+  if (!membershipActive || appointment.businessId != businessId) return false;
+  final pending =
+      appointment.status == AppointmentStatus.scheduled ||
+      appointment.status == AppointmentStatus.confirmed;
+  if (!pending) return false;
+  if (role == MembershipRole.owner || role == MembershipRole.manager) {
+    return true;
+  }
+  return linkedProfessionalId != null &&
+      appointment.professionalId == linkedProfessionalId;
+}
 
 class _DayHeader extends StatelessWidget {
   const _DayHeader({required this.day});
@@ -217,6 +249,7 @@ class _AppointmentCard extends StatelessWidget {
     required this.serviceName,
     required this.canManage,
     required this.canCheckout,
+    required this.canLinkCustomer,
     this.servicePrice,
   });
 
@@ -226,6 +259,7 @@ class _AppointmentCard extends StatelessWidget {
   final double? servicePrice;
   final bool canManage;
   final bool canCheckout;
+  final bool canLinkCustomer;
 
   @override
   Widget build(BuildContext context) {
@@ -248,11 +282,18 @@ class _AppointmentCard extends StatelessWidget {
   }
 
   Widget _trailing(BuildContext context, bool cancelled) {
-    if (cancelled || (!canManage && !canCheckout)) return Text(_statusLabel);
+    if (cancelled || (!canManage && !canCheckout && !canLinkCustomer)) {
+      return Text(_statusLabel);
+    }
     return PopupMenuButton<String>(
-      onSelected: (action) {
+      key: ValueKey('appointment-actions-${appointment.id}'),
+      onSelected: (action) async {
+        if (action == 'link_customer') {
+          await _associateLoyalCustomer(context, appointment);
+          return;
+        }
         if (action == 'checkout') {
-          _showCheckoutSheet(context, appointment);
+          await _showCheckoutSheet(context, appointment);
           return;
         }
         final status = switch (action) {
@@ -269,6 +310,18 @@ class _AppointmentCard extends StatelessWidget {
       itemBuilder: (_) => [
         if (canManage)
           const PopupMenuItem(value: 'confirm', child: Text('Confirmar')),
+        if (canLinkCustomer)
+          PopupMenuItem(
+            value: 'link_customer',
+            child: Row(
+              key: ValueKey('link-customer-${appointment.id}'),
+              children: const [
+                Icon(Icons.person_search_outlined),
+                SizedBox(width: 10),
+                Text('Associar a Cliente Fiel'),
+              ],
+            ),
+          ),
         if (canCheckout)
           const PopupMenuItem(value: 'checkout', child: Text('Concluir')),
         if (canManage)
@@ -295,6 +348,216 @@ class _AppointmentCard extends StatelessWidget {
 
   String _time(DateTime value) =>
       '${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}';
+}
+
+Future<void> _associateLoyalCustomer(
+  BuildContext context,
+  Appointment appointment,
+) async {
+  final customerBloc = context.read<CustomerBloc>();
+  final appointmentBloc = context.read<AppointmentBloc>();
+  final messenger = ScaffoldMessenger.of(context);
+  final customer = await showModalBottomSheet<Customer>(
+    context: context,
+    isScrollControlled: true,
+    builder: (_) => BlocProvider.value(
+      value: customerBloc,
+      child: _CustomerAssociationSearch(appointment: appointment),
+    ),
+  );
+  if (customer == null || !context.mounted) return;
+
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: const Text('Confirmar associação'),
+      content: Text(
+        'Associar ${appointment.customerName} ao cadastro de ${customer.name}? '
+        'O Fluxora atualizará a identidade e recalculará o preço deste atendimento antes do checkout.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dialogContext, false),
+          child: const Text('Voltar'),
+        ),
+        FilledButton(
+          key: const ValueKey('customer-link-confirm'),
+          onPressed: () => Navigator.pop(dialogContext, true),
+          child: const Text('Associar cliente'),
+        ),
+      ],
+    ),
+  );
+  if (confirmed != true || !context.mounted) return;
+
+  final completion = Completer<bool>();
+  customerBloc.add(
+    CustomerLinkedToAppointment(
+      appointmentId: appointment.id,
+      customerId: customer.id,
+      completer: completion,
+    ),
+  );
+  final linked = await completion.future;
+  if (!context.mounted) return;
+  if (!linked) {
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          customerBloc.state.message ?? 'Não foi possível associar o cliente.',
+        ),
+      ),
+    );
+    return;
+  }
+
+  appointmentBloc.add(
+    AppointmentsStarted(day: appointmentBloc.state.selectedDay),
+  );
+  messenger.showSnackBar(
+    const SnackBar(
+      content: Text('Cliente fiel associado. Preço do atendimento corrigido.'),
+    ),
+  );
+}
+
+class _CustomerAssociationSearch extends StatefulWidget {
+  const _CustomerAssociationSearch({required this.appointment});
+
+  final Appointment appointment;
+
+  @override
+  State<_CustomerAssociationSearch> createState() =>
+      _CustomerAssociationSearchState();
+}
+
+class _CustomerAssociationSearchState
+    extends State<_CustomerAssociationSearch> {
+  final _search = TextEditingController();
+  Timer? _debounce;
+  String _query = '';
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    _search.dispose();
+    super.dispose();
+  }
+
+  void _scheduleSearch(String value, {bool immediately = false}) {
+    final query = value.trim();
+    setState(() => _query = query);
+    _debounce?.cancel();
+    void dispatch() => context.read<CustomerBloc>().add(
+      CustomerAssociationSearched(
+        appointmentId: widget.appointment.id,
+        query: query,
+      ),
+    );
+    if (immediately || query.length < 2) {
+      dispatch();
+      return;
+    }
+    _debounce = Timer(const Duration(milliseconds: 350), dispatch);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          20,
+          20,
+          20,
+          20 + MediaQuery.viewInsetsOf(context).bottom,
+        ),
+        child: BlocBuilder<CustomerBloc, CustomerState>(
+          builder: (context, state) {
+            final queryMatches = state.associationQuery == _query.trim();
+            final results = queryMatches
+                ? state.associationCandidates
+                : const <Customer>[];
+            return SizedBox(
+              height: MediaQuery.sizeOf(context).height * 0.72,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Associar a Cliente Fiel',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Busque o cadastro antigo de ${widget.appointment.customerName}. Só clientes deste estabelecimento aparecem.',
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    key: const ValueKey('customer-link-search'),
+                    controller: _search,
+                    autofocus: true,
+                    textInputAction: TextInputAction.search,
+                    decoration: const InputDecoration(
+                      labelText: 'Nome, e-mail ou telefone',
+                      prefixIcon: Icon(Icons.search),
+                    ),
+                    onChanged: _scheduleSearch,
+                    onSubmitted: (value) =>
+                        _scheduleSearch(value, immediately: true),
+                  ),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: state.associationSearchLoading && queryMatches
+                        ? const Center(child: CircularProgressIndicator())
+                        : _query.trim().length < 2
+                        ? const Center(
+                            child: Text(
+                              'Digite pelo menos 2 caracteres para buscar.',
+                              textAlign: TextAlign.center,
+                            ),
+                          )
+                        : results.isEmpty
+                        ? const Center(
+                            child: Text(
+                              'Nenhum cliente encontrado neste estabelecimento.',
+                              textAlign: TextAlign.center,
+                            ),
+                          )
+                        : ListView.separated(
+                            itemCount: results.length,
+                            separatorBuilder: (_, _) =>
+                                const Divider(height: 1),
+                            itemBuilder: (context, index) {
+                              final customer = results[index];
+                              final details = [
+                                if (customer.email.isNotEmpty) customer.email,
+                                if (customer.phone.isNotEmpty) customer.phone,
+                                (customer.manualTierOverride ??
+                                        customer.loyaltyTier)
+                                    .label,
+                              ];
+                              return ListTile(
+                                key: ValueKey(
+                                  'customer-link-result-${customer.id}',
+                                ),
+                                leading: const CircleAvatar(
+                                  child: Icon(Icons.person_outline),
+                                ),
+                                title: Text(customer.name),
+                                subtitle: Text(details.join(' • ')),
+                                trailing: const Icon(Icons.chevron_right),
+                                onTap: () => Navigator.pop(context, customer),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
 }
 
 Future<void> _showCheckoutSheet(
@@ -485,9 +748,7 @@ Future<void> _showCheckoutSheet(
                                   .completeAppointmentCheckout(
                                     appointmentId: appointment.id,
                                     paymentMethod: method,
-                                    paymentFeePercent: _number(
-                                      feePercent.text,
-                                    ),
+                                    paymentFeePercent: _number(feePercent.text),
                                     products: [
                                       for (final entry
                                           in selectedProducts.entries)

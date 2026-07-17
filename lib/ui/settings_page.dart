@@ -7,7 +7,9 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../domain/account_lifecycle_repository.dart';
+import '../domain/account.dart';
 import '../domain/business_repository.dart';
+import '../domain/public_booking.dart';
 import '../state/auth_bloc.dart';
 import '../state/auth_event.dart';
 import '../state/catalog_bloc.dart';
@@ -20,6 +22,7 @@ import 'patch_notes_page.dart';
 import 'privacy_page.dart';
 import 'transactions_page.dart';
 import 'loyalty_settings_page.dart';
+import 'public_booking_settings_page.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -27,6 +30,7 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final access = context.watch<BusinessAccess>();
+    final publicBookingRepository = context.watch<PublicBookingRepository?>();
     return Scaffold(
       appBar: AppBar(title: const Text('Configurações')),
       body: ListView(
@@ -47,6 +51,30 @@ class SettingsPage extends StatelessWidget {
               ),
             ),
           ),
+          if (access.membership.role == MembershipRole.owner)
+            Card(
+              child: ListTile(
+                leading: const CircleAvatar(child: Icon(Icons.public_outlined)),
+                title: const Text('Agendamento online'),
+                subtitle: Text(
+                  publicBookingRepository == null
+                      ? 'Conecte o servidor para configurar seu link'
+                      : 'Configure e compartilhe o link dos seus clientes',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                enabled: publicBookingRepository != null,
+                onTap: publicBookingRepository == null
+                    ? null
+                    : () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => PublicBookingSettingsPage(
+                            businessId: access.business.id,
+                            repository: publicBookingRepository,
+                          ),
+                        ),
+                      ),
+              ),
+            ),
           Card(
             child: ListTile(
               leading: const CircleAvatar(

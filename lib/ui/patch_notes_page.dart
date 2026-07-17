@@ -4,7 +4,7 @@ class PatchNotesPage extends StatelessWidget {
   const PatchNotesPage({super.key});
 
   static const version = '1.0.0';
-  static const buildNumber = '15';
+  static const buildNumber = '16';
 
   @override
   Widget build(BuildContext context) {
@@ -16,53 +16,53 @@ class PatchNotesPage extends StatelessWidget {
           _ReleaseHeader(),
           SizedBox(height: 16),
           _ReleaseSection(
-            icon: Icons.language_outlined,
-            title: 'Preparação para usuários de outros países',
+            icon: Icons.calendar_month_outlined,
+            title: 'Novo agendamento online',
             items: [
-              'O Fluxora agora tem a base técnica de internacionalização configurada.',
-              'O app foi preparado para reconhecer idiomas e regiões de vários mercados.',
-              'Componentes do sistema, como calendários, seletores e direção de texto, passam a respeitar melhor o idioma do aparelho.',
-              'Português do Brasil segue como idioma principal enquanto os textos próprios do app são traduzidos por etapas.',
+              'O estabelecimento agora pode criar um link público para o cliente agendar sem instalar aplicativo.',
+              'Cada profissional recebe seus próprios serviços, expediente, intervalos, folgas e bloqueios.',
+              'O cliente escolhe serviço, profissional e somente horários realmente disponíveis.',
+              'O painel explica o que é regra geral do portal e o que serve apenas como padrão para novos profissionais.',
             ],
           ),
           _ReleaseSection(
-            icon: Icons.public_outlined,
-            title: 'Expansão internacional com segurança',
+            icon: Icons.lock_outline,
+            title: 'Reservas protegidas no servidor',
             items: [
-              'Foram adicionados idiomas e variações regionais usados em mercados prioritários.',
-              'A estrutura evita espalhar configurações de idioma pelo código, facilitando futuras traduções.',
-              'A base já considera idiomas com leitura da direita para a esquerda, como árabe e hebraico.',
-              'Textos ligados a dinheiro, assinatura, privacidade e exclusão de dados terão revisão mais cuidadosa antes de tradução pública.',
-            ],
-          ),
-          _ReleaseSection(
-            icon: Icons.description_outlined,
-            title: 'Documentação de internacionalização',
-            items: [
-              'Foi criada uma documentação própria explicando como o Fluxora será traduzido.',
-              'A estratégia recomenda começar por inglês, espanhol e português de Portugal.',
-              'A documentação separa localização do sistema de tradução dos textos próprios do produto.',
-              'Isso ajuda a evoluir o app sem publicar traduções automáticas ruins em telas sensíveis.',
-            ],
-          ),
-          _ReleaseSection(
-            icon: Icons.verified_outlined,
-            title: 'Qualidade validada por testes',
-            items: [
-              'Foi adicionado teste automático para garantir mercados prioritários na lista de idiomas.',
-              'O teste também impede idiomas duplicados na configuração central.',
-              'A análise do Flutter permanece sem erros.',
-              'A suíte de testes confirma que as regras financeiras, assinatura, fidelidade, catálogo, checkout e agenda continuam preservadas.',
+              'O Supabase confere novamente o horário no instante da confirmação.',
+              'Bloqueios de concorrência impedem duas reservas simultâneas para o mesmo profissional.',
+              'Uma chave de idempotência evita agendamentos duplicados após toque repetido ou falha de rede.',
+              'Somente as funções públicas indispensáveis ficam acessíveis sem login.',
             ],
           ),
           _ReleaseSection(
             icon: Icons.workspace_premium_outlined,
-            title: 'Continuidade da gestão de beleza',
+            title: 'Fidelidade com identidade protegida',
             items: [
-              'Agenda, vendas, caixa, serviços, profissionais, produtos e assinatura continuam disponíveis.',
-              'Fidelidade configurável, permissões por perfil e checkout financeiro seguem preservados.',
-              'O Fluxora continua focado em beleza e bem-estar, com cálculo de lucro real para o dono.',
-              'A base internacional foi adicionada sem alterar o fluxo principal já validado.',
+              'Agendamentos públicos usam preço cheio enquanto a identidade do cliente não estiver confirmada.',
+              'Dono, gerente ou profissional responsável pode usar “Associar a Cliente Fiel” antes do checkout.',
+              'A associação recalcula o desconto e registra a correção para auditoria.',
+              'Funcionários pesquisam somente no atendimento permitido e recebem e-mail e telefone mascarados.',
+            ],
+          ),
+          _ReleaseSection(
+            icon: Icons.manage_history_outlined,
+            title: 'Agenda administrável',
+            items: [
+              'O dono pode vincular serviços específicos a cada integrante da equipe.',
+              'É possível dividir o dia em dois ou mais períodos, incluindo intervalo de almoço.',
+              'Folgas podem bloquear somente um profissional ou todo o estabelecimento.',
+              'O servidor impede que o último horário elegível seja removido enquanto o portal estiver ativo.',
+            ],
+          ),
+          _ReleaseSection(
+            icon: Icons.verified_outlined,
+            title: 'Qualidade e continuidade',
+            items: [
+              'A análise estática foi concluída sem problemas.',
+              'A suíte automatizada passou por 84 testes de domínio, segurança, interface e integração.',
+              'O build web de produção foi validado com a configuração real do Supabase.',
+              'Vendas, produtos, checkout, comissões, caixa e lucro real continuam preservados.',
             ],
           ),
           SizedBox(height: 8),
@@ -100,8 +100,8 @@ class _ReleaseHeader extends StatelessWidget {
             const Text(
               'A primeira versão reúne as ferramentas essenciais para negócios '
               'de beleza acompanharem vendas, equipe, fidelidade, produtos, '
-              'caixa e lucro real, agora com base preparada para expansão '
-              'internacional.',
+              'caixa e lucro real, agora com um portal seguro de agendamento '
+              'online por profissional.',
             ),
           ],
         ),

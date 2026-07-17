@@ -15,10 +15,12 @@ import '../domain/product_repository.dart';
 import '../domain/checkout_repository.dart';
 import '../domain/sales_repository.dart';
 import '../domain/operations_repository.dart';
+import '../domain/public_booking.dart';
 import '../domain/subscription_repository.dart';
 import '../domain/account_lifecycle_repository.dart';
 import '../state/auth_bloc.dart';
 import '../ui/auth_gate.dart';
+import '../ui/public_booking_page.dart';
 import '../ui/startup_splash_page.dart';
 import 'theme.dart';
 
@@ -38,6 +40,7 @@ class FluxoraApp extends StatelessWidget {
     required this.subscriptionRepositoryFactory,
     required this.accountLifecycleRepository,
     required this.billingRepository,
+    required this.publicBookingRepository,
   });
 
   final AuthRepository authRepository;
@@ -50,7 +53,8 @@ class FluxoraApp extends StatelessWidget {
   catalogRepositoryFactory;
   final CustomerRepository Function(BusinessAccess access)?
   customerRepositoryFactory;
-  final ProductRepository Function(BusinessAccess access)? productRepositoryFactory;
+  final ProductRepository Function(BusinessAccess access)?
+  productRepositoryFactory;
   final CheckoutRepository Function(BusinessAccess access)?
   checkoutRepositoryFactory;
   final SalesRepository Function(BusinessAccess access)? salesRepositoryFactory;
@@ -60,6 +64,7 @@ class FluxoraApp extends StatelessWidget {
   subscriptionRepositoryFactory;
   final AccountLifecycleRepository accountLifecycleRepository;
   final BillingRepository billingRepository;
+  final PublicBookingRepository? publicBookingRepository;
 
   @override
   Widget build(BuildContext context) {
@@ -69,6 +74,9 @@ class FluxoraApp extends StatelessWidget {
           value: accountLifecycleRepository,
         ),
         Provider<BillingRepository>.value(value: billingRepository),
+        Provider<PublicBookingRepository?>.value(
+          value: publicBookingRepository,
+        ),
       ],
       child: BlocProvider(
         create: (_) => AuthBloc(authRepository),
@@ -84,19 +92,82 @@ class FluxoraApp extends StatelessWidget {
           theme: FluxoraTheme.light,
           darkTheme: FluxoraTheme.dark,
           themeMode: ThemeMode.dark,
-          home: StartupSplashPage(
-            child: AuthGate(
-              businessRepository: businessRepository,
-              financeRepositoryFactory: financeRepositoryFactory,
-              appointmentRepositoryFactory: appointmentRepositoryFactory,
-              catalogRepositoryFactory: catalogRepositoryFactory,
-              customerRepositoryFactory: customerRepositoryFactory,
-              productRepositoryFactory: productRepositoryFactory,
-              checkoutRepositoryFactory: checkoutRepositoryFactory,
-              salesRepositoryFactory: salesRepositoryFactory,
-              operationsRepositoryFactory: operationsRepositoryFactory,
-              subscriptionRepositoryFactory: subscriptionRepositoryFactory,
-            ),
+          initialRoute: publicBookingRouteFromLocation(Uri.base) ?? '/',
+          onGenerateRoute: (settings) {
+            final slug = publicBookingSlugFromRoute(settings.name);
+            return MaterialPageRoute<void>(
+              settings: settings,
+              builder: (_) => slug == null
+                  ? _buildAuthenticatedHome()
+                  : publicBookingRepository == null
+                  ? const _PublicBookingConfigurationError()
+                  : PublicBookingPage(
+                      slug: slug,
+                      repository: publicBookingRepository!,
+                    ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAuthenticatedHome() {
+    return StartupSplashPage(
+      child: AuthGate(
+        businessRepository: businessRepository,
+        financeRepositoryFactory: financeRepositoryFactory,
+        appointmentRepositoryFactory: appointmentRepositoryFactory,
+        catalogRepositoryFactory: catalogRepositoryFactory,
+        customerRepositoryFactory: customerRepositoryFactory,
+        productRepositoryFactory: productRepositoryFactory,
+        checkoutRepositoryFactory: checkoutRepositoryFactory,
+        salesRepositoryFactory: salesRepositoryFactory,
+        operationsRepositoryFactory: operationsRepositoryFactory,
+        subscriptionRepositoryFactory: subscriptionRepositoryFactory,
+      ),
+    );
+  }
+}
+
+String? publicBookingRouteFromLocation(Uri location) {
+  final fromFragment = publicBookingSlugFromRoute(location.fragment);
+  if (fromFragment != null) return '/agendar/$fromFragment';
+  final fromPath = publicBookingSlugFromRoute(location.path);
+  if (fromPath != null) return '/agendar/$fromPath';
+  final fromQuery = location.queryParameters['agendar']?.trim();
+  if (fromQuery == null || fromQuery.isEmpty) return null;
+  return '/agendar/${Uri.encodeComponent(fromQuery)}';
+}
+
+String? publicBookingSlugFromRoute(String? routeName) {
+  if (routeName == null || routeName.isEmpty) return null;
+  final normalized = routeName.startsWith('#')
+      ? routeName.substring(1)
+      : routeName;
+  final uri = Uri.tryParse(normalized);
+  if (uri == null) return null;
+  final segments = uri.pathSegments
+      .where((segment) => segment.isNotEmpty)
+      .toList();
+  if (segments.length != 2 || segments.first != 'agendar') return null;
+  final slug = Uri.decodeComponent(segments.last).trim().toLowerCase();
+  if (!RegExp(r'^[a-z0-9]+(?:-[a-z0-9]+)*$').hasMatch(slug)) return null;
+  return slug;
+}
+
+class _PublicBookingConfigurationError extends StatelessWidget {
+  const _PublicBookingConfigurationError();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: Text(
+            'Este link de agendamento ainda não está conectado ao servidor.',
+            textAlign: TextAlign.center,
           ),
         ),
       ),

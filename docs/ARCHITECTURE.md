@@ -34,8 +34,8 @@ idempotente, auditável e protegida contra duplicidade.
 Regras que afetam dinheiro ou permissão não devem depender apenas da interface.
 O Supabase é a autoridade para:
 
-- identificação antifraude do cliente no link público de agendamento;
-- cálculo de nível de fidelidade;
+- isolamento de identidades não verificadas no link público de agendamento;
+- cálculo de fidelidade somente após identidade confiável ou associação manual;
 - snapshots de preço e desconto no agendamento;
 - fechamento de atendimento com produtos;
 - baixa de estoque;

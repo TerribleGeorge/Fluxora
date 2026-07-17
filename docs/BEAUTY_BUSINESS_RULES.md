@@ -48,8 +48,9 @@ O cliente informa:
 - e-mail;
 - telefone.
 
-Ele não escolhe nível de fidelidade e não vê controles de desconto. O cálculo
-ocorre silenciosamente no Supabase.
+Ele não escolhe nível de fidelidade e não vê controles de desconto. Sem prova
+de posse por OTP, o Supabase mantém o preço cheio; o desconto só é recalculado
+após associação interna a um cadastro fiel verificado.
 
 ## Fidelidade por níveis
 
@@ -75,13 +76,16 @@ O dono pode fixar manualmente um nível, útil para importação de clientes ant
 
 ## Blindagem antifraude no agendamento público
 
-O fluxo público não expõe botões de nível. O Supabase identifica o cliente:
+O fluxo público não expõe botões de nível. Em modo seguro sem OTP, o Supabase:
 
-1. busca por e-mail normalizado dentro do estabelecimento;
-2. se não encontrar, busca por telefone + nome normalizados;
-3. se não encontrar, cria cliente novo;
-4. calcula o nível e o desconto;
-5. salva o preço aplicado no agendamento.
+1. valida nome, e-mail e telefone obrigatórios;
+2. usa correspondência estrita apenas para evitar cadastros duplicados;
+3. não concede desconto com base em dados públicos não verificados;
+4. cria o agendamento como `new`, com preço cheio;
+5. permite que a equipe faça a associação segura antes do checkout.
+
+Quando a prova de posse por OTP for implementada, a identidade confirmada poderá
+receber o nível automaticamente sem abrir um oráculo de clientes ou descontos.
 
 O preço aplicado fica congelado no agendamento:
 
@@ -98,13 +102,17 @@ Isso evita que uma alteração futura de desconto mude vendas antigas.
 Quando um cliente fiel agenda com dados novos e cai como cliente novo, o app
 terá o fluxo “Associar a Cliente Fiel”.
 
-A função `link_appointment_to_customer`:
+A função `link_appointment_to_customer`, disponível somente antes do checkout:
 
 - vincula o agendamento ao cliente correto;
 - grava as novas identidades de e-mail/telefone;
 - recalcula preço/desconto;
 - registra auditoria;
-- corrige a venda vinculada quando existir.
+- bloqueia a alteração se a venda já existir, preservando o livro financeiro.
+
+O funcionário responsável busca o cadastro por uma RPC específica do próprio
+atendimento. A resposta limita-se a nome, contato mascarado e nível; as tabelas
+de clientes e configurações de fidelidade continuam protegidas por RLS.
 
 ## Produtos e estoque por nicho
 

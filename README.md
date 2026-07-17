@@ -16,6 +16,9 @@ Gestão e inteligência financeira para negócios do ramo de beleza.
 - Dashboard de lucro real e relatórios de desempenho
 - Período de teste e preparação para planos comerciais
 - Exportação e exclusão de conta
+- Portal web público para o cliente agendar sem instalar aplicativo
+- Agenda individual por profissional, serviços vinculados, almoço e bloqueios
+- Reserva idempotente para impedir agendamentos duplicados em reenvios
 - Núcleo financeiro independente da interface
 - Persistência local real em Android, iOS, web e Windows
 - Repositório substituível, preparado para PostgreSQL/Supabase
@@ -43,6 +46,9 @@ O escopo comercial da primeira versão está registrado em
 
 As ações externas necessárias para publicação estão em
 [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md).
+
+A arquitetura, implantação e validação do portal do cliente estão em
+[`docs/PUBLIC_BOOKING.md`](docs/PUBLIC_BOOKING.md).
 
 ## Validação
 

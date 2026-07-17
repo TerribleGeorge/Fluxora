@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluxora/domain/account.dart';
 import 'package:fluxora/domain/customer.dart';
@@ -50,6 +52,96 @@ void main() {
 
     await bloc.close();
   });
+
+  test(
+    'CustomerBloc associa cliente sem exigir leitura ampla da base',
+    () async {
+      final repository = _FakeCustomerRepository();
+      final bloc = CustomerBloc(repository);
+      bloc.add(const CustomerStarted());
+      await expectLater(
+        bloc.stream,
+        emitsThrough(
+          predicate<CustomerState>(
+            (state) => state.status == CustomerStatus.success,
+          ),
+        ),
+      );
+
+      final completion = Completer<bool>();
+      bloc.add(
+        CustomerLinkedToAppointment(
+          appointmentId: 'appointment-1',
+          customerId: 'customer-1',
+          completer: completion,
+        ),
+      );
+
+      expect(await completion.future, isTrue);
+      expect(repository.linkedAppointmentId, 'appointment-1');
+      expect(repository.linkedCustomerId, 'customer-1');
+      expect(repository.customerLoads, 1);
+      expect(
+        bloc.state.message,
+        'Cliente fiel associado e preço do atendimento atualizado.',
+      );
+
+      await bloc.close();
+    },
+  );
+
+  test('CustomerBloc busca candidatos no escopo do atendimento', () async {
+    final repository = _FakeCustomerRepository();
+    final bloc = CustomerBloc(repository);
+
+    bloc.add(
+      const CustomerAssociationSearched(
+        appointmentId: 'appointment-1',
+        query: 'Ana',
+      ),
+    );
+    await expectLater(
+      bloc.stream,
+      emitsThrough(
+        predicate<CustomerState>(
+          (state) =>
+              !state.associationSearchLoading &&
+              state.associationQuery == 'Ana' &&
+              state.associationCandidates.single.id == 'customer-1',
+        ),
+      ),
+    );
+    expect(repository.searchedAppointmentId, 'appointment-1');
+    expect(repository.searchedQuery, 'Ana');
+
+    await bloc.close();
+  });
+
+  test(
+    'CustomerBloc informa falha ao não conseguir associar cliente',
+    () async {
+      final repository = _FakeCustomerRepository()..failLink = true;
+      final bloc = CustomerBloc(repository);
+      final completion = Completer<bool>();
+
+      bloc.add(
+        CustomerLinkedToAppointment(
+          appointmentId: 'appointment-1',
+          customerId: 'customer-1',
+          completer: completion,
+        ),
+      );
+
+      expect(await completion.future, isFalse);
+      expect(bloc.state.status, CustomerStatus.failure);
+      expect(
+        bloc.state.message,
+        contains('atendimento ainda não foi concluído'),
+      );
+
+      await bloc.close();
+    },
+  );
 
   test('ProductBloc cadastra produto respeitando nicho do negócio', () async {
     final repository = _FakeProductRepository();
@@ -120,7 +212,8 @@ void main() {
         predicate<ProductState>(
           (state) =>
               state.status == ProductStatus.failure &&
-              state.message == 'Revise nome, preço, custo e estoque do produto.',
+              state.message ==
+                  'Revise nome, preço, custo e estoque do produto.',
         ),
       ),
     );
@@ -131,9 +224,18 @@ void main() {
 
 class _FakeCustomerRepository implements CustomerRepository {
   LoyaltySettings settings = const LoyaltySettings(businessId: 'business-1');
+  String? linkedAppointmentId;
+  String? linkedCustomerId;
+  int customerLoads = 0;
+  bool failLink = false;
+  String? searchedAppointmentId;
+  String? searchedQuery;
 
   @override
-  Future<List<Customer>> getCustomers() async => const [];
+  Future<List<Customer>> getCustomers() async {
+    customerLoads += 1;
+    return const [];
+  }
 
   @override
   Future<LoyaltySettings> getLoyaltySettings() async => settings;
@@ -160,7 +262,31 @@ class _FakeCustomerRepository implements CustomerRepository {
   Future<void> linkAppointmentToCustomer({
     required String appointmentId,
     required String customerId,
-  }) async {}
+  }) async {
+    if (failLink) throw Exception('link failed');
+    linkedAppointmentId = appointmentId;
+    linkedCustomerId = customerId;
+  }
+
+  @override
+  Future<List<Customer>> searchLinkableCustomers({
+    required String appointmentId,
+    required String query,
+  }) async {
+    searchedAppointmentId = appointmentId;
+    searchedQuery = query;
+    return [
+      Customer(
+        id: 'customer-1',
+        businessId: 'business-1',
+        name: 'Ana Paula',
+        email: 'an***@example.com',
+        phone: '******4321',
+        loyaltyTier: CustomerLoyaltyTier.premium,
+        createdAt: DateTime(2025),
+      ),
+    ];
+  }
 }
 
 class _FakeProductRepository implements ProductRepository {

@@ -1,22 +1,22 @@
-# Notas da versão 1.0.0 (build 15)
+# Notas da versão 1.0.0 (build 16)
 
-O Fluxora agora está preparado para receber usuários de outros países. Esta
-versão adiciona a base de internacionalização do app, com suporte a idiomas e
-variações regionais usados em mercados globais.
+## Texto para o Google Play Console
 
-Novidades principais:
+```text
+<pt-BR>
+O Fluxora agora oferece agendamento online por link, sem exigir app do cliente. Configure serviços, expediente, intervalos, folgas e bloqueios de cada profissional. Reservas simultâneas e reenvios duplicados são protegidos no servidor. A nova opção “Associar a Cliente Fiel” corrige a identidade e recalcula o desconto antes do checkout, com dados mascarados e permissões restritas. Também incluímos melhorias de segurança, estabilidade e testes.
+</pt-BR>
+```
 
-- Preparação técnica para localização internacional do aplicativo.
-- Suporte a componentes do sistema em vários idiomas, incluindo calendários,
-  seletores, botões internos do Flutter e direção de texto.
-- Lista central de idiomas e regiões para facilitar futuras traduções.
-- Documentação da estratégia internacional do Fluxora.
-- Testes automáticos para validar mercados prioritários e evitar configurações
-  duplicadas de idiomas.
-- Continuidade das funções de gestão financeira para beleza e bem-estar:
-  agenda, vendas, caixa, profissionais, serviços, produtos, fidelidade,
-  assinatura, comissões e cálculo de lucro real.
+## Detalhes internos
 
-Português do Brasil segue como idioma principal nesta etapa. As próximas
-traduções dos textos próprios do Fluxora devem começar por inglês, espanhol e
-português de Portugal.
+- Portal web público com serviço, profissional, data, horário e confirmação.
+- Agenda individual com múltiplos períodos diários e bloqueios gerais ou
+  específicos.
+- Proteção contra conflito simultâneo e repetição da mesma tentativa.
+- Preço cheio para identidade pública ainda não confirmada.
+- Associação manual e auditável a cliente fiel antes do checkout.
+- Busca restrita por atendimento, com e-mail e telefone mascarados.
+- RPCs públicas reduzidas ao conjunto mínimo necessário.
+- Build web de produção validado.
+- 84 testes automatizados aprovados e análise Flutter sem erros.
