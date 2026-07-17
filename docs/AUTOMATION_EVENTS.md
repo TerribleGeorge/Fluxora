@@ -94,6 +94,43 @@ Destinatários:
 
 - dono ou gestor.
 
+### product.stock_movement
+
+Disparado quando existe entrada ou saída de estoque.
+
+Destinatários:
+
+- dono ou gestor.
+
+Dados mínimos:
+
+- estabelecimento;
+- produto;
+- tipo do movimento: compra, venda, ajuste ou perda;
+- quantidade movimentada;
+- estoque atual;
+- custo unitário;
+- valor em custo no estoque;
+- valor potencial de venda;
+- resumo financeiro do estoque em tempo real.
+
+### product.low_stock
+
+Disparado quando o produto fica com estoque igual ou menor que o mínimo
+configurado.
+
+Destinatários:
+
+- dono ou gestor.
+
+Dados mínimos:
+
+- produto;
+- estoque atual;
+- estoque mínimo;
+- resumo do estoque;
+- receita, custo e lucro bruto de produtos no mês.
+
 ## Supabase como motor gratuito
 
 Para reduzir custo e evitar dependência de plataformas externas, o primeiro
@@ -121,9 +158,28 @@ Quando um agendamento é criado ou alterado, o Supabase cria eventos na tabela
 | `appointment.updated` | imediatamente | Registrar mudança de horário, profissional, serviço ou status. |
 | `appointment.cancelled` | imediatamente | Registrar cancelamento. |
 | `appointment.reminder` | 30 minutos antes do atendimento | Lembrar o cliente por WhatsApp e/ou e-mail. |
+| `product.stock_movement` | imediatamente | Informar entrada/saída de produto e resumo de estoque. |
+| `product.low_stock` | imediatamente, com janela anti-spam | Alertar dono quando produto estiver acabando. |
 
 Se o horário do agendamento mudar, o lembrete pendente é recalculado. Se o
 agendamento for cancelado, o lembrete pendente é removido.
+
+Entradas manuais de estoque usam `save_product_with_stock_movement`. Vendas no
+checkout já baixam estoque e registram `product_stock_movements`. Assim, tanto
+o cadastro do dono quanto o fechamento de atendimento alimentam o mesmo
+relatório.
+
+O relatório consolidado fica disponível pela RPC autenticada
+`get_product_inventory_report`, liberada para dono e gestor. Ela retorna:
+
+- produtos ativos;
+- produtos em estoque baixo;
+- valor total do estoque por custo;
+- valor potencial do estoque por preço de venda;
+- receita de produtos no período;
+- custo dos produtos vendidos;
+- lucro bruto de produtos;
+- últimos movimentos de estoque.
 
 ## Canais de envio
 

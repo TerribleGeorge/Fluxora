@@ -57,17 +57,17 @@ class SupabaseProductRepository implements ProductRepository {
 
   @override
   Future<void> saveProduct(Product product) async {
-    await _client.from('products').upsert({
-      'id': product.id,
-      'business_id': businessId,
-      'business_type': businessType.name,
-      'name': product.name,
-      'category': product.category,
-      'sale_price': product.salePrice,
-      'unit_cost': product.unitCost,
-      'stock_quantity': product.stockQuantity,
-      'min_stock_quantity': product.minStockQuantity,
-      'active': product.active,
+    await _client.rpc('save_product_with_stock_movement', params: {
+      'target_product_id': product.id,
+      'target_business_id': businessId,
+      'target_business_type': businessType.name,
+      'target_name': product.name,
+      'target_category': product.category,
+      'target_sale_price': product.salePrice,
+      'target_unit_cost': product.unitCost,
+      'target_stock_quantity': product.stockQuantity,
+      'target_min_stock_quantity': product.minStockQuantity,
+      'target_active': product.active,
     });
   }
 

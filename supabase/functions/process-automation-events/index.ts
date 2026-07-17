@@ -40,6 +40,32 @@ type AppointmentPayload = {
   reminderMinutesBefore?: number
 }
 
+type ProductPayload = {
+  businessName?: string
+  businessPhone?: string
+  productName?: string
+  category?: string
+  movementType?: string
+  quantity?: number
+  unitCost?: number
+  stockQuantity?: number
+  minStockQuantity?: number
+  salePrice?: number
+  stockCostValue?: number
+  stockSaleValue?: number
+  notes?: string
+  inventorySummary?: {
+    activeProducts?: number
+    lowStockProducts?: number
+    stockCostValue?: number
+    stockSaleValue?: number
+    monthProductRevenue?: number
+    monthProductCost?: number
+    monthProductProfit?: number
+  }
+  ownerContacts?: Array<{ name?: string; email?: string }>
+}
+
 Deno.serve(async (request) => {
   if (request.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -119,8 +145,19 @@ Deno.serve(async (request) => {
 async function processNotification(
   event: AutomationEvent,
 ): Promise<NotificationResult[]> {
+  if (event.aggregate_type === 'product') {
+    return processProductNotification(event)
+  }
+
   if (event.aggregate_type !== 'appointment') {
-    return [{ channel: 'automation', recipient: 'none', status: 'skipped', reason: 'Unsupported aggregate type' }]
+    return [
+      {
+        channel: 'automation',
+        recipient: 'none',
+        status: 'skipped',
+        reason: 'Unsupported aggregate type',
+      },
+    ]
   }
 
   const payload = event.payload as AppointmentPayload
@@ -139,7 +176,95 @@ async function processNotification(
     return results
   }
 
-  return [{ channel: 'automation', recipient: 'none', status: 'skipped', reason: `No handler for ${event.event_type}` }]
+  return [
+    {
+      channel: 'automation',
+      recipient: 'none',
+      status: 'skipped',
+      reason: `No handler for ${event.event_type}`,
+    },
+  ]
+}
+
+async function processProductNotification(
+  event: AutomationEvent,
+): Promise<NotificationResult[]> {
+  const payload = event.payload as ProductPayload
+  if (event.event_type === 'product.low_stock') {
+    return sendOwnerProductEmail({
+      payload,
+      subject: `Alerta de estoque baixo: ${payload.productName ?? 'produto'}`,
+      text: [
+        `O produto ${payload.productName ?? '-'} está acabando.`,
+        `Estoque atual: ${payload.stockQuantity ?? 0}`,
+        `Estoque mínimo: ${payload.minStockQuantity ?? 0}`,
+        `Estabelecimento: ${payload.businessName ?? '-'}`,
+        '',
+        productSummaryText(payload),
+      ].join('\n'),
+    })
+  }
+
+  if (event.event_type === 'product.stock_movement') {
+    return sendOwnerProductEmail({
+      payload,
+      subject: `Movimento de estoque: ${payload.productName ?? 'produto'}`,
+      text: [
+        `Produto: ${payload.productName ?? '-'}`,
+        `Tipo: ${payload.movementType ?? '-'}`,
+        `Quantidade: ${payload.quantity ?? 0}`,
+        `Estoque atual: ${payload.stockQuantity ?? 0}`,
+        `Valor em custo no estoque: ${formatMoney(payload.stockCostValue ?? 0)}`,
+        `Valor potencial de venda: ${formatMoney(payload.stockSaleValue ?? 0)}`,
+        `Observação: ${payload.notes ?? '-'}`,
+        '',
+        productSummaryText(payload),
+      ].join('\n'),
+    })
+  }
+
+  return [
+    {
+      channel: 'automation',
+      recipient: 'none',
+      status: 'skipped',
+      reason: `No handler for ${event.event_type}`,
+    },
+  ]
+}
+
+async function sendOwnerProductEmail({
+  payload,
+  subject,
+  text,
+}: {
+  payload: ProductPayload
+  subject: string
+  text: string
+}): Promise<NotificationResult[]> {
+  const owners = Array.isArray(payload.ownerContacts)
+    ? payload.ownerContacts
+    : []
+  const emails = owners
+    .map((owner) => normalizeEmail(owner.email))
+    .filter((email) => email.length > 0)
+
+  if (emails.length === 0) {
+    return [
+      {
+        channel: 'email',
+        recipient: 'owner',
+        status: 'skipped',
+        reason: 'Owner email is empty',
+      },
+    ]
+  }
+
+  const results: NotificationResult[] = []
+  for (const email of emails) {
+    results.push(await sendEmail({ to: email, subject, text, recipientLabel: 'owner' }))
+  }
+  return results
 }
 
 async function sendProfessionalAppointmentCreated(
@@ -231,6 +356,7 @@ async function sendCustomerAppointmentReminder(
     to: email,
     subject: `Lembrete: atendimento em ${minutes} minutos`,
     text,
+    recipientLabel: 'customer',
   })
 }
 
@@ -322,10 +448,12 @@ async function sendEmail({
   to,
   subject,
   text,
+  recipientLabel = 'recipient',
 }: {
   to: string
   subject: string
   text: string
+  recipientLabel?: string
 }): Promise<NotificationResult> {
   const apiKey = Deno.env.get('RESEND_API_KEY')
   const from = Deno.env.get('EMAIL_FROM')
@@ -333,7 +461,7 @@ async function sendEmail({
   if (!apiKey || !from) {
     return {
       channel: 'email',
-      recipient: 'customer',
+      recipient: recipientLabel,
       status: 'skipped',
       reason: 'Email provider is not configured',
     }
@@ -352,7 +480,7 @@ async function sendEmail({
     throw new Error(`Email send failed: ${response.status} ${await response.text()}`)
   }
 
-  return { channel: 'email', recipient: 'customer', status: 'sent' }
+  return { channel: 'email', recipient: recipientLabel, status: 'sent' }
 }
 
 async function markProcessing(
@@ -384,4 +512,26 @@ function normalizePhone(value: unknown) {
 function normalizeEmail(value: unknown) {
   const email = String(value ?? '').trim().toLowerCase()
   return email.includes('@') ? email : ''
+}
+
+function formatMoney(value: number) {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(value)
+}
+
+function productSummaryText(payload: ProductPayload) {
+  const summary = payload.inventorySummary
+  if (!summary) return 'Resumo do estoque indisponível.'
+  return [
+    'Resumo em tempo real:',
+    `Produtos ativos: ${summary.activeProducts ?? 0}`,
+    `Produtos em alerta: ${summary.lowStockProducts ?? 0}`,
+    `Valor em custo no estoque: ${formatMoney(summary.stockCostValue ?? 0)}`,
+    `Valor potencial de venda: ${formatMoney(summary.stockSaleValue ?? 0)}`,
+    `Receita de produtos no mês: ${formatMoney(summary.monthProductRevenue ?? 0)}`,
+    `Custo dos produtos vendidos no mês: ${formatMoney(summary.monthProductCost ?? 0)}`,
+    `Lucro bruto de produtos no mês: ${formatMoney(summary.monthProductProfit ?? 0)}`,
+  ].join('\n')
 }
