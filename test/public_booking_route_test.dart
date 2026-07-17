@@ -35,6 +35,12 @@ void main() {
         ),
         '/agendar',
       );
+      expect(
+        publicBookingDirectoryRouteFromLocation(
+          Uri.parse('https://terriblegeorge.github.io/fluxora-agendamento/'),
+        ),
+        '/agendar',
+      );
       expect(publicBookingDirectoryRouteFromRoute('/agendar'), isTrue);
       expect(
         publicBookingDirectoryRouteFromRoute('/agendar/studio-ana'),

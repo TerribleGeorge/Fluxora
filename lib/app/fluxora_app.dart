@@ -218,6 +218,12 @@ String? publicBookingDirectoryRouteFromLocation(Uri location) {
     return '/agendar';
   }
   if (publicBookingDirectoryRouteFromRoute(location.path)) return '/agendar';
+  if ((location.scheme == 'http' || location.scheme == 'https') &&
+      location.pathSegments
+          .where((segment) => segment.isNotEmpty)
+          .every((segment) => segment == 'fluxora-agendamento')) {
+    return '/agendar';
+  }
   return null;
 }
 
