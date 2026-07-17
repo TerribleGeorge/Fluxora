@@ -33,4 +33,7 @@ class UnconfiguredAuthRepository implements AuthRepository {
 
   @override
   Future<void> updatePassword(String password) async => _unavailable();
+
+  @override
+  Future<void> close() async {}
 }

@@ -4,7 +4,7 @@ class PatchNotesPage extends StatelessWidget {
   const PatchNotesPage({super.key});
 
   static const version = '1.0.0';
-  static const buildNumber = '16';
+  static const buildNumber = '17';
 
   @override
   Widget build(BuildContext context) {
@@ -15,6 +15,26 @@ class PatchNotesPage extends StatelessWidget {
         children: const [
           _ReleaseHeader(),
           SizedBox(height: 16),
+          _ReleaseSection(
+            icon: Icons.lock_reset_outlined,
+            title: 'Recuperação de senha corrigida',
+            items: [
+              'O link agora retorna ao mesmo ambiente em que foi solicitado: aplicativo no celular e Fluxora Web no navegador.',
+              'A tela de nova senha abre imediatamente, sem aguardar a animação inicial de dez segundos.',
+              'Confirmação de conta e recuperação usam endereços separados e seguros.',
+              'Nova senha exige confirmação para evitar erros de digitação e informa quando o link venceu ou foi aberto fora do app ou perfil de navegador correto.',
+            ],
+          ),
+          _ReleaseSection(
+            icon: Icons.security_outlined,
+            title: 'Links e mensagens mais seguros',
+            items: [
+              'O fluxo PKCE mantém a validação no dispositivo que iniciou a recuperação.',
+              'Android e iPhone reconhecem corretamente os callbacks de acesso do Fluxora.',
+              'Erros de limite de envio, link expirado e senha repetida agora recebem orientações claras.',
+              'O teclado também envia o pedido de recuperação pelo botão Concluir.',
+            ],
+          ),
           _ReleaseSection(
             icon: Icons.calendar_month_outlined,
             title: 'Novo agendamento online',
@@ -60,7 +80,7 @@ class PatchNotesPage extends StatelessWidget {
             title: 'Qualidade e continuidade',
             items: [
               'A análise estática foi concluída sem problemas.',
-              'A suíte automatizada passou por 84 testes de domínio, segurança, interface e integração.',
+              'A suíte automatizada cobre domínio, segurança, interface, integração e recuperação de acesso.',
               'O build web de produção foi validado com a configuração real do Supabase.',
               'Vendas, produtos, checkout, comissões, caixa e lucro real continuam preservados.',
             ],

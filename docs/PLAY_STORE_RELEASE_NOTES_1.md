@@ -1,10 +1,10 @@
-# Notas da versão 1.0.0 (build 16)
+# Notas da versão 1.0.0 (build 17)
 
 ## Texto para o Google Play Console
 
 ```text
 <pt-BR>
-O Fluxora agora oferece agendamento online por link, sem exigir app do cliente. Configure serviços, expediente, intervalos, folgas e bloqueios de cada profissional. Reservas simultâneas e reenvios duplicados são protegidos no servidor. A nova opção “Associar a Cliente Fiel” corrige a identidade e recalcula o desconto antes do checkout, com dados mascarados e permissões restritas. Também incluímos melhorias de segurança, estabilidade e testes.
+Corrigimos a recuperação de senha no aplicativo e na Web. O link agora retorna ao mesmo ambiente em que foi solicitado, abre a tela de nova senha sem esperar a animação inicial e orienta sobre links expirados ou abertos fora do app ou perfil de navegador correto. Também separamos a confirmação de conta da recuperação, adicionamos confirmação da nova senha e melhoramos as mensagens de erro, mantendo agendamentos e dados financeiros protegidos.
 </pt-BR>
 ```
 
@@ -19,4 +19,6 @@ O Fluxora agora oferece agendamento online por link, sem exigir app do cliente. 
 - Busca restrita por atendimento, com e-mail e telefone mascarados.
 - RPCs públicas reduzidas ao conjunto mínimo necessário.
 - Build web de produção validado.
-- 84 testes automatizados aprovados e análise Flutter sem erros.
+- Recuperação de senha separada por plataforma sem quebrar o fluxo PKCE.
+- Deep links Android/iOS ajustados para o manipulador usado pelo Supabase.
+- 99 testes automatizados aprovados e análise Flutter sem erros.

@@ -45,4 +45,9 @@ if (-not [string]::IsNullOrWhiteSpace($resolvedPublicBookingBaseUrl)) {
   $buildArguments += "--dart-define=PUBLIC_BOOKING_BASE_URL=$resolvedPublicBookingBaseUrl"
 }
 
+if ($vars.ContainsKey("AUTH_WEB_REDIRECT_BASE_URL") -and
+    -not [string]::IsNullOrWhiteSpace($vars["AUTH_WEB_REDIRECT_BASE_URL"])) {
+  $buildArguments += "--dart-define=AUTH_WEB_REDIRECT_BASE_URL=$($vars["AUTH_WEB_REDIRECT_BASE_URL"])"
+}
+
 flutter @buildArguments

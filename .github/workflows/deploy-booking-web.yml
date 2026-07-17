@@ -51,6 +51,7 @@ jobs:
           --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }}
           --dart-define=SUPABASE_PUBLISHABLE_KEY=${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
           --dart-define=PUBLIC_BOOKING_BASE_URL=https://terriblegeorge.github.io/fluxora-agendamento
+          --dart-define=AUTH_WEB_REDIRECT_BASE_URL=https://terriblegeorge.github.io/fluxora-agendamento/
 
       - name: Publish compiled site
         uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4
