@@ -12,6 +12,7 @@ import '../state/finance_event.dart';
 import '../state/sales_bloc.dart';
 import '../state/sales_event.dart';
 import 'money.dart';
+import 'quick_start_manual_page.dart';
 import 'reports_page.dart';
 
 class DashboardPage extends StatelessWidget {
@@ -46,6 +47,15 @@ class DashboardPage extends StatelessWidget {
         ),
         actions: [
           IconButton(
+            tooltip: 'Manual rápido',
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const QuickStartManualPage(),
+              ),
+            ),
+            icon: const Icon(Icons.help_outline),
+          ),
+          IconButton(
             tooltip: 'Relatórios',
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute<void>(
@@ -69,6 +79,8 @@ class DashboardPage extends StatelessWidget {
               'Resultado deste mês',
               style: Theme.of(context).textTheme.titleMedium,
             ),
+            const SizedBox(height: 12),
+            const QuickStartManualCard(),
             const SizedBox(height: 12),
             _SetupProgressCard(
               onOpenCatalog: onOpenCatalog,
