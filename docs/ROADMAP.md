@@ -16,15 +16,29 @@ clínicas de estética não médica.
 - [x] 1. Definir posicionamento, público e escopo da versão 1 — **Concluído**
 - [x] 2. Definir arquitetura de usuários, negócios e permissões — **Concluído**
 - [x] 3. Implementar autenticação e recuperação de acesso — **Concluído**
-- [ ] 4. Implementar banco em nuvem e sincronização local — **Em andamento**
-- [ ] 5. Implementar cadastro de profissionais e serviços
-- [ ] 6. Implementar atendimentos, vendas e formas de pagamento
-- [ ] 7. Implementar comissões, repasses e fechamento de caixa
-- [ ] 8. Implementar despesas, taxas e retirada do proprietário
-- [ ] 9. Implementar dashboard de lucro e relatórios
-- [ ] 10. Implementar onboarding, planos e período de teste
-- [ ] 11. Preparar privacidade, exclusão de conta e Play Store
-- [ ] 12. Executar testes, beta fechado e publicação
+- [x] 4. Implementar banco em nuvem e sincronização local — **Concluído no código; implantação externa pendente**
+- [x] 5. Implementar cadastro de profissionais e serviços — **Concluído**
+- [x] 6. Implementar atendimentos, vendas e formas de pagamento — **Concluído**
+- [x] 7. Implementar comissões, repasses e fechamento de caixa — **Concluído**
+- [x] 8. Implementar despesas, taxas e retirada do proprietário — **Concluído**
+- [x] 9. Implementar dashboard de lucro e relatórios — **Concluído**
+- [x] 10. Implementar onboarding, planos e período de teste — **Concluído**
+- [x] 11. Preparar privacidade, exclusão de conta e Play Store — **Concluído no código; URLs públicas pendentes**
+- [ ] 12. Executar testes, beta fechado e publicação — **Bloqueado por contas externas**
+
+## Expansão de plataforma
+
+A partir da validação inicial, o Fluxora passa a mirar uma operação completa
+para o estabelecimento:
+
+- [x] 13. Agenda interna do estabelecimento — **Concluído no código; validação remota pendente**
+- [x] 14. Acesso limitado do profissional — **Concluído no código; teste com contas reais pendente**
+- [x] 15. Página pública de agendamento para clientes — **Código e hospedagem concluídos; implantação Supabase pendente**
+- [x] 16. Eventos para automações externas — **Concluído no código; provedor de destino pendente**
+- [ ] 17. Integração n8n + WhatsApp
+- [ ] 18. Painel web para uso no PC
+
+Detalhes da decisão estão em `docs/PLATFORM_VISION.md`.
 
 ## Regra de trabalho
 

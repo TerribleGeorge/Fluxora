@@ -1,5 +1,15 @@
 enum TransactionType { income, expense }
 
+enum FinancialEntryKind {
+  otherIncome,
+  operatingExpense,
+  tax,
+  ownerWithdrawal,
+  otherExpense,
+}
+
+enum EntryPaymentSource { cash, bank, other }
+
 class FinanceTransaction {
   const FinanceTransaction({
     required this.id,
@@ -13,6 +23,8 @@ class FinanceTransaction {
     this.createdBy = '',
     this.updatedAt,
     this.deletedAt,
+    this.kind,
+    this.paymentSource = EntryPaymentSource.bank,
   });
 
   final String id;
@@ -26,6 +38,8 @@ class FinanceTransaction {
   final String createdBy;
   final DateTime? updatedAt;
   final DateTime? deletedAt;
+  final FinancialEntryKind? kind;
+  final EntryPaymentSource paymentSource;
 
   bool get deleted => deletedAt != null;
 
@@ -41,6 +55,8 @@ class FinanceTransaction {
     'createdBy': createdBy,
     if (updatedAt != null) 'updatedAt': updatedAt!.toIso8601String(),
     if (deletedAt != null) 'deletedAt': deletedAt!.toIso8601String(),
+    'kind': (kind ?? _defaultKind(type)).name,
+    'paymentSource': paymentSource.name,
   };
 
   factory FinanceTransaction.fromJson(Map<String, dynamic> json) {
@@ -68,6 +84,19 @@ class FinanceTransaction {
       createdBy: json['createdBy'] as String? ?? '',
       updatedAt: DateTime.tryParse(json['updatedAt'] as String? ?? ''),
       deletedAt: DateTime.tryParse(json['deletedAt'] as String? ?? ''),
+      kind: FinancialEntryKind.values
+          .where((item) => item.name == json['kind'])
+          .firstOrNull,
+      paymentSource:
+          EntryPaymentSource.values
+              .where((item) => item.name == json['paymentSource'])
+              .firstOrNull ??
+          EntryPaymentSource.bank,
     );
   }
+
+  static FinancialEntryKind _defaultKind(TransactionType type) =>
+      type == TransactionType.income
+      ? FinancialEntryKind.otherIncome
+      : FinancialEntryKind.operatingExpense;
 }

@@ -1,0 +1,48 @@
+Fluxora 1.0.0 (build 16)
+Pacote: dev.devvoid.fluxora
+Empresa: DevVoid.dev
+Artefato: build/app/outputs/bundle/release/app-release.aab
+Tamanho: 49544544 bytes
+SHA-256: DA3C4E4BA65957698FF554C3C7E112ADC8D7FBBE644F6963799E05D3E21BB1D5
+Assinatura: verificada (jar verified)
+Certificado de upload: CN=DevVoid.dev, OU=Mobile, O=DevVoid.dev, L=Brasilia, ST=DF, C=BR
+Certificado SHA-256: 72:1F:1E:0F:F8:E7:4A:38:B9:E2:57:C1:28:08:64:8E:F1:D6:3C:4C:2A:CC:0D:C6:1C:C3:87:31:24:E1:96:AC
+Gerado em: 2026-07-17
+Backend: Supabase nqcoxxbzwzcuwprbzpdb
+Supabase: SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY passados via --dart-define
+Portal público: https://terriblegeorge.github.io/fluxora-agendamento
+Google Play Billing: dependência in_app_purchase preservada
+Produto Google Play: fluxora_pro
+Plano básico configurado: mensal
+Oferta configurada: teste-14-dias (teste gratuito de 2 semanas)
+
+Validações executadas:
+- flutter analyze --no-pub: sem problemas
+- flutter test --no-pub: 84 testes aprovados
+- 10 migrações aplicadas em PostgreSQL isolado: aprovadas
+- cenário de antifraude, idempotência e associação fiel: aprovado
+- flutter build web --release: concluído
+- flutter build appbundle --release: concluído
+- AndroidManifest: versionCode 16, versionName 1.0.0
+- jarsigner -verify: jar verified
+
+Principais mudanças da build 16:
+- Portal público para agendamento sem aplicativo do cliente.
+- Serviços, expediente, intervalos e bloqueios configuráveis por profissional.
+- Proteção contra duas reservas simultâneas e reenvios duplicados.
+- Identidade pública sem OTP permanece com preço cheio por segurança.
+- Fluxo “Associar a Cliente Fiel” antes do checkout, com recálculo auditável.
+- Busca limitada ao atendimento permitido, com e-mail e telefone mascarados.
+- RPCs anônimas reduzidas ao conjunto mínimo necessário.
+- Build web publicado e automação do GitHub Pages ativa.
+- Patch notes internos e notas da Play Store atualizados para a build 16.
+
+Pendências externas conhecidas:
+- Aplicar as migrações 20260716190000 e 20260716210000 no Supabase remoto.
+- Site publicado em https://terriblegeorge.github.io/fluxora-agendamento/.
+- Configurar OTP ou proteção anti-bot antes de tráfego público amplo.
+- Fazer upload manual do AAB na Play Console e validar o teste fechado.
+
+A chave e as senhas de upload permanecem somente em android/key.properties e
+android/upload-keystore.jks, ambos ignorados pelo Git. Faça backup privado dos
+dois arquivos antes de publicar versões na Google Play.

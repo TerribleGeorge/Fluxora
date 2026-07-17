@@ -47,6 +47,12 @@ class FinanceBloc extends Bloc<FinanceEvent, FinanceState> {
       date: DateTime.now(),
       type: event.type,
       notes: event.notes.trim(),
+      kind:
+          event.kind ??
+          (event.type == TransactionType.income
+              ? FinancialEntryKind.otherIncome
+              : FinancialEntryKind.operatingExpense),
+      paymentSource: event.paymentSource,
     );
     try {
       await _repository.saveTransaction(transaction);

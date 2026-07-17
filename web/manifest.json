@@ -1,12 +1,12 @@
 {
-    "name": "fluxora",
-    "short_name": "fluxora",
+    "name": "Fluxora",
+    "short_name": "Fluxora",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "background_color": "#0C1514",
+    "theme_color": "#6EE7B7",
+    "description": "Agendamento online e gestão financeira para negócios de beleza e bem-estar.",
+    "orientation": "any",
     "prefer_related_applications": false,
     "icons": [
         {

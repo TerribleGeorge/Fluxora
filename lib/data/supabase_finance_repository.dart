@@ -51,6 +51,9 @@ class SupabaseFinanceRepository implements FinanceRepository {
     'category': transaction.category,
     'occurred_at': transaction.date.toUtc().toIso8601String(),
     'type': transaction.type.name,
+    'entry_kind':
+        (transaction.kind ?? FinancialEntryKind.operatingExpense).name,
+    'payment_source': transaction.paymentSource.name,
     'notes': transaction.notes,
     'created_by': transaction.createdBy.isEmpty
         ? userId
@@ -67,6 +70,13 @@ class SupabaseFinanceRepository implements FinanceRepository {
       category: row['category'] as String,
       date: DateTime.parse(row['occurred_at'] as String).toLocal(),
       type: TransactionType.values.byName(row['type'] as String),
+      kind: FinancialEntryKind.values.byName(
+        row['entry_kind'] as String? ??
+            (row['type'] == 'income' ? 'otherIncome' : 'operatingExpense'),
+      ),
+      paymentSource: EntryPaymentSource.values.byName(
+        row['payment_source'] as String? ?? 'bank',
+      ),
       notes: row['notes'] as String? ?? '',
       createdBy: row['created_by'] as String,
       updatedAt: DateTime.tryParse(row['updated_at'] as String? ?? ''),

@@ -3,15 +3,47 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app/fluxora_app.dart';
+import 'data/local_catalog_repository.dart';
+import 'data/local_appointment_repository.dart';
 import 'data/local_finance_repository.dart';
+import 'data/local_sales_repository.dart';
+import 'data/local_operations_repository.dart';
+import 'data/google_play_billing_repository.dart';
+import 'data/offline_first_catalog_repository.dart';
+import 'data/offline_first_appointment_repository.dart';
 import 'data/offline_first_finance_repository.dart';
+import 'data/offline_first_sales_repository.dart';
+import 'data/offline_first_operations_repository.dart';
 import 'data/supabase_auth_repository.dart';
 import 'data/supabase_business_repository.dart';
+import 'data/supabase_catalog_repository.dart';
+import 'data/supabase_appointment_repository.dart';
+import 'data/supabase_customer_repository.dart';
 import 'data/supabase_finance_repository.dart';
+import 'data/supabase_product_repository.dart';
+import 'data/supabase_public_booking_repository.dart';
+import 'data/supabase_checkout_repository.dart';
+import 'data/supabase_sales_repository.dart';
+import 'data/supabase_operations_repository.dart';
+import 'data/cached_subscription_repository.dart';
+import 'data/supabase_subscription_repository.dart';
+import 'data/supabase_account_lifecycle_repository.dart';
+import 'data/unavailable_account_lifecycle_repository.dart';
 import 'data/unconfigured_auth_repository.dart';
 import 'domain/auth_repository.dart';
+import 'domain/appointment_repository.dart';
+import 'domain/billing_repository.dart';
 import 'domain/business_repository.dart';
+import 'domain/catalog_repository.dart';
+import 'domain/customer_repository.dart';
 import 'domain/finance_repository.dart';
+import 'domain/product_repository.dart';
+import 'domain/public_booking.dart';
+import 'domain/checkout_repository.dart';
+import 'domain/sales_repository.dart';
+import 'domain/operations_repository.dart';
+import 'domain/subscription_repository.dart';
+import 'domain/account_lifecycle_repository.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,6 +53,17 @@ Future<void> main() async {
       authRepository: dependencies.auth,
       businessRepository: dependencies.business,
       financeRepositoryFactory: dependencies.financeFactory,
+      appointmentRepositoryFactory: dependencies.appointmentFactory,
+      catalogRepositoryFactory: dependencies.catalogFactory,
+      customerRepositoryFactory: dependencies.customerFactory,
+      productRepositoryFactory: dependencies.productFactory,
+      checkoutRepositoryFactory: dependencies.checkoutFactory,
+      salesRepositoryFactory: dependencies.salesFactory,
+      operationsRepositoryFactory: dependencies.operationsFactory,
+      subscriptionRepositoryFactory: dependencies.subscriptionFactory,
+      accountLifecycleRepository: dependencies.accountLifecycle,
+      billingRepository: dependencies.billing,
+      publicBookingRepository: dependencies.publicBooking,
     ),
   );
 }
@@ -29,6 +72,17 @@ typedef _Dependencies = ({
   AuthRepository auth,
   BusinessRepository? business,
   FinanceRepository Function(BusinessAccess access)? financeFactory,
+  AppointmentRepository Function(BusinessAccess access)? appointmentFactory,
+  CatalogRepository Function(BusinessAccess access)? catalogFactory,
+  CustomerRepository Function(BusinessAccess access)? customerFactory,
+  ProductRepository Function(BusinessAccess access)? productFactory,
+  CheckoutRepository Function(BusinessAccess access)? checkoutFactory,
+  SalesRepository Function(BusinessAccess access)? salesFactory,
+  OperationsRepository Function(BusinessAccess access)? operationsFactory,
+  SubscriptionRepository Function(BusinessAccess access)? subscriptionFactory,
+  AccountLifecycleRepository accountLifecycle,
+  BillingRepository billing,
+  PublicBookingRepository? publicBooking,
 });
 
 Future<_Dependencies> _createDependencies() async {
@@ -39,6 +93,17 @@ Future<_Dependencies> _createDependencies() async {
       auth: UnconfiguredAuthRepository(),
       business: null,
       financeFactory: null,
+      appointmentFactory: null,
+      catalogFactory: null,
+      customerFactory: null,
+      productFactory: null,
+      checkoutFactory: null,
+      salesFactory: null,
+      operationsFactory: null,
+      subscriptionFactory: null,
+      accountLifecycle: UnavailableAccountLifecycleRepository(),
+      billing: const UnavailableBillingRepository(),
+      publicBooking: null,
     );
   }
   await Supabase.initialize(url: url, publishableKey: publishableKey);
@@ -65,5 +130,67 @@ Future<_Dependencies> _createDependencies() async {
         businessId: businessId,
       );
     },
+    catalogFactory: (access) {
+      final businessId = access.business.id;
+      return OfflineFirstCatalogRepository(
+        local: LocalCatalogRepository(preferences, businessId),
+        remote: SupabaseCatalogRepository(client, businessId),
+        preferences: preferences,
+        businessId: businessId,
+      );
+    },
+    customerFactory: (access) {
+      return SupabaseCustomerRepository(client, access.business.id);
+    },
+    productFactory: (access) {
+      return SupabaseProductRepository(
+        client,
+        access.business.id,
+        access.business.type,
+      );
+    },
+    checkoutFactory: (_) => SupabaseCheckoutRepository(client),
+    appointmentFactory: (access) {
+      final businessId = access.business.id;
+      return OfflineFirstAppointmentRepository(
+        local: LocalAppointmentRepository(preferences, businessId),
+        remote: SupabaseAppointmentRepository(
+          client,
+          businessId,
+          client.auth.currentUser!.id,
+        ),
+        preferences: preferences,
+        businessId: businessId,
+      );
+    },
+    salesFactory: (access) {
+      final businessId = access.business.id;
+      return OfflineFirstSalesRepository(
+        local: LocalSalesRepository(preferences, businessId),
+        remote: SupabaseSalesRepository(client, businessId),
+        preferences: preferences,
+        businessId: businessId,
+      );
+    },
+    operationsFactory: (access) {
+      final businessId = access.business.id;
+      return OfflineFirstOperationsRepository(
+        local: LocalOperationsRepository(preferences, businessId),
+        remote: SupabaseOperationsRepository(client, businessId),
+        preferences: preferences,
+        businessId: businessId,
+      );
+    },
+    subscriptionFactory: (access) {
+      final businessId = access.business.id;
+      return CachedSubscriptionRepository(
+        remote: SupabaseSubscriptionRepository(client, businessId),
+        preferences: preferences,
+        businessId: businessId,
+      );
+    },
+    accountLifecycle: SupabaseAccountLifecycleRepository(client),
+    billing: GooglePlayBillingRepository(),
+    publicBooking: SupabasePublicBookingRepository(client),
   );
 }
