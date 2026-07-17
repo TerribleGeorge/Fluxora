@@ -104,10 +104,83 @@ Componentes:
 - tabela `automation_events`;
 - triggers no banco para criar eventos;
 - Edge Function `process-automation-events`;
-- integração futura com WhatsApp/e-mail dentro da função.
+- integração com WhatsApp Cloud API e e-mail dentro da função, quando as
+  credenciais externas estiverem configuradas.
 
 O app não precisa conhecer o provedor final de mensagem. Ele registra o dado
 operacional e o banco cria o evento correspondente.
+
+## Implementação atual
+
+Quando um agendamento é criado ou alterado, o Supabase cria eventos na tabela
+`automation_events`:
+
+| Evento | Quando fica disponível | Objetivo |
+| --- | --- | --- |
+| `appointment.created` | imediatamente | Avisar o profissional sobre novo agendamento. |
+| `appointment.updated` | imediatamente | Registrar mudança de horário, profissional, serviço ou status. |
+| `appointment.cancelled` | imediatamente | Registrar cancelamento. |
+| `appointment.reminder` | 30 minutos antes do atendimento | Lembrar o cliente por WhatsApp e/ou e-mail. |
+
+Se o horário do agendamento mudar, o lembrete pendente é recalculado. Se o
+agendamento for cancelado, o lembrete pendente é removido.
+
+## Canais de envio
+
+### WhatsApp
+
+A Edge Function `process-automation-events` está preparada para a WhatsApp
+Cloud API oficial da Meta. Para produção, configure os secrets abaixo no
+Supabase:
+
+```powershell
+npx supabase secrets set WHATSAPP_ACCESS_TOKEN="TOKEN_DA_META" --project-ref nqcoxxbzwzcuwprbzpdb
+npx supabase secrets set WHATSAPP_PHONE_NUMBER_ID="PHONE_NUMBER_ID" --project-ref nqcoxxbzwzcuwprbzpdb
+npx supabase secrets set WHATSAPP_TEMPLATE_LANGUAGE="pt_BR" --project-ref nqcoxxbzwzcuwprbzpdb
+npx supabase secrets set WHATSAPP_TEMPLATE_APPOINTMENT_CREATED="fluxora_novo_agendamento" --project-ref nqcoxxbzwzcuwprbzpdb
+npx supabase secrets set WHATSAPP_TEMPLATE_APPOINTMENT_REMINDER="fluxora_lembrete_agendamento" --project-ref nqcoxxbzwzcuwprbzpdb
+```
+
+Para mensagens automáticas iniciadas pelo estabelecimento, use templates
+aprovados na Meta. O modo de texto livre só deve ser usado em testes ou em
+janelas permitidas pela plataforma:
+
+```powershell
+npx supabase secrets set WHATSAPP_ALLOW_FREEFORM_TEXT="true" --project-ref nqcoxxbzwzcuwprbzpdb
+```
+
+### E-mail
+
+O envio de e-mail está preparado para Resend:
+
+```powershell
+npx supabase secrets set RESEND_API_KEY="SUA_CHAVE_RESEND" --project-ref nqcoxxbzwzcuwprbzpdb
+npx supabase secrets set EMAIL_FROM="Fluxora <agenda@seudominio.com>" --project-ref nqcoxxbzwzcuwprbzpdb
+```
+
+## Processamento automático
+
+Os eventos só viram mensagens quando a Edge Function é chamada. Para produção,
+configure um agendamento recorrente no Supabase para chamar:
+
+```text
+process-automation-events
+```
+
+Recomendação inicial:
+
+- frequência: a cada 1 minuto;
+- método: `POST`;
+- objetivo: processar eventos `pending` cujo `available_at` já chegou.
+
+Também é possível acionar manualmente durante testes:
+
+```powershell
+npx supabase functions invoke process-automation-events --project-ref nqcoxxbzwzcuwprbzpdb
+```
+
+Sem credenciais de WhatsApp/e-mail, a função processa o evento e registra o
+canal como `skipped`, sem quebrar o app.
 
 ## n8n ou alternativas futuras
 

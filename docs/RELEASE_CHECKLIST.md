@@ -69,6 +69,12 @@
 
 - [ ] Testar cadastro e confirmação de e-mail em Android real.
 - [ ] Testar recuperação de senha pelo deep link.
+- [ ] Configurar credenciais de WhatsApp Cloud API e templates aprovados.
+- [ ] Configurar provedor de e-mail transacional para lembretes.
+- [ ] Agendar a Edge Function `process-automation-events` para rodar
+  periodicamente.
+- [ ] Validar notificação do profissional no WhatsApp ao criar agendamento.
+- [ ] Validar lembrete do cliente 30 minutos antes por WhatsApp/e-mail.
 - [ ] Validar isolamento de dois estabelecimentos no banco.
 - [ ] Validar sincronização offline e reconexão em dois dispositivos.
 - [ ] Validar exclusão completa da conta e dos dados em um usuário de teste.
