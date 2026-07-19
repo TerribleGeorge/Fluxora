@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../domain/billing_repository.dart';
+import '../domain/business_repository.dart';
 
 class PlansPage extends StatefulWidget {
   const PlansPage({super.key, this.expired = false});
@@ -83,7 +84,8 @@ class _PlansPageState extends State<PlansPage> {
                   plan: plan,
                   storeProduct: storeProduct,
                   buying: _buying,
-                  onBuy: plan.id == FluxoraBillingCatalog.founderMonthlyBasePlanId
+                  onBuy:
+                      plan.id == FluxoraBillingCatalog.founderMonthlyBasePlanId
                       ? () => _buy(context)
                       : null,
                 ),
@@ -105,6 +107,7 @@ class _PlansPageState extends State<PlansPage> {
     try {
       await context.read<BillingRepository>().buy(
         FluxoraBillingCatalog.founderProductId,
+        businessId: context.read<BusinessAccess>().business.id,
       );
     } on Exception catch (error) {
       if (context.mounted) {
@@ -213,7 +216,9 @@ class _BillingNotice extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Card(
-      color: isError ? colorScheme.errorContainer : colorScheme.surfaceContainer,
+      color: isError
+          ? colorScheme.errorContainer
+          : colorScheme.surfaceContainer,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Text(

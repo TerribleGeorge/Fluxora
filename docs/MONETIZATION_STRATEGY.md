@@ -47,6 +47,37 @@ usar Google Play Billing para assinaturas digitais dentro do app. Isso garante:
 - compatibilidade com a política de pagamentos do Google;
 - possibilidade de teste interno antes de cobrar usuários reais.
 
+## Verificação segura de compra
+
+O Fluxora não libera acesso Pro apenas porque o aplicativo recebeu um retorno
+positivo do celular. O fluxo correto é:
+
+1. O app inicia a compra pela Google Play.
+2. O app escuta o `purchaseStream` e recebe o `purchaseToken`.
+3. O token é enviado para a Edge Function `verify-play-purchase`.
+4. A função consulta a Google Play Developer API no servidor.
+5. Só depois da resposta oficial do Google o Supabase atualiza
+   `business_subscriptions` para `status = active`.
+6. O app reconhece a compra com `completePurchase()` apenas após a verificação.
+
+Essa decisão evita desbloqueio local fraudulento, reduz risco de cobrança sem
+acesso e impede reembolso automático por compra não reconhecida.
+
+### Secrets obrigatórios no Supabase
+
+Para a verificação funcionar em produção, configurar:
+
+| Secret | Finalidade |
+| --- | --- |
+| `GOOGLE_PLAY_PACKAGE_NAME` | Pacote Android. Valor atual: `dev.devvoid.fluxora`. |
+| `GOOGLE_PLAY_ALLOWED_PRODUCT_IDS` | Lista de produtos aceitos. Valor atual: `fluxora_pro`. |
+| `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | JSON completo da conta de serviço com acesso à Play Developer API. |
+| `GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL` | Alternativa ao JSON completo. |
+| `GOOGLE_PLAY_SERVICE_ACCOUNT_PRIVATE_KEY` | Alternativa ao JSON completo. |
+
+> Enquanto a conta de serviço não estiver configurada, a função retorna erro
+> `503` e não libera o acesso Pro. Isso é intencional.
+
 ## Objeção encontrada no Play Console
 
 Ao tentar criar a assinatura, o Play Console mostrou apenas a ação
@@ -57,9 +88,12 @@ Correção aplicada:
 
 1. Adicionamos `in_app_purchase`.
 2. Criamos um catálogo de billing com IDs estáveis.
-3. Criamos `GooglePlayBillingRepository` para consultar e iniciar compra.
-4. Atualizamos a tela de planos para refletir o plano fundador.
-5. O próximo AAB precisa ser enviado ao teste interno antes de criar/ativar a
+3. Criamos `GooglePlayBillingRepository` para consultar, iniciar e escutar
+   compras.
+4. Criamos a Edge Function `verify-play-purchase` para validar o token no
+   servidor antes de liberar acesso.
+5. Atualizamos a tela de planos para refletir o plano fundador.
+6. O próximo AAB precisa ser enviado ao teste interno antes de criar/ativar a
    assinatura no Console.
 
 ## Status operacional
@@ -70,4 +104,7 @@ Correção aplicada:
 - [x] Criar plano base mensal `mensal`.
 - [x] Ativar plano mensal por R$ 39,99/mês.
 - [x] Criar oferta `teste-14-dias` com teste gratuito de 2 semanas.
+- [x] Implementar listener de compras e confirmação após verificação.
+- [x] Criar Edge Function de verificação server-side.
+- [ ] Configurar conta de serviço e secrets da Google Play Developer API.
 - [ ] Testar compra com testador licenciado antes de produção.

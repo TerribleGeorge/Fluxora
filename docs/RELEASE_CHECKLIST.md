@@ -33,6 +33,18 @@
   - Estratégia definida em `docs/MONETIZATION_STRATEGY.md`.
   - O Play Console exige upload de novo AAB com Billing antes de criar o produto.
   - Produto planejado: `fluxora_pro`.
+- [ ] Configurar verificação server-side das compras Google Play.
+  - Edge Function: `verify-play-purchase`.
+  - Migração: `20260719120000_play_billing_verification.sql`.
+  - Secrets necessários no Supabase:
+    - `GOOGLE_PLAY_PACKAGE_NAME=dev.devvoid.fluxora`
+    - `GOOGLE_PLAY_ALLOWED_PRODUCT_IDS=fluxora_pro`
+    - `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`
+      ou `GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL` +
+      `GOOGLE_PLAY_SERVICE_ACCOUNT_PRIVATE_KEY`
+  - A Google Play Developer API precisa estar habilitada e a conta de serviço
+    precisa ter acesso ao app na Play Console.
+  - Sem esses secrets, a função recusa a liberação de acesso Pro por segurança.
 - [x] Gerar e verificar o Android App Bundle assinado.
 - [ ] Executar teste fechado com 12 testadores por 14 dias, se exigido pela conta.
 - [ ] Solicitar acesso à produção e publicar após aprovação.

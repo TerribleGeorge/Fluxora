@@ -35,7 +35,7 @@ abstract class BillingRepository {
 
   Future<List<BillingProduct>> loadProducts();
 
-  Future<void> buy(String productId);
+  Future<void> buy(String productId, {required String businessId});
 }
 
 class BillingUnavailableException implements Exception {

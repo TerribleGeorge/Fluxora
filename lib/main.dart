@@ -228,7 +228,10 @@ Future<_Dependencies> _createDependencies() async {
       );
     },
     accountLifecycle: SupabaseAccountLifecycleRepository(client),
-    billing: GooglePlayBillingRepository(),
+    billing: GooglePlayBillingRepository(
+      client: client,
+      preferences: preferences,
+    ),
     publicBooking: SupabasePublicBookingRepository(client),
   );
 }
