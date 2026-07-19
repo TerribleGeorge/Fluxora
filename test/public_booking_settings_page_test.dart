@@ -23,6 +23,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Agendamento online'), findsOneWidget);
+    expect(find.text('Compartilhar minha agenda'), findsOneWidget);
     expect(
       find.textContaining('aparecerá após a publicação do portal web'),
       findsOneWidget,

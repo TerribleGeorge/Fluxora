@@ -60,6 +60,7 @@ void main() {
       type: BusinessType.browAndLashStudio,
       createdAt: createdAt,
       phone: '11999999999',
+      referralCode: 'AB12CD',
     );
     final membership = BusinessMembership(
       id: 'membership-1',
@@ -71,6 +72,10 @@ void main() {
 
     expect(UserProfile.fromJson(user.toJson()).email, user.email);
     expect(BeautyBusiness.fromJson(business.toJson()).type, business.type);
+    expect(
+      BeautyBusiness.fromJson(business.toJson()).referralCode,
+      business.referralCode,
+    );
     expect(
       BusinessMembership.fromJson(membership.toJson()).role,
       MembershipRole.owner,

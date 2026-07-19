@@ -36,10 +36,28 @@ void main() {
     expect(state.business?.name, 'Studio Aurora');
     expect(state.membership?.role, MembershipRole.owner);
   });
+
+  test('envia código de indicação ao criar estabelecimento', () async {
+    final repository = _FakeBusinessRepository();
+    final bloc = BusinessBloc(repository);
+    addTearDown(bloc.close);
+
+    bloc.add(
+      const BusinessCreated(
+        name: 'Studio Indicado',
+        type: BusinessType.spa,
+        referralCode: 'AB12CD',
+      ),
+    );
+    await bloc.stream.firstWhere((item) => item.status == BusinessStatus.ready);
+
+    expect(repository.lastReferralCode, 'AB12CD');
+  });
 }
 
 class _FakeBusinessRepository implements BusinessRepository {
   final List<BusinessAccess> items = [];
+  String lastReferralCode = '';
 
   @override
   Future<BusinessAccess> createBusiness({
@@ -47,7 +65,9 @@ class _FakeBusinessRepository implements BusinessRepository {
     required BusinessType type,
     String document = '',
     String phone = '',
+    String referralCode = '',
   }) async {
+    lastReferralCode = referralCode;
     final createdAt = DateTime(2026, 7, 7);
     final access = BusinessAccess(
       business: BeautyBusiness(

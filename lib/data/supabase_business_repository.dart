@@ -32,6 +32,7 @@ class SupabaseBusinessRepository implements BusinessRepository {
     required BusinessType type,
     String document = '',
     String phone = '',
+    String referralCode = '',
   }) async {
     try {
       final row = await _client.rpc<Map<String, dynamic>>(
@@ -41,6 +42,7 @@ class SupabaseBusinessRepository implements BusinessRepository {
           'business_kind': type.name,
           'business_document': document.trim(),
           'business_phone': phone.trim(),
+          'referral_code': referralCode.trim(),
         },
       );
       final business = _businessFromRow(row);
@@ -79,6 +81,7 @@ class SupabaseBusinessRepository implements BusinessRepository {
       createdAt: DateTime.parse(row['created_at'] as String),
       document: row['document'] as String? ?? '',
       phone: row['phone'] as String? ?? '',
+      referralCode: row['referral_code'] as String? ?? '',
     );
   }
 

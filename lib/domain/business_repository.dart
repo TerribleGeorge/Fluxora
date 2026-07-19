@@ -14,5 +14,6 @@ abstract interface class BusinessRepository {
     required BusinessType type,
     String document,
     String phone,
+    String referralCode,
   });
 }

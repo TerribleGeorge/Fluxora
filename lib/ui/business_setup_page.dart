@@ -14,11 +14,13 @@ class BusinessSetupPage extends StatefulWidget {
 
 class _BusinessSetupPageState extends State<BusinessSetupPage> {
   final _nameController = TextEditingController();
+  final _referralController = TextEditingController();
   BusinessType _type = BusinessType.beautySalon;
 
   @override
   void dispose() {
     _nameController.dispose();
+    _referralController.dispose();
     super.dispose();
   }
 
@@ -69,6 +71,17 @@ class _BusinessSetupPageState extends State<BusinessSetupPage> {
                       .toList(),
                   onChanged: (value) => setState(() => _type = value ?? _type),
                 ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _referralController,
+                  textCapitalization: TextCapitalization.characters,
+                  decoration: const InputDecoration(
+                    labelText: 'Código de indicação (opcional)',
+                    helperText:
+                        'Se outro estabelecimento indicou o Fluxora, informe o código aqui.',
+                    prefixIcon: Icon(Icons.handshake_outlined),
+                  ),
+                ),
                 const SizedBox(height: 24),
                 FilledButton(
                   onPressed: state.loading
@@ -77,6 +90,7 @@ class _BusinessSetupPageState extends State<BusinessSetupPage> {
                           BusinessCreated(
                             name: _nameController.text,
                             type: _type,
+                            referralCode: _referralController.text,
                           ),
                         ),
                   child: const Text('Criar estabelecimento'),

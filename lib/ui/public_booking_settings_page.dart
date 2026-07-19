@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../domain/public_booking.dart';
 import 'professional_booking_configuration_page.dart';
@@ -196,6 +197,14 @@ class _PublicBookingSettingsPageState extends State<PublicBookingSettingsPage> {
                   : () => _copyLink(link),
               icon: const Icon(Icons.copy_outlined),
               label: const Text('Copiar link'),
+            ),
+            const SizedBox(height: 8),
+            FilledButton.icon(
+              onPressed: _slugController.text.trim().isEmpty || link.isEmpty
+                  ? null
+                  : () => _shareLink(link),
+              icon: const Icon(Icons.ios_share_outlined),
+              label: const Text('Compartilhar minha agenda'),
             ),
           ],
         ),
@@ -548,6 +557,15 @@ class _PublicBookingSettingsPageState extends State<PublicBookingSettingsPage> {
         context,
       ).showSnackBar(const SnackBar(content: Text('Link copiado.')));
     }
+  }
+
+  Future<void> _shareLink(String link) async {
+    await SharePlus.instance.share(
+      ShareParams(
+        subject: 'Agendamento online',
+        text: 'Agende seu horário pelo meu link do Fluxora:\n$link',
+      ),
+    );
   }
 
   String _publicLink(String fallbackSlug) {

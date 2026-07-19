@@ -55,6 +55,7 @@ class BusinessBloc extends Bloc<BusinessEvent, BusinessState> {
       final access = await _repository.createBusiness(
         name: event.name,
         type: event.type,
+        referralCode: event.referralCode,
       );
       emit(
         BusinessState(

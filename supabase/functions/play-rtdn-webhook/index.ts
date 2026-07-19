@@ -3,19 +3,13 @@ import { createClient } from 'npm:@supabase/supabase-js@2'
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers':
-    'authorization, x-client-info, apikey, content-type',
+    'authorization, x-client-info, apikey, content-type, x-fluxora-webhook-secret',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
 type ServiceAccount = {
   client_email: string
   private_key: string
-}
-
-type VerifyBody = {
-  businessId?: string
-  productId?: string
-  purchaseToken?: string
 }
 
 Deno.serve(async (request) => {
@@ -27,68 +21,35 @@ Deno.serve(async (request) => {
     return json({ error: 'Method not allowed' }, 405)
   }
 
+  const webhookSecret = Deno.env.get('GOOGLE_PLAY_RTDN_WEBHOOK_SECRET')
+  const receivedSecret =
+    request.headers.get('x-fluxora-webhook-secret') ??
+    new URL(request.url).searchParams.get('token') ??
+    ''
+  if (!webhookSecret || receivedSecret !== webhookSecret) {
+    return json({ error: 'Invalid webhook secret' }, 401)
+  }
+
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
   if (!supabaseUrl || !serviceRoleKey) {
     return json({ error: 'Supabase service role is not configured' }, 500)
   }
 
-  const adminClient = createClient(supabaseUrl, serviceRoleKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  })
+  const event = await request.json().catch(() => null)
+  const decoded = decodePubSubEvent(event)
+  const subscriptionNotification = decoded?.subscriptionNotification
+  const purchaseToken = normalizeString(subscriptionNotification?.purchaseToken)
+  const productId = normalizeString(subscriptionNotification?.subscriptionId)
 
-  const jwt = getBearerToken(request)
-  if (!jwt) return json({ error: 'Missing authorization token' }, 401)
-
-  const { data: userData, error: userError } = await adminClient.auth.getUser(jwt)
-  if (userError || !userData.user) {
-    return json({ error: 'Invalid authorization token' }, 401)
-  }
-
-  const body = (await request.json().catch(() => ({}))) as VerifyBody
-  const businessId = normalizeString(body.businessId)
-  const productId = normalizeString(body.productId)
-  const purchaseToken = normalizeString(body.purchaseToken)
-
-  if (!businessId || !productId || !purchaseToken) {
-    return json({ error: 'businessId, productId and purchaseToken are required' }, 400)
-  }
-
-  const { data: membership, error: membershipError } = await adminClient
-    .from('memberships')
-    .select('role, active')
-    .eq('business_id', businessId)
-    .eq('user_id', userData.user.id)
-    .eq('active', true)
-    .maybeSingle()
-
-  if (membershipError) {
-    console.error('membership lookup failed', membershipError.message)
-    return json({ error: 'Unable to validate business access' }, 500)
-  }
-
-  if (!membership || !['owner', 'manager'].includes(String(membership.role))) {
-    return json({ error: 'Only owners and managers can verify purchases' }, 403)
-  }
-
-  const allowedProducts = parseCsvEnv('GOOGLE_PLAY_ALLOWED_PRODUCT_IDS')
-  if (allowedProducts.length > 0 && !allowedProducts.includes(productId)) {
-    return json({ error: 'Product is not allowed for this app' }, 400)
+  if (!purchaseToken || !productId) {
+    return json({ error: 'Missing subscription notification data' }, 400)
   }
 
   const packageName = Deno.env.get('GOOGLE_PLAY_PACKAGE_NAME') ?? 'dev.devvoid.fluxora'
   const serviceAccount = getServiceAccount()
   if (!serviceAccount) {
-    return json(
-      {
-        error: 'Google Play verification is not configured',
-        requiredSecrets: [
-          'GOOGLE_PLAY_SERVICE_ACCOUNT_JSON',
-          'or GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL + GOOGLE_PLAY_SERVICE_ACCOUNT_PRIVATE_KEY',
-        ],
-      },
-      503,
-    )
+    return json({ error: 'Google Play verification is not configured' }, 503)
   }
 
   let subscription: Record<string, unknown>
@@ -100,8 +61,8 @@ Deno.serve(async (request) => {
       purchaseToken,
     })
   } catch (error) {
-    console.error('Google Play verification failed', error)
-    return json({ error: 'Unable to verify purchase with Google Play' }, 502)
+    console.error('RTDN verification failed', error)
+    return json({ error: 'Unable to verify RTDN with Google Play' }, 502)
   }
 
   const lineItems = Array.isArray(subscription.lineItems)
@@ -111,66 +72,95 @@ Deno.serve(async (request) => {
     (item) => normalizeString(item.productId) === productId,
   )
   if (!matchingLineItem) {
-    return json({ error: 'Purchase token does not belong to this product' }, 400)
+    return json({ error: 'Notification does not match a known product' }, 400)
   }
 
+  const tokenHash = await sha256Hex(purchaseToken)
   const state = String(subscription.subscriptionState ?? '')
-  const hasAccess = [
-    'SUBSCRIPTION_STATE_ACTIVE',
-    'SUBSCRIPTION_STATE_IN_GRACE_PERIOD',
-  ].includes(state)
-
+  const status = statusForSubscriptionState(state)
   const expiryTime = normalizeString(matchingLineItem.expiryTime)
   const orderId =
     normalizeString(subscription.latestOrderId) ||
     normalizeString(matchingLineItem.latestSuccessfulOrderId)
 
-  const update = {
-    plan: 'pro',
-    status: hasAccess ? 'active' : 'pastDue',
-    provider: 'google_play',
-    provider_product_id: productId,
-    provider_purchase_token_hash: await sha256Hex(purchaseToken),
-    provider_subscription_id: orderId || productId,
-    provider_order_id: orderId || null,
-    current_period_ends_at: expiryTime || null,
-    last_verified_at: new Date().toISOString(),
+  const adminClient = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
+  const { data: existing, error: lookupError } = await adminClient
+    .from('business_subscriptions')
+    .select('business_id')
+    .eq('provider_purchase_token_hash', tokenHash)
+    .maybeSingle()
+
+  if (lookupError) {
+    console.error('RTDN lookup failed', lookupError.message)
+    return json({ error: 'Unable to find subscription' }, 500)
+  }
+
+  if (!existing) {
+    return json({ processed: false, reason: 'unknown_purchase_token' })
   }
 
   const { error: updateError } = await adminClient
     .from('business_subscriptions')
-    .update(update)
-    .eq('business_id', businessId)
+    .update({
+      plan: 'pro',
+      status,
+      provider: 'google_play',
+      provider_product_id: productId,
+      provider_subscription_id: orderId || productId,
+      provider_order_id: orderId || null,
+      current_period_ends_at: expiryTime || null,
+      last_verified_at: new Date().toISOString(),
+    })
+    .eq('business_id', existing.business_id)
 
   if (updateError) {
-    console.error('subscription update failed', updateError.message)
+    console.error('RTDN update failed', updateError.message)
     return json({ error: 'Unable to update subscription' }, 500)
   }
 
   return json({
-    verified: true,
-    hasAccess,
+    processed: true,
+    businessId: existing.business_id,
+    status,
     subscriptionState: state,
-    productId,
     currentPeriodEndsAt: expiryTime || null,
   })
 })
 
-function getBearerToken(request: Request) {
-  const authorization = request.headers.get('authorization') ?? ''
-  const match = authorization.match(/^Bearer\s+(.+)$/i)
-  return match?.[1] ?? ''
+function decodePubSubEvent(event: unknown) {
+  if (!event || typeof event !== 'object') return null
+  const message = (event as Record<string, unknown>).message
+  if (!message || typeof message !== 'object') return null
+  const data = normalizeString((message as Record<string, unknown>).data)
+  if (!data) return null
+  try {
+    const bytes = Uint8Array.from(atob(data), (char) => char.charCodeAt(0))
+    return JSON.parse(new TextDecoder().decode(bytes)) as Record<string, unknown>
+  } catch {
+    return null
+  }
+}
+
+function statusForSubscriptionState(state: string) {
+  if (
+    state === 'SUBSCRIPTION_STATE_ACTIVE' ||
+    state === 'SUBSCRIPTION_STATE_IN_GRACE_PERIOD'
+  ) {
+    return 'active'
+  }
+  if (
+    state === 'SUBSCRIPTION_STATE_CANCELED' ||
+    state === 'SUBSCRIPTION_STATE_EXPIRED'
+  ) {
+    return 'cancelled'
+  }
+  return 'pastDue'
 }
 
 function normalizeString(value: unknown) {
   return typeof value === 'string' ? value.trim() : ''
-}
-
-function parseCsvEnv(name: string) {
-  return (Deno.env.get(name) ?? '')
-    .split(',')
-    .map((value) => value.trim())
-    .filter((value) => value.length > 0)
 }
 
 function getServiceAccount(): ServiceAccount | null {

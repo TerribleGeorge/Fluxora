@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -14,12 +16,26 @@ class PlansPage extends StatefulWidget {
 
 class _PlansPageState extends State<PlansPage> {
   late final Future<List<BillingProduct>> _productsFuture;
+  StreamSubscription<String>? _billingMessageSubscription;
   bool _buying = false;
 
   @override
   void initState() {
     super.initState();
-    _productsFuture = context.read<BillingRepository>().loadProducts();
+    final billing = context.read<BillingRepository>();
+    _productsFuture = billing.loadProducts();
+    _billingMessageSubscription = billing.messages.listen((message) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+    });
+  }
+
+  @override
+  void dispose() {
+    _billingMessageSubscription?.cancel();
+    super.dispose();
   }
 
   @override

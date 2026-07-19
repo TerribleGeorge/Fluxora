@@ -172,32 +172,38 @@ class _CommissionCard extends StatelessWidget {
 
 Future<void> _showOpenCash(BuildContext context) async {
   final controller = TextEditingController(text: '0');
-  await _valueDialog(
-    context,
-    title: 'Abrir caixa',
-    label: 'Saldo inicial',
-    controller: controller,
-    action: 'Abrir',
-    onConfirm: () => context.read<OperationsBloc>().add(
-      CashOpened(_number(controller.text)),
-    ),
-  );
-  controller.dispose();
+  try {
+    await _valueDialog(
+      context,
+      title: 'Abrir caixa',
+      label: 'Saldo inicial',
+      controller: controller,
+      action: 'Abrir',
+      onConfirm: () => context.read<OperationsBloc>().add(
+        CashOpened(_number(controller.text)),
+      ),
+    );
+  } finally {
+    controller.dispose();
+  }
 }
 
 Future<void> _showCloseCash(BuildContext context, double expected) async {
   final controller = TextEditingController(text: expected.toStringAsFixed(2));
-  await _valueDialog(
-    context,
-    title: 'Fechar caixa',
-    label: 'Valor contado',
-    controller: controller,
-    action: 'Confirmar fechamento',
-    onConfirm: () => context.read<OperationsBloc>().add(
-      CashClosed(countedBalance: _number(controller.text)),
-    ),
-  );
-  controller.dispose();
+  try {
+    await _valueDialog(
+      context,
+      title: 'Fechar caixa',
+      label: 'Valor contado',
+      controller: controller,
+      action: 'Confirmar fechamento',
+      onConfirm: () => context.read<OperationsBloc>().add(
+        CashClosed(countedBalance: _number(controller.text)),
+      ),
+    );
+  } finally {
+    controller.dispose();
+  }
 }
 
 Future<void> _showPayout(
@@ -207,62 +213,67 @@ Future<void> _showPayout(
 ) async {
   final controller = TextEditingController(text: available.toStringAsFixed(2));
   var method = PaymentMethod.pix;
-  await showDialog<void>(
-    context: context,
-    builder: (dialogContext) => StatefulBuilder(
-      builder: (context, setState) => AlertDialog(
-        title: Text('Repasse para ${professional.name}'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: controller,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
+  try {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text('Repasse para ${professional.name}'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: controller,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: InputDecoration(
+                  labelText: 'Valor (máximo ${money(available)})',
+                ),
               ),
-              decoration: InputDecoration(
-                labelText: 'Valor (máximo ${money(available)})',
+              const SizedBox(height: 12),
+              DropdownButtonFormField<PaymentMethod>(
+                initialValue: method,
+                decoration: const InputDecoration(
+                  labelText: 'Forma de repasse',
+                ),
+                items: PaymentMethod.values
+                    .map(
+                      (item) => DropdownMenuItem(
+                        value: item,
+                        child: Text(_methodLabel(item)),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (value) => setState(() => method = value ?? method),
               ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancelar'),
             ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<PaymentMethod>(
-              initialValue: method,
-              decoration: const InputDecoration(labelText: 'Forma de repasse'),
-              items: PaymentMethod.values
-                  .map(
-                    (item) => DropdownMenuItem(
-                      value: item,
-                      child: Text(_methodLabel(item)),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (value) => setState(() => method = value ?? method),
+            FilledButton(
+              onPressed: () {
+                context.read<OperationsBloc>().add(
+                  CommissionPaid(
+                    professionalId: professional.id,
+                    amount: _number(controller.text),
+                    method: method,
+                  ),
+                );
+                Navigator.pop(dialogContext);
+              },
+              child: const Text('Registrar repasse'),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () {
-              context.read<OperationsBloc>().add(
-                CommissionPaid(
-                  professionalId: professional.id,
-                  amount: _number(controller.text),
-                  method: method,
-                ),
-              );
-              Navigator.pop(dialogContext);
-            },
-            child: const Text('Registrar repasse'),
-          ),
-        ],
       ),
-    ),
-  );
-  controller.dispose();
+    );
+  } finally {
+    controller.dispose();
+  }
 }
 
 Future<void> _valueDialog(

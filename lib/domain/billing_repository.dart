@@ -31,6 +31,8 @@ class BillingProduct {
 }
 
 abstract class BillingRepository {
+  Stream<String> get messages;
+
   Future<bool> isAvailable();
 
   Future<List<BillingProduct>> loadProducts();

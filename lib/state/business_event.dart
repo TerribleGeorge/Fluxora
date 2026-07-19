@@ -10,9 +10,14 @@ final class BusinessesStarted extends BusinessEvent {
 }
 
 final class BusinessCreated extends BusinessEvent {
-  const BusinessCreated({required this.name, required this.type});
+  const BusinessCreated({
+    required this.name,
+    required this.type,
+    this.referralCode = '',
+  });
   final String name;
   final BusinessType type;
+  final String referralCode;
 }
 
 final class BusinessSelected extends BusinessEvent {

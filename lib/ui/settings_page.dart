@@ -116,6 +116,28 @@ class SettingsPage extends StatelessWidget {
               subtitle: Text('Perfil: ${access.membership.role.name}'),
             ),
           ),
+          if (access.membership.role == MembershipRole.owner)
+            Card(
+              child: ListTile(
+                leading: const CircleAvatar(
+                  child: Icon(Icons.handshake_outlined),
+                ),
+                title: const Text('Indique o Fluxora'),
+                subtitle: Text(
+                  access.business.referralCode.isEmpty
+                      ? 'Seu código será gerado após sincronizar o estabelecimento.'
+                      : 'Código: ${access.business.referralCode} • indique e ganhe bônus de trial.',
+                ),
+                trailing: access.business.referralCode.isEmpty
+                    ? null
+                    : IconButton(
+                        tooltip: 'Copiar código',
+                        icon: const Icon(Icons.copy_outlined),
+                        onPressed: () =>
+                            _copyReferralCode(context, access.business),
+                      ),
+              ),
+            ),
           Card(
             child: ListTile(
               leading: const CircleAvatar(
@@ -211,43 +233,58 @@ class SettingsPage extends StatelessWidget {
     }
   }
 
+  Future<void> _copyReferralCode(
+    BuildContext context,
+    BeautyBusiness business,
+  ) async {
+    await Clipboard.setData(ClipboardData(text: business.referralCode));
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Código de indicação copiado.')),
+    );
+  }
+
   Future<void> _deleteAccount(BuildContext context) async {
     final controller = TextEditingController();
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Excluir conta definitivamente?'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Esta ação remove a conta e os dados associados. Exporte uma cópia antes, se necessário.',
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: controller,
-              decoration: const InputDecoration(
-                labelText: 'Digite EXCLUIR para confirmar',
+    final bool? confirmed;
+    try {
+      confirmed = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Excluir conta definitivamente?'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Esta ação remove a conta e os dados associados. Exporte uma cópia antes, se necessário.',
               ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: controller,
+                decoration: const InputDecoration(
+                  labelText: 'Digite EXCLUIR para confirmar',
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(
+                dialogContext,
+                controller.text.trim().toUpperCase() == 'EXCLUIR',
+              ),
+              child: const Text('Excluir definitivamente'),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(
-              dialogContext,
-              controller.text.trim().toUpperCase() == 'EXCLUIR',
-            ),
-            child: const Text('Excluir definitivamente'),
-          ),
-        ],
-      ),
-    );
-    controller.dispose();
+      );
+    } finally {
+      controller.dispose();
+    }
     if (confirmed != true || !context.mounted) return;
     try {
       await context.read<AccountLifecycleRepository>().deleteAccount();

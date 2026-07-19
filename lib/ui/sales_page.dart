@@ -143,216 +143,223 @@ Future<void> _showSaleForm(BuildContext context) async {
   final fee = TextEditingController(text: '0');
   final installments = TextEditingController(text: '1');
 
-  await showModalBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
-    builder: (sheetContext) => StatefulBuilder(
-      builder: (context, setModalState) {
-        return SafeArea(
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(
-              20,
-              20,
-              20,
-              20 + MediaQuery.viewInsetsOf(context).bottom,
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    'Novo atendimento ou venda',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 20),
-                  DropdownButtonFormField<String>(
-                    initialValue: professionalId,
-                    decoration: const InputDecoration(
-                      labelText: 'Profissional',
+  try {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (context, setModalState) {
+          return SafeArea(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                20,
+                20,
+                20,
+                20 + MediaQuery.viewInsetsOf(context).bottom,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'Novo atendimento ou venda',
+                      style: Theme.of(context).textTheme.titleLarge,
                     ),
-                    items: professionals
-                        .map(
-                          (item) => DropdownMenuItem(
-                            value: item.id,
-                            child: Text(item.name),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (value) =>
-                        professionalId = value ?? professionalId,
-                  ),
-                  const SizedBox(height: 14),
-                  SegmentedButton<SaleItemType>(
-                    segments: const [
-                      ButtonSegment(
-                        value: SaleItemType.service,
-                        label: Text('Serviço'),
-                      ),
-                      ButtonSegment(
-                        value: SaleItemType.product,
-                        label: Text('Produto'),
-                      ),
-                    ],
-                    selected: {itemType},
-                    onSelectionChanged: (value) =>
-                        setModalState(() => itemType = value.first),
-                  ),
-                  const SizedBox(height: 14),
-                  if (itemType == SaleItemType.service)
+                    const SizedBox(height: 20),
                     DropdownButtonFormField<String>(
-                      initialValue: serviceId,
-                      decoration: const InputDecoration(labelText: 'Serviço'),
-                      items: services
+                      initialValue: professionalId,
+                      decoration: const InputDecoration(
+                        labelText: 'Profissional',
+                      ),
+                      items: professionals
                           .map(
                             (item) => DropdownMenuItem(
                               value: item.id,
-                              child: Text(
-                                '${item.name} — ${money(item.price)}',
-                              ),
+                              child: Text(item.name),
                             ),
                           )
                           .toList(),
-                      onChanged: (value) => serviceId = value,
-                    )
-                  else
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 2,
-                          child: TextField(
-                            controller: productDescription,
-                            decoration: const InputDecoration(
-                              labelText: 'Produto',
-                            ),
-                          ),
+                      onChanged: (value) =>
+                          professionalId = value ?? professionalId,
+                    ),
+                    const SizedBox(height: 14),
+                    SegmentedButton<SaleItemType>(
+                      segments: const [
+                        ButtonSegment(
+                          value: SaleItemType.service,
+                          label: Text('Serviço'),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: TextField(
-                            controller: productPrice,
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                            ),
-                            decoration: const InputDecoration(
-                              labelText: 'Preço',
-                            ),
-                          ),
+                        ButtonSegment(
+                          value: SaleItemType.product,
+                          label: Text('Produto'),
                         ),
                       ],
+                      selected: {itemType},
+                      onSelectionChanged: (value) =>
+                          setModalState(() => itemType = value.first),
                     ),
-                  const SizedBox(height: 14),
-                  TextField(
-                    controller: quantity,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Quantidade'),
-                  ),
-                  const SizedBox(height: 14),
-                  DropdownButtonFormField<PaymentMethod>(
-                    initialValue: paymentMethod,
-                    decoration: const InputDecoration(
-                      labelText: 'Forma de pagamento',
-                    ),
-                    items: PaymentMethod.values
-                        .map(
-                          (method) => DropdownMenuItem(
-                            value: method,
-                            child: Text(_paymentMethodLabel(method)),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (value) => setModalState(
-                      () => paymentMethod = value ?? paymentMethod,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  if (paymentMethod == PaymentMethod.debitCard ||
-                      paymentMethod == PaymentMethod.creditCard)
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: fee,
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                            ),
-                            decoration: const InputDecoration(
-                              labelText: 'Taxa (%)',
+                    const SizedBox(height: 14),
+                    if (itemType == SaleItemType.service)
+                      DropdownButtonFormField<String>(
+                        initialValue: serviceId,
+                        decoration: const InputDecoration(labelText: 'Serviço'),
+                        items: services
+                            .map(
+                              (item) => DropdownMenuItem(
+                                value: item.id,
+                                child: Text(
+                                  '${item.name} — ${money(item.price)}',
+                                ),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (value) => serviceId = value,
+                      )
+                    else
+                      Row(
+                        children: [
+                          Expanded(
+                            flex: 2,
+                            child: TextField(
+                              controller: productDescription,
+                              decoration: const InputDecoration(
+                                labelText: 'Produto',
+                              ),
                             ),
                           ),
-                        ),
-                        if (paymentMethod == PaymentMethod.creditCard) ...[
                           const SizedBox(width: 12),
                           Expanded(
                             child: TextField(
-                              controller: installments,
-                              keyboardType: TextInputType.number,
+                              controller: productPrice,
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
                               decoration: const InputDecoration(
-                                labelText: 'Parcelas',
+                                labelText: 'Preço',
                               ),
                             ),
                           ),
                         ],
-                      ],
+                      ),
+                    const SizedBox(height: 14),
+                    TextField(
+                      controller: quantity,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Quantidade',
+                      ),
                     ),
-                  const SizedBox(height: 14),
-                  TextField(
-                    controller: customer,
-                    decoration: const InputDecoration(
-                      labelText: 'Cliente (opcional)',
+                    const SizedBox(height: 14),
+                    DropdownButtonFormField<PaymentMethod>(
+                      initialValue: paymentMethod,
+                      decoration: const InputDecoration(
+                        labelText: 'Forma de pagamento',
+                      ),
+                      items: PaymentMethod.values
+                          .map(
+                            (method) => DropdownMenuItem(
+                              value: method,
+                              child: Text(_paymentMethodLabel(method)),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) => setModalState(
+                        () => paymentMethod = value ?? paymentMethod,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  FilledButton(
-                    onPressed: () {
-                      final selectedService = services
-                          .where((item) => item.id == serviceId)
-                          .firstOrNull;
-                      final saleItem =
-                          itemType == SaleItemType.service &&
-                              selectedService != null
-                          ? SaleItem(
-                              id: createUuid(),
-                              type: SaleItemType.service,
-                              description: selectedService.name,
-                              quantity: int.tryParse(quantity.text) ?? 0,
-                              unitPrice: selectedService.price,
-                              serviceId: selectedService.id,
-                            )
-                          : SaleItem(
-                              id: createUuid(),
-                              type: SaleItemType.product,
-                              description: productDescription.text,
-                              quantity: int.tryParse(quantity.text) ?? 0,
-                              unitPrice: _parseNumber(productPrice.text),
-                            );
-                      context.read<SalesBloc>().add(
-                        SaleCreated(
-                          professionalId: professionalId,
-                          items: [saleItem],
-                          paymentMethod: paymentMethod,
-                          paymentFeePercent: _parseNumber(fee.text),
-                          installments: int.tryParse(installments.text) ?? 1,
-                          customerName: customer.text,
-                        ),
-                      );
-                      Navigator.pop(sheetContext);
-                    },
-                    child: const Text('Concluir venda'),
-                  ),
-                ],
+                    const SizedBox(height: 14),
+                    if (paymentMethod == PaymentMethod.debitCard ||
+                        paymentMethod == PaymentMethod.creditCard)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: fee,
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
+                              decoration: const InputDecoration(
+                                labelText: 'Taxa (%)',
+                              ),
+                            ),
+                          ),
+                          if (paymentMethod == PaymentMethod.creditCard) ...[
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: TextField(
+                                controller: installments,
+                                keyboardType: TextInputType.number,
+                                decoration: const InputDecoration(
+                                  labelText: 'Parcelas',
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    const SizedBox(height: 14),
+                    TextField(
+                      controller: customer,
+                      decoration: const InputDecoration(
+                        labelText: 'Cliente (opcional)',
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    FilledButton(
+                      onPressed: () {
+                        final selectedService = services
+                            .where((item) => item.id == serviceId)
+                            .firstOrNull;
+                        final saleItem =
+                            itemType == SaleItemType.service &&
+                                selectedService != null
+                            ? SaleItem(
+                                id: createUuid(),
+                                type: SaleItemType.service,
+                                description: selectedService.name,
+                                quantity: int.tryParse(quantity.text) ?? 0,
+                                unitPrice: selectedService.price,
+                                serviceId: selectedService.id,
+                              )
+                            : SaleItem(
+                                id: createUuid(),
+                                type: SaleItemType.product,
+                                description: productDescription.text,
+                                quantity: int.tryParse(quantity.text) ?? 0,
+                                unitPrice: _parseNumber(productPrice.text),
+                              );
+                        context.read<SalesBloc>().add(
+                          SaleCreated(
+                            professionalId: professionalId,
+                            items: [saleItem],
+                            paymentMethod: paymentMethod,
+                            paymentFeePercent: _parseNumber(fee.text),
+                            installments: int.tryParse(installments.text) ?? 1,
+                            customerName: customer.text,
+                          ),
+                        );
+                        Navigator.pop(sheetContext);
+                      },
+                      child: const Text('Concluir venda'),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        );
-      },
-    ),
-  );
-  productDescription.dispose();
-  productPrice.dispose();
-  quantity.dispose();
-  customer.dispose();
-  fee.dispose();
-  installments.dispose();
+          );
+        },
+      ),
+    );
+  } finally {
+    productDescription.dispose();
+    productPrice.dispose();
+    quantity.dispose();
+    customer.dispose();
+    fee.dispose();
+    installments.dispose();
+  }
 }
 
 String _paymentMethodLabel(PaymentMethod method) => switch (method) {

@@ -42,9 +42,17 @@
     - `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`
       ou `GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL` +
       `GOOGLE_PLAY_SERVICE_ACCOUNT_PRIVATE_KEY`
+    - `GOOGLE_PLAY_RTDN_WEBHOOK_SECRET` para proteger o webhook de
+      notificações externas da Google Play.
   - A Google Play Developer API precisa estar habilitada e a conta de serviço
     precisa ter acesso ao app na Play Console.
   - Sem esses secrets, a função recusa a liberação de acesso Pro por segurança.
+- [ ] Configurar Real-time Developer Notifications da Google Play.
+  - Edge Function preparada: `play-rtdn-webhook`.
+  - O endpoint deve receber o secret por header `x-fluxora-webhook-secret` ou
+    por query string `?token=...`.
+  - Usado para refletir renovações, cancelamentos e reembolsos feitos fora do
+    aplicativo.
 - [x] Gerar e verificar o Android App Bundle assinado.
 - [ ] Executar teste fechado com 12 testadores por 14 dias, se exigido pela conta.
 - [ ] Solicitar acesso à produção e publicar após aprovação.

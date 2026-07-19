@@ -104,10 +104,9 @@ class _ProductsTab extends StatelessWidget {
                           onTap: () => _showProductForm(context, item),
                           trailing: Switch(
                             value: item.active,
-                            onChanged: (active) =>
-                                context.read<ProductBloc>().add(
-                                  ProductActiveChanged(item, active),
-                                ),
+                            onChanged: (active) => context
+                                .read<ProductBloc>()
+                                .add(ProductActiveChanged(item, active)),
                           ),
                         ),
                       );
@@ -298,78 +297,85 @@ Future<void> _showProfessionalForm(
           identity != null &&
           identity.email.trim().toLowerCase() ==
               email.text.trim().toLowerCase());
-  await showModalBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
-    builder: (sheetContext) => StatefulBuilder(
-      builder: (context, setModalState) => _FormSheet(
-        title: item == null ? 'Novo profissional' : 'Editar profissional',
-        children: [
-          TextField(
-            controller: name,
-            decoration: const InputDecoration(labelText: 'Nome'),
-          ),
-          TextField(
-            controller: phone,
-            keyboardType: TextInputType.phone,
-            decoration: const InputDecoration(labelText: 'Telefone'),
-          ),
-          TextField(
-            controller: email,
-            keyboardType: TextInputType.emailAddress,
-            decoration: const InputDecoration(labelText: 'E-mail (opcional)'),
-            onChanged: (value) {
-              if (identity == null) return;
-              final sameEmail =
-                  value.trim().toLowerCase() ==
-                  identity.email.trim().toLowerCase();
-              if (sameEmail != linkToCurrentUser) {
-                setModalState(() => linkToCurrentUser = sameEmail);
-              }
-            },
-          ),
-          if (identity != null)
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              value: linkToCurrentUser,
-              title: const Text('Vincular este profissional ao meu usuário'),
-              subtitle: Text(
-                linkToCurrentUser
-                    ? 'Este login verá a própria agenda e comissões.'
-                    : 'Use quando este cadastro representa a pessoa logada.',
-              ),
-              onChanged: (value) =>
-                  setModalState(() => linkToCurrentUser = value),
+  try {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (context, setModalState) => _FormSheet(
+          title: item == null ? 'Novo profissional' : 'Editar profissional',
+          children: [
+            TextField(
+              controller: name,
+              decoration: const InputDecoration(labelText: 'Nome'),
             ),
-          TextField(
-            controller: commission,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(labelText: 'Comissão padrão (%)'),
-          ),
-          FilledButton(
-            onPressed: () {
-              bloc.add(
-                ProfessionalSaved(
-                  id: item?.id,
-                  name: name.text,
-                  phone: phone.text,
-                  email: email.text,
-                  commissionPercent: _number(commission.text),
-                  userId: linkToCurrentUser ? identity?.id : item?.userId,
+            TextField(
+              controller: phone,
+              keyboardType: TextInputType.phone,
+              decoration: const InputDecoration(labelText: 'Telefone'),
+            ),
+            TextField(
+              controller: email,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(labelText: 'E-mail (opcional)'),
+              onChanged: (value) {
+                if (identity == null) return;
+                final sameEmail =
+                    value.trim().toLowerCase() ==
+                    identity.email.trim().toLowerCase();
+                if (sameEmail != linkToCurrentUser) {
+                  setModalState(() => linkToCurrentUser = sameEmail);
+                }
+              },
+            ),
+            if (identity != null)
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                value: linkToCurrentUser,
+                title: const Text('Vincular este profissional ao meu usuário'),
+                subtitle: Text(
+                  linkToCurrentUser
+                      ? 'Este login verá a própria agenda e comissões.'
+                      : 'Use quando este cadastro representa a pessoa logada.',
                 ),
-              );
-              Navigator.pop(sheetContext);
-            },
-            child: const Text('Salvar profissional'),
-          ),
-        ],
+                onChanged: (value) =>
+                    setModalState(() => linkToCurrentUser = value),
+              ),
+            TextField(
+              controller: commission,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              decoration: const InputDecoration(
+                labelText: 'Comissão padrão (%)',
+              ),
+            ),
+            FilledButton(
+              onPressed: () {
+                bloc.add(
+                  ProfessionalSaved(
+                    id: item?.id,
+                    name: name.text,
+                    phone: phone.text,
+                    email: email.text,
+                    commissionPercent: _number(commission.text),
+                    userId: linkToCurrentUser ? identity?.id : item?.userId,
+                  ),
+                );
+                Navigator.pop(sheetContext);
+              },
+              child: const Text('Salvar profissional'),
+            ),
+          ],
+        ),
       ),
-    ),
-  );
-  name.dispose();
-  phone.dispose();
-  email.dispose();
-  commission.dispose();
+    );
+  } finally {
+    name.dispose();
+    phone.dispose();
+    email.dispose();
+    commission.dispose();
+  }
 }
 
 Future<void> _showServiceForm(
@@ -392,198 +398,209 @@ Future<void> _showServiceForm(
   final search = TextEditingController();
   var commissionType =
       item?.commissionType ?? ServiceCommissionType.businessDefault;
-  await showModalBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
-    builder: (sheetContext) => StatefulBuilder(
-      builder: (context, setModalState) {
-        final suggestions = templates
-            .where((template) => template.matches(search.text))
-            .take(18)
-            .toList(growable: false);
-        return _FormSheet(
-          title: item == null ? 'Novo serviço' : 'Editar serviço',
-          children: [
-            if (item == null) ...[
-              TextField(
-                controller: search,
-                decoration: const InputDecoration(
-                  labelText: 'Buscar sugestão ou criar serviço personalizado',
-                  hintText: 'Ex.: corte, barba, manicure, realidade virtual...',
-                  prefixIcon: Icon(Icons.search),
-                ),
-                onChanged: (_) => setModalState(() {}),
-              ),
-              Text(
-                'Use uma sugestão pronta ou ignore a lista e preencha os campos manualmente. O dono pode cadastrar qualquer experiência vendida no estabelecimento.',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              if (suggestions.isEmpty)
-                Card(
-                  child: ListTile(
-                    leading: const CircleAvatar(
-                      child: Icon(Icons.edit_note_outlined),
-                    ),
-                    title: const Text('Criar serviço fora da lista'),
-                    subtitle: Text(
-                      search.text.trim().isEmpty
-                          ? 'Digite nome, categoria, preço e duração abaixo.'
-                          : '“${search.text.trim()}” pode ser cadastrado manualmente abaixo.',
-                    ),
-                    onTap: () {
-                      final value = search.text.trim();
-                      if (value.isEmpty) return;
-                      setModalState(() {
-                        name.text = value;
-                        category.text = 'Experiências';
-                      });
-                    },
+  try {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (context, setModalState) {
+          final suggestions = templates
+              .where((template) => template.matches(search.text))
+              .take(18)
+              .toList(growable: false);
+          return _FormSheet(
+            title: item == null ? 'Novo serviço' : 'Editar serviço',
+            children: [
+              if (item == null) ...[
+                TextField(
+                  controller: search,
+                  decoration: const InputDecoration(
+                    labelText: 'Buscar sugestão ou criar serviço personalizado',
+                    hintText:
+                        'Ex.: corte, barba, manicure, realidade virtual...',
+                    prefixIcon: Icon(Icons.search),
                   ),
+                  onChanged: (_) => setModalState(() {}),
                 ),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final template in suggestions)
-                    ActionChip(
-                      label: Text(
-                        '${template.name} • ${template.durationMinutes} min',
+                Text(
+                  'Use uma sugestão pronta ou ignore a lista e preencha os campos manualmente. O dono pode cadastrar qualquer experiência vendida no estabelecimento.',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                if (suggestions.isEmpty)
+                  Card(
+                    child: ListTile(
+                      leading: const CircleAvatar(
+                        child: Icon(Icons.edit_note_outlined),
                       ),
-                      onPressed: () {
+                      title: const Text('Criar serviço fora da lista'),
+                      subtitle: Text(
+                        search.text.trim().isEmpty
+                            ? 'Digite nome, categoria, preço e duração abaixo.'
+                            : '“${search.text.trim()}” pode ser cadastrado manualmente abaixo.',
+                      ),
+                      onTap: () {
+                        final value = search.text.trim();
+                        if (value.isEmpty) return;
                         setModalState(() {
-                          name.text = template.name;
-                          category.text = template.category;
-                          duration.text = template.durationMinutes.toString();
-                          if (template.suggestedPrice > 0) {
-                            price.text = template.suggestedPrice
-                                .toStringAsFixed(2);
-                          }
+                          name.text = value;
+                          category.text = 'Experiências';
                         });
                       },
                     ),
+                  ),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final template in suggestions)
+                      ActionChip(
+                        label: Text(
+                          '${template.name} • ${template.durationMinutes} min',
+                        ),
+                        onPressed: () {
+                          setModalState(() {
+                            name.text = template.name;
+                            category.text = template.category;
+                            duration.text = template.durationMinutes.toString();
+                            if (template.suggestedPrice > 0) {
+                              price.text = template.suggestedPrice
+                                  .toStringAsFixed(2);
+                            }
+                          });
+                        },
+                      ),
+                  ],
+                ),
+              ],
+              TextField(
+                controller: name,
+                decoration: const InputDecoration(
+                  labelText: 'Nome',
+                  helperText:
+                      'Pode ser um serviço tradicional ou uma experiência exclusiva.',
+                ),
+              ),
+              TextField(
+                controller: category,
+                decoration: const InputDecoration(
+                  labelText: 'Categoria',
+                  hintText: 'Ex.: Cabelo, Barba, Pacotes, Experiências',
+                ),
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: price,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      decoration: const InputDecoration(
+                        labelText: 'Preço (R\$)',
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextField(
+                      controller: duration,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Duração (min)',
+                      ),
+                    ),
+                  ),
                 ],
               ),
-            ],
-            TextField(
-              controller: name,
-              decoration: const InputDecoration(
-                labelText: 'Nome',
-                helperText:
-                    'Pode ser um serviço tradicional ou uma experiência exclusiva.',
+              DropdownButtonFormField<ServiceCommissionType>(
+                initialValue: commissionType,
+                decoration: const InputDecoration(
+                  labelText: 'Regra de comissão',
+                ),
+                items: const [
+                  DropdownMenuItem(
+                    value: ServiceCommissionType.businessDefault,
+                    child: Text('Usar comissão do profissional'),
+                  ),
+                  DropdownMenuItem(
+                    value: ServiceCommissionType.percentage,
+                    child: Text('Percentual específico'),
+                  ),
+                  DropdownMenuItem(
+                    value: ServiceCommissionType.fixedAmount,
+                    child: Text('Valor fixo'),
+                  ),
+                ],
+                onChanged: (value) => setModalState(
+                  () => commissionType = value ?? commissionType,
+                ),
               ),
-            ),
-            TextField(
-              controller: category,
-              decoration: const InputDecoration(
-                labelText: 'Categoria',
-                hintText: 'Ex.: Cabelo, Barba, Pacotes, Experiências',
-              ),
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: price,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    decoration: const InputDecoration(labelText: 'Preço (R\$)'),
+              if (commissionType != ServiceCommissionType.businessDefault)
+                TextField(
+                  controller: commission,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  decoration: InputDecoration(
+                    labelText:
+                        commissionType == ServiceCommissionType.percentage
+                        ? 'Comissão (%)'
+                        : 'Comissão fixa (R\$)',
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextField(
-                    controller: duration,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Duração (min)',
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            DropdownButtonFormField<ServiceCommissionType>(
-              initialValue: commissionType,
-              decoration: const InputDecoration(labelText: 'Regra de comissão'),
-              items: const [
-                DropdownMenuItem(
-                  value: ServiceCommissionType.businessDefault,
-                  child: Text('Usar comissão do profissional'),
-                ),
-                DropdownMenuItem(
-                  value: ServiceCommissionType.percentage,
-                  child: Text('Percentual específico'),
-                ),
-                DropdownMenuItem(
-                  value: ServiceCommissionType.fixedAmount,
-                  child: Text('Valor fixo'),
-                ),
-              ],
-              onChanged: (value) =>
-                  setModalState(() => commissionType = value ?? commissionType),
-            ),
-            if (commissionType != ServiceCommissionType.businessDefault)
-              TextField(
-                controller: commission,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: InputDecoration(
-                  labelText: commissionType == ServiceCommissionType.percentage
-                      ? 'Comissão (%)'
-                      : 'Comissão fixa (R\$)',
-                ),
-              ),
-            FilledButton(
-              onPressed: () {
-                final parsedPrice = _number(price.text);
-                final parsedDuration = int.tryParse(duration.text.trim()) ?? 0;
-                final parsedCommission = _number(commission.text);
-                final invalidCommission =
-                    parsedCommission < 0 ||
-                    (commissionType == ServiceCommissionType.percentage &&
-                        parsedCommission > 100);
-                if (name.text.trim().length < 2 ||
-                    parsedPrice <= 0 ||
-                    parsedDuration < 5 ||
-                    invalidCommission) {
-                  messenger
-                    ..hideCurrentSnackBar()
-                    ..showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Revise o serviço: nome, preço, duração mínima de 5 minutos e comissão válida.',
+              FilledButton(
+                onPressed: () {
+                  final parsedPrice = _number(price.text);
+                  final parsedDuration =
+                      int.tryParse(duration.text.trim()) ?? 0;
+                  final parsedCommission = _number(commission.text);
+                  final invalidCommission =
+                      parsedCommission < 0 ||
+                      (commissionType == ServiceCommissionType.percentage &&
+                          parsedCommission > 100);
+                  if (name.text.trim().length < 2 ||
+                      parsedPrice <= 0 ||
+                      parsedDuration < 5 ||
+                      invalidCommission) {
+                    messenger
+                      ..hideCurrentSnackBar()
+                      ..showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Revise o serviço: nome, preço, duração mínima de 5 minutos e comissão válida.',
+                          ),
                         ),
-                      ),
-                    );
-                  return;
-                }
-                bloc.add(
-                  ServiceSaved(
-                    id: item?.id,
-                    name: name.text,
-                    category: category.text,
-                    price: parsedPrice,
-                    durationMinutes: parsedDuration,
-                    commissionType: commissionType,
-                    commissionValue: parsedCommission,
-                  ),
-                );
-                Navigator.pop(sheetContext);
-              },
-              child: const Text('Salvar serviço'),
-            ),
-          ],
-        );
-      },
-    ),
-  );
-  name.dispose();
-  category.dispose();
-  price.dispose();
-  duration.dispose();
-  commission.dispose();
-  search.dispose();
+                      );
+                    return;
+                  }
+                  bloc.add(
+                    ServiceSaved(
+                      id: item?.id,
+                      name: name.text,
+                      category: category.text,
+                      price: parsedPrice,
+                      durationMinutes: parsedDuration,
+                      commissionType: commissionType,
+                      commissionValue: parsedCommission,
+                    ),
+                  );
+                  Navigator.pop(sheetContext);
+                },
+                child: const Text('Salvar serviço'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  } finally {
+    name.dispose();
+    category.dispose();
+    price.dispose();
+    duration.dispose();
+    commission.dispose();
+    search.dispose();
+  }
 }
 
 Future<void> _showProductForm(BuildContext context, [Product? item]) async {
@@ -606,165 +623,168 @@ Future<void> _showProductForm(BuildContext context, [Product? item]) async {
   );
   final search = TextEditingController();
 
-  await showModalBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
-    builder: (sheetContext) => StatefulBuilder(
-      builder: (context, setModalState) {
-        final query = search.text.trim().toLowerCase();
-        final suggestions = templates
-            .where((template) {
-              if (query.isEmpty) return true;
-              return template.name.toLowerCase().contains(query) ||
-                  template.category.toLowerCase().contains(query);
-            })
-            .take(18)
-            .toList(growable: false);
-        return _FormSheet(
-          title: item == null ? 'Novo produto' : 'Editar produto',
-          children: [
-            if (item == null) ...[
-              TextField(
-                controller: search,
-                decoration: const InputDecoration(
-                  labelText: 'Buscar produto do nicho',
-                  hintText: 'Ex.: pomada, esmalte, óleo, sérum...',
-                  prefixIcon: Icon(Icons.search),
+  try {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (context, setModalState) {
+          final query = search.text.trim().toLowerCase();
+          final suggestions = templates
+              .where((template) {
+                if (query.isEmpty) return true;
+                return template.name.toLowerCase().contains(query) ||
+                    template.category.toLowerCase().contains(query);
+              })
+              .take(18)
+              .toList(growable: false);
+          return _FormSheet(
+            title: item == null ? 'Novo produto' : 'Editar produto',
+            children: [
+              if (item == null) ...[
+                TextField(
+                  controller: search,
+                  decoration: const InputDecoration(
+                    labelText: 'Buscar produto do nicho',
+                    hintText: 'Ex.: pomada, esmalte, óleo, sérum...',
+                    prefixIcon: Icon(Icons.search),
+                  ),
+                  onChanged: (_) => setModalState(() {}),
                 ),
-                onChanged: (_) => setModalState(() {}),
+                Text(
+                  'As sugestões respeitam o tipo de estabelecimento cadastrado.',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final template in suggestions)
+                      ActionChip(
+                        label: Text('${template.name} • ${template.category}'),
+                        onPressed: () {
+                          setModalState(() {
+                            name.text = template.name;
+                            category.text = template.category;
+                            if (template.suggestedSalePrice > 0) {
+                              salePrice.text = template.suggestedSalePrice
+                                  .toStringAsFixed(2);
+                            }
+                          });
+                        },
+                      ),
+                  ],
+                ),
+              ],
+              TextField(
+                controller: name,
+                decoration: const InputDecoration(labelText: 'Nome'),
               ),
-              Text(
-                'As sugestões respeitam o tipo de estabelecimento cadastrado.',
-                style: Theme.of(context).textTheme.bodySmall,
+              TextField(
+                controller: category,
+                decoration: const InputDecoration(labelText: 'Categoria'),
               ),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
+              Row(
                 children: [
-                  for (final template in suggestions)
-                    ActionChip(
-                      label: Text('${template.name} • ${template.category}'),
-                      onPressed: () {
-                        setModalState(() {
-                          name.text = template.name;
-                          category.text = template.category;
-                          if (template.suggestedSalePrice > 0) {
-                            salePrice.text = template.suggestedSalePrice
-                                .toStringAsFixed(2);
-                          }
-                        });
-                      },
+                  Expanded(
+                    child: TextField(
+                      controller: salePrice,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      decoration: const InputDecoration(
+                        labelText: 'Preço de venda (R\$)',
+                      ),
                     ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextField(
+                      controller: unitCost,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      decoration: const InputDecoration(
+                        labelText: 'Custo unitário (R\$)',
+                      ),
+                    ),
+                  ),
                 ],
               ),
-            ],
-            TextField(
-              controller: name,
-              decoration: const InputDecoration(labelText: 'Nome'),
-            ),
-            TextField(
-              controller: category,
-              decoration: const InputDecoration(labelText: 'Categoria'),
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: salePrice,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    decoration: const InputDecoration(
-                      labelText: 'Preço de venda (R\$)',
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: stock,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(labelText: 'Estoque'),
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextField(
-                    controller: unitCost,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    decoration: const InputDecoration(
-                      labelText: 'Custo unitário (R\$)',
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: stock,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Estoque'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextField(
-                    controller: minStock,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Estoque mínimo',
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            FilledButton(
-              onPressed: () {
-                final parsedSalePrice = _number(salePrice.text);
-                final parsedUnitCost = _number(unitCost.text);
-                final parsedStock = int.tryParse(stock.text.trim()) ?? -1;
-                final parsedMinStock = int.tryParse(minStock.text.trim()) ?? -1;
-                if (name.text.trim().length < 2 ||
-                    parsedSalePrice < 0 ||
-                    parsedUnitCost < 0 ||
-                    parsedStock < 0 ||
-                    parsedMinStock < 0) {
-                  messenger
-                    ..hideCurrentSnackBar()
-                    ..showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Revise nome, preço, custo e estoque do produto.',
-                        ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextField(
+                      controller: minStock,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Estoque mínimo',
                       ),
-                    );
-                  return;
-                }
-                bloc.add(
-                  ProductSaved(
-                    id: item?.id,
-                    name: name.text,
-                    category: category.text,
-                    salePrice: parsedSalePrice,
-                    unitCost: parsedUnitCost,
-                    stockQuantity: parsedStock,
-                    minStockQuantity: parsedMinStock,
-                    active: item?.active ?? true,
+                    ),
                   ),
-                );
-                Navigator.pop(sheetContext);
-              },
-              child: const Text('Salvar produto'),
-            ),
-          ],
-        );
-      },
-    ),
-  );
-
-  name.dispose();
-  category.dispose();
-  salePrice.dispose();
-  unitCost.dispose();
-  stock.dispose();
-  minStock.dispose();
-  search.dispose();
+                ],
+              ),
+              FilledButton(
+                onPressed: () {
+                  final parsedSalePrice = _number(salePrice.text);
+                  final parsedUnitCost = _number(unitCost.text);
+                  final parsedStock = int.tryParse(stock.text.trim()) ?? -1;
+                  final parsedMinStock =
+                      int.tryParse(minStock.text.trim()) ?? -1;
+                  if (name.text.trim().length < 2 ||
+                      parsedSalePrice < 0 ||
+                      parsedUnitCost < 0 ||
+                      parsedStock < 0 ||
+                      parsedMinStock < 0) {
+                    messenger
+                      ..hideCurrentSnackBar()
+                      ..showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Revise nome, preço, custo e estoque do produto.',
+                          ),
+                        ),
+                      );
+                    return;
+                  }
+                  bloc.add(
+                    ProductSaved(
+                      id: item?.id,
+                      name: name.text,
+                      category: category.text,
+                      salePrice: parsedSalePrice,
+                      unitCost: parsedUnitCost,
+                      stockQuantity: parsedStock,
+                      minStockQuantity: parsedMinStock,
+                      active: item?.active ?? true,
+                    ),
+                  );
+                  Navigator.pop(sheetContext);
+                },
+                child: const Text('Salvar produto'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  } finally {
+    name.dispose();
+    category.dispose();
+    salePrice.dispose();
+    unitCost.dispose();
+    stock.dispose();
+    minStock.dispose();
+    search.dispose();
+  }
 }
 
 class _FormSheet extends StatelessWidget {

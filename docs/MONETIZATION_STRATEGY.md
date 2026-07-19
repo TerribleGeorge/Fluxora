@@ -59,6 +59,8 @@ positivo do celular. O fluxo correto é:
 5. Só depois da resposta oficial do Google o Supabase atualiza
    `business_subscriptions` para `status = active`.
 6. O app reconhece a compra com `completePurchase()` apenas após a verificação.
+7. Eventos externos da Play Store, como renovação, cancelamento e reembolso,
+   são preparados para entrar pelo webhook `play-rtdn-webhook`.
 
 Essa decisão evita desbloqueio local fraudulento, reduz risco de cobrança sem
 acesso e impede reembolso automático por compra não reconhecida.
@@ -74,6 +76,7 @@ Para a verificação funcionar em produção, configurar:
 | `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | JSON completo da conta de serviço com acesso à Play Developer API. |
 | `GOOGLE_PLAY_SERVICE_ACCOUNT_EMAIL` | Alternativa ao JSON completo. |
 | `GOOGLE_PLAY_SERVICE_ACCOUNT_PRIVATE_KEY` | Alternativa ao JSON completo. |
+| `GOOGLE_PLAY_RTDN_WEBHOOK_SECRET` | Segredo compartilhado para proteger o endpoint de RTDN. |
 
 > Enquanto a conta de serviço não estiver configurada, a função retorna erro
 > `503` e não libera o acesso Pro. Isso é intencional.
@@ -106,5 +109,7 @@ Correção aplicada:
 - [x] Criar oferta `teste-14-dias` com teste gratuito de 2 semanas.
 - [x] Implementar listener de compras e confirmação após verificação.
 - [x] Criar Edge Function de verificação server-side.
+- [x] Preparar webhook RTDN para eventos externos da Google Play.
 - [ ] Configurar conta de serviço e secrets da Google Play Developer API.
+- [ ] Configurar Pub/Sub/RTDN na Play Console apontando para o webhook.
 - [ ] Testar compra com testador licenciado antes de produção.

@@ -65,6 +65,7 @@ class BeautyBusiness {
     required this.createdAt,
     this.document = '',
     this.phone = '',
+    this.referralCode = '',
   });
 
   final String id;
@@ -73,6 +74,7 @@ class BeautyBusiness {
   final DateTime createdAt;
   final String document;
   final String phone;
+  final String referralCode;
 
   Map<String, Object> toJson() => {
     'id': id,
@@ -81,6 +83,7 @@ class BeautyBusiness {
     'createdAt': createdAt.toIso8601String(),
     'document': document,
     'phone': phone,
+    'referralCode': referralCode,
   };
 
   factory BeautyBusiness.fromJson(Map<String, dynamic> json) {
@@ -102,6 +105,7 @@ class BeautyBusiness {
       createdAt: createdAt,
       document: (json['document'] as String? ?? '').trim(),
       phone: (json['phone'] as String? ?? '').trim(),
+      referralCode: (json['referralCode'] as String? ?? '').trim(),
     );
   }
 }

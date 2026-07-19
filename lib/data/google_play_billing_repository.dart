@@ -17,7 +17,9 @@ class GooglePlayBillingRepository implements BillingRepository {
     _purchaseSubscription = _inAppPurchase.purchaseStream.listen(
       _onPurchaseUpdates,
       onError: (_) {
-        // Access is only granted after server-side verification.
+        _messages.add(
+          'Não foi possível acompanhar a compra agora. Abra a tela de planos novamente em alguns instantes.',
+        );
       },
     );
   }
@@ -26,9 +28,13 @@ class GooglePlayBillingRepository implements BillingRepository {
   final SupabaseClient _client;
   final SharedPreferences _preferences;
   late final StreamSubscription<List<PurchaseDetails>> _purchaseSubscription;
+  final _messages = StreamController<String>.broadcast();
   final Map<String, String> _pendingBusinessIdsByProduct = {};
   static const _pendingBusinessPrefix =
       'fluxora.billing.pendingBusinessIdByProduct.';
+
+  @override
+  Stream<String> get messages => _messages.stream;
 
   @override
   Future<bool> isAvailable() => _inAppPurchase.isAvailable();
@@ -86,6 +92,10 @@ class GooglePlayBillingRepository implements BillingRepository {
         if (verified && purchase.pendingCompletePurchase) {
           await _inAppPurchase.completePurchase(purchase);
         }
+      } else if (purchase.status == PurchaseStatus.error) {
+        _messages.add(
+          'Não foi possível concluir a compra na Google Play. Tente novamente em alguns instantes.',
+        );
       }
     }
   }
@@ -111,11 +121,17 @@ class GooglePlayBillingRepository implements BillingRepository {
       await _preferences.remove(_pendingBusinessKey(purchase.productID));
       return true;
     } catch (_) {
+      _messages.add(
+        'Compra recebida, mas ainda não foi possível confirmar a assinatura. O acesso Pro será liberado após a verificação.',
+      );
       return false;
     }
   }
 
-  Future<void> dispose() => _purchaseSubscription.cancel();
+  Future<void> dispose() async {
+    await _purchaseSubscription.cancel();
+    await _messages.close();
+  }
 
   String _pendingBusinessKey(String productId) =>
       '$_pendingBusinessPrefix$productId';
@@ -123,6 +139,9 @@ class GooglePlayBillingRepository implements BillingRepository {
 
 class UnavailableBillingRepository implements BillingRepository {
   const UnavailableBillingRepository();
+
+  @override
+  Stream<String> get messages => const Stream.empty();
 
   @override
   Future<void> buy(String productId, {required String businessId}) async {
