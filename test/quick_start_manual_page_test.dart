@@ -30,7 +30,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('1. Onde o funcionário entra'), findsOneWidget);
-    expect(find.textContaining('Não use a conta do dono'), findsOneWidget);
+    expect(find.textContaining('toque em Funcionário'), findsOneWidget);
+    expect(find.textContaining('e-mail do estabelecimento'), findsOneWidget);
     expect(find.textContaining('Faturamento total da empresa'), findsOneWidget);
   });
 

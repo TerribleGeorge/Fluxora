@@ -42,7 +42,7 @@ class QuickStartManualCard extends StatelessWidget {
             Text(
               isProfessional
                   ? 'Entenda como acessar sua agenda, concluir atendimentos e usar o Fluxora sem ver os dados financeiros do dono.'
-                  : 'Aprenda a cadastrar equipe, liberar o acesso do funcionário e deixar seu estabelecimento visível para clientes.',
+                  : 'Aprenda a cadastrar equipe, criar login de funcionário e deixar seu estabelecimento visível para clientes.',
             ),
             const SizedBox(height: 12),
             Wrap(
@@ -133,24 +133,27 @@ class _OwnerManual extends StatelessWidget {
           icon: Icons.groups_outlined,
           title: '2. Como preparar sua equipe',
           body:
-              'Cadastre primeiro os profissionais que atendem no estabelecimento. Depois cadastre os serviços e vincule cada serviço ao profissional que realmente executa aquele atendimento.',
+              'Cadastre primeiro os profissionais que atendem no estabelecimento. Depois libere o acesso de funcionário, cadastre os serviços e vincule cada serviço ao profissional certo.',
           bullets: [
-            'Abra Cadastros > Profissionais e crie o profissional.',
-            'Abra Cadastros > Serviços e cadastre os serviços oferecidos.',
+            'Abra Mais > Equipe e serviços e crie o profissional.',
+            'Ative Criar acesso de funcionário, defina o nome de login e uma senha inicial.',
+            'Cadastre os serviços oferecidos, incluindo serviços personalizados do seu estabelecimento.',
             'No profissional, marque quais serviços ele atende.',
-            'Configure os dias e horários de trabalho do profissional.',
+            'Configure os dias, horários e bloqueios de agenda do profissional.',
           ],
         ),
         _ManualSectionData(
           icon: Icons.admin_panel_settings_outlined,
           title: '3. Como funciona o login do funcionário',
           body:
-              'O funcionário acessa pelo mesmo painel web ou pelo app, mas entra com o próprio e-mail. O que protege os dados do dono não é outro link: é o perfil de acesso vinculado ao usuário no Supabase.',
+              'A tela de entrada tem dois modos: Proprietário e Funcionário. O dono entra com e-mail e senha. O funcionário entra com o e-mail do estabelecimento, o nome cadastrado no profissional e a senha definida pelo dono.',
           bullets: [
-            'Dono: vê financeiro, lucro líquido, caixa, despesas, produtos, equipe e relatórios.',
-            'Funcionário: deve ver apenas a própria agenda, próprios atendimentos e ações operacionais liberadas.',
+            'Proprietário: usa o e-mail e a senha da conta do dono.',
+            'Funcionário: usa o e-mail do estabelecimento, o nome cadastrado e a senha inicial criada pelo dono.',
+            'Dono ou gerente: vê financeiro, lucro líquido, caixa, despesas, produtos, equipe e relatórios.',
+            'Funcionário: vê apenas a própria agenda, próprios atendimentos e ações operacionais liberadas.',
             'Nunca compartilhe a senha do dono com funcionário.',
-            'Cada funcionário precisa ter o próprio login para que o Fluxora saiba quem está usando.',
+            'Se o funcionário esquecer a senha, redefina o acesso no cadastro do profissional.',
           ],
         ),
         _ManualSectionData(
@@ -159,7 +162,8 @@ class _OwnerManual extends StatelessWidget {
           body:
               'O estabelecimento só aparece na busca pública quando está completo o suficiente para receber agendamentos reais. Isso evita que o cliente encontre uma página vazia ou sem horários.',
           bullets: [
-            'Ative Agendamento público nas configurações.',
+            'Abra Mais > Agendamento online nas configurações.',
+            'Ative Agendamento público.',
             'Ative Aparecer na busca pública.',
             'Preencha CEP, cidade e UF.',
             'Tenha pelo menos 1 serviço ativo.',
@@ -192,16 +196,20 @@ class _ProfessionalManual extends StatelessWidget {
   Widget build(BuildContext context) {
     return const _ManualList(
       introduction:
-          'O acesso do funcionário foi pensado para o trabalho do dia a dia: ver agenda, atender cliente e concluir atendimento sem expor informações estratégicas do dono.',
+          'O acesso do funcionário foi pensado para o trabalho do dia a dia: entrar com credenciais próprias, ver agenda, atender cliente e concluir atendimento sem expor informações estratégicas do dono.',
       sections: [
         _ManualSectionData(
           icon: Icons.link_outlined,
           title: '1. Onde o funcionário entra',
           body:
-              'O funcionário usa o mesmo painel web administrativo ou o app, mas sempre com o próprio e-mail e senha. O sistema identifica o perfil dele e limita a experiência.',
+              'O funcionário usa o mesmo painel web administrativo ou o app, mas deve escolher o modo Funcionário na tela de login. Esse modo separa a operação do colaborador da conta do dono.',
           bullets: [
             'Acesso web: https://terriblegeorge.github.io/fluxora-admin/',
-            'Não use a conta do dono.',
+            'Na tela de entrada, toque em Funcionário.',
+            'Informe o e-mail do estabelecimento passado pelo dono.',
+            'Digite o nome cadastrado exatamente como foi liberado no seu acesso.',
+            'Digite a senha definida pelo dono.',
+            'Nunca entre pelo modo Proprietário usando a conta do dono.',
             'Se estiver no iPhone, entre pelo navegador.',
             'Se estiver no Android, pode usar o app quando disponível.',
           ],
