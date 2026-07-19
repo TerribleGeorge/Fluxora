@@ -98,12 +98,14 @@ class _AppShellState extends State<AppShell> {
             ),
           );
         }
-        const mobileIndices = [0, 1, 4, 5, 3, 6];
+        const mobileIndices = [0, 1, 2, 4, 6];
         final mobileSelected = mobileIndices.indexOf(_index);
         return Scaffold(
           body: content,
           bottomNavigationBar: NavigationBar(
-            selectedIndex: mobileSelected < 0 ? 0 : mobileSelected,
+            selectedIndex: mobileSelected < 0
+                ? mobileIndices.length - 1
+                : mobileSelected,
             onDestinationSelected: (value) =>
                 setState(() => _index = mobileIndices[value]),
             destinations: const [
@@ -118,19 +120,14 @@ class _AppShellState extends State<AppShell> {
                 label: 'Agenda',
               ),
               NavigationDestination(
+                icon: Icon(Icons.receipt_long_outlined),
+                selectedIcon: Icon(Icons.receipt_long),
+                label: 'Lançamentos',
+              ),
+              NavigationDestination(
                 icon: Icon(Icons.point_of_sale_outlined),
                 selectedIcon: Icon(Icons.point_of_sale),
                 label: 'Vendas',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.account_balance_wallet_outlined),
-                selectedIcon: Icon(Icons.account_balance_wallet),
-                label: 'Caixa',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.storefront_outlined),
-                selectedIcon: Icon(Icons.storefront),
-                label: 'Cadastros',
               ),
               NavigationDestination(
                 icon: Icon(Icons.more_horiz),

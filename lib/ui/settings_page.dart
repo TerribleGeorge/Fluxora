@@ -23,6 +23,8 @@ import 'privacy_page.dart';
 import 'transactions_page.dart';
 import 'loyalty_settings_page.dart';
 import 'customers_page.dart';
+import 'catalog_page.dart';
+import 'operations_page.dart';
 import 'public_booking_settings_page.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -91,6 +93,36 @@ class SettingsPage extends StatelessWidget {
                 MaterialPageRoute<void>(
                   builder: (_) => const TransactionsPage(),
                 ),
+              ),
+            ),
+          ),
+          Card(
+            child: ListTile(
+              leading: const CircleAvatar(
+                child: Icon(Icons.account_balance_wallet_outlined),
+              ),
+              title: const Text('Caixa e comissões'),
+              subtitle: const Text(
+                'Abra caixa, acompanhe repasses e comissões',
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const OperationsPage()),
+              ),
+            ),
+          ),
+          Card(
+            child: ListTile(
+              leading: const CircleAvatar(
+                child: Icon(Icons.storefront_outlined),
+              ),
+              title: const Text('Equipe e serviços'),
+              subtitle: const Text(
+                'Cadastre profissionais, serviços e comissões',
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const CatalogPage()),
               ),
             ),
           ),
