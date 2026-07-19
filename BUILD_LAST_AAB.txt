@@ -1,14 +1,14 @@
-Fluxora 1.0.0 (build 18)
+Fluxora 1.0.0 (build 19)
 Pacote: dev.devvoid.fluxora
 Empresa: DevVoid.dev
 Artefato: build/app/outputs/bundle/release/app-release.aab
-Tamanho: 49684747 bytes
-SHA-256: 6C5F464C0EE892A26D3E90E428B2101C38B2B77FEAA32513D2D1DBEA8E6B3353
+Tamanho: 49960833 bytes
+SHA-256: 06289D5DEC92C4D35A9D0B59A900A7E953C28E9291D987DE8E8DA33929A6B537
 Assinatura: verificada (jar verified)
 Certificado de upload: CN=DevVoid.dev, OU=Mobile, O=DevVoid.dev, L=Brasilia, ST=DF, C=BR
-Gerado em: 2026-07-17
+Gerado em: 2026-07-19
 Backend: Supabase nqcoxxbzwzcuwprbzpdb
-Supabase: SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY passados via --dart-define
+Supabase: SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY passados via --dart-define-from-file=.env
 Portal público: https://terriblegeorge.github.io/fluxora-agendamento
 Google Play Billing: dependência in_app_purchase preservada
 Produto Google Play: fluxora_pro
@@ -17,37 +17,31 @@ Oferta configurada: teste-14-dias (teste gratuito de 2 semanas)
 
 Validações executadas:
 - flutter analyze --no-pub: sem problemas
-- flutter test --no-pub: 105 testes aprovados
-- npx supabase db push --linked: migration whatsapp_webhook_events aplicada
-- npx supabase functions deploy process-automation-events: publicado
-- npx supabase functions deploy whatsapp-webhook --no-verify-jwt: publicado
-- Verificação GET do webhook da Meta: HTTP 200 com challenge correto
-- POST fake de status WhatsApp: gravado em public.whatsapp_webhook_events
-- Evento de automação com WhatsApp desligado: processado sem bloquear e-mail
-- flutter build appbundle --release: concluído
-- jarsigner -verify: jar verified
+- flutter test --no-pub: 108 testes aprovados
+- flutter build appbundle --release --dart-define-from-file=.env: concluído
+- jarsigner -verify -certs build/app/outputs/bundle/release/app-release.aab: jar verified
+- SHA-256 calculado com Get-FileHash
 
-Principais mudanças da build 18:
-- Patch notes internos atualizados para a versão 1.0.0 (18).
-- Notas da Google Play atualizadas para a build 18.
-- Automação de agendamento preparada para e-mail do profissional, dono/gerente e cliente.
-- E-mails de agendamento podem anexar convite .ics compatível com Google Agenda, Apple Calendar e Outlook.
-- Convite .ics inclui serviço, cliente, profissional, estabelecimento, referência e alarme de 30 minutos.
-- WhatsApp oficial foi colocado atrás da chave WHATSAPP_NOTIFICATIONS_ENABLED=true.
-- Com WhatsApp desligado, falhas da Meta não impedem o processamento por e-mail.
-- Retorno da Meta agora grava providerMessageId e providerResponse para auditoria futura.
-- Webhook whatsapp-webhook criado para receber status de mensagens da Meta quando a integração for ativada.
-- Tabela public.whatsapp_webhook_events criada para armazenar status de enviado, entregue, lido, falha ou mensagens recebidas.
-- Documentação docs/AUTOMATION_EVENTS.md atualizada com WhatsApp, webhook, e-mail e calendário.
-- Relatórios/alertas de produtos e estoque preservados.
-- Manual inicial e portal público de agendamento preservados.
+Principais mudanças da build 19:
+- Patch notes internos atualizados para a versão 1.0.0 (19).
+- Notas da Google Play atualizadas para a build 19.
+- Login do funcionário separado por modo de acesso na tela inicial.
+- Proprietário entra com e-mail e senha da conta principal.
+- Funcionário entra com e-mail do estabelecimento, nome cadastrado e senha definida pelo dono.
+- Cadastro de profissional orienta a criação de acesso operacional para colaboradores.
+- Controle de clientes recorrentes e fidelidade avançou para reduzir dependência de importação de planilhas.
+- Lista/histórico de clientes agendados e atendidos foi preservada como base para reconhecer assiduidade.
+- Navegação mobile financeira foi ajustada para deixar lançamentos, despesas, retiradas e impostos mais acessíveis.
+- Verificação de compras do Google Play foi corrigida.
+- Base de indicações e eventos de assinatura em tempo real foi preparada.
+- Manual rápido da tela inicial foi atualizado para explicar o fluxo do dono e do funcionário.
+- Vendas, produtos, checkout, comissões, caixa, fidelidade e lucro real continuam preservados.
 
 Pendências externas conhecidas:
 - Configurar RESEND_API_KEY e EMAIL_FROM no Supabase para envio real de e-mails.
 - Configurar SMTP/entrega transacional antes de convidar usuários externos em escala.
-- No painel da Meta, usar o webhook apenas quando WhatsApp oficial entrar em produção.
-- Para WhatsApp em produção, será necessário número dedicado, templates aprovados e política de custo definida.
 - Fazer upload manual do AAB na Play Console e validar o teste fechado.
+- Validar em dispositivo real o login de proprietário, login de funcionário, site público e checkout após upload.
 
 A chave e as senhas de upload permanecem somente em android/key.properties e
 android/upload-keystore.jks, ambos ignorados pelo Git. Faça backup privado dos
