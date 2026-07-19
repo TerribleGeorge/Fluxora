@@ -19,6 +19,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
               ),
       ) {
     on<AuthSignInRequested>(_onSignIn);
+    on<AuthEmployeeSignInRequested>(_onEmployeeSignIn);
     on<AuthSignUpRequested>(_onSignUp);
     on<AuthPasswordResetRequested>(_onResetRequested);
     on<AuthPasswordUpdated>(_onPasswordUpdated);
@@ -43,6 +44,36 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
     await _run(emit, () async {
       await _repository.signIn(email: event.email, password: event.password);
+      emit(
+        AuthState(
+          status: AuthStatus.authenticated,
+          identity: _repository.currentIdentity,
+        ),
+      );
+    });
+  }
+
+  Future<void> _onEmployeeSignIn(
+    AuthEmployeeSignInRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    if (!_validEmail(event.businessEmail) ||
+        event.professionalName.trim().length < 2 ||
+        event.password.length < 8) {
+      emit(
+        const AuthState(
+          message:
+              'Informe e-mail do estabelecimento, nome cadastrado e senha.',
+        ),
+      );
+      return;
+    }
+    await _run(emit, () async {
+      await _repository.signInEmployee(
+        businessEmail: event.businessEmail.trim(),
+        professionalName: event.professionalName.trim(),
+        password: event.password,
+      );
       emit(
         AuthState(
           status: AuthStatus.authenticated,

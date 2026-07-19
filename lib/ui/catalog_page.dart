@@ -287,10 +287,15 @@ Future<void> _showProfessionalForm(
   final name = TextEditingController(text: item?.name);
   final phone = TextEditingController(text: item?.phone);
   final email = TextEditingController(text: item?.email);
+  final employeeLoginName = TextEditingController(
+    text: item?.loginName.isNotEmpty == true ? item!.loginName : item?.name,
+  );
+  final employeePassword = TextEditingController();
   final commission = TextEditingController(
     text: item?.defaultCommissionPercent.toStringAsFixed(1) ?? '0',
   );
   final identity = context.read<AuthBloc>().state.identity;
+  var enableEmployeeLogin = item?.loginEnabled ?? false;
   var linkToCurrentUser =
       item?.userId == identity?.id ||
       (item == null &&
@@ -341,6 +346,42 @@ Future<void> _showProfessionalForm(
                 onChanged: (value) =>
                     setModalState(() => linkToCurrentUser = value),
               ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              value: enableEmployeeLogin,
+              title: const Text('Criar acesso de funcionário'),
+              subtitle: Text(
+                enableEmployeeLogin
+                    ? 'Ele entrará pela aba Funcionário com o e-mail do estabelecimento, nome cadastrado e senha.'
+                    : 'Use para liberar apenas a agenda e tarefas próprias deste colaborador.',
+              ),
+              onChanged: (value) =>
+                  setModalState(() => enableEmployeeLogin = value),
+            ),
+            if (enableEmployeeLogin) ...[
+              TextField(
+                controller: employeeLoginName,
+                textInputAction: TextInputAction.next,
+                decoration: const InputDecoration(
+                  labelText: 'Nome de login do funcionário',
+                  helperText:
+                      'Ex.: Ana, João Barbeiro. O funcionário digitará esse nome no login.',
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: employeePassword,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: item?.loginEnabled == true
+                      ? 'Nova senha (opcional)'
+                      : 'Senha do funcionário',
+                  helperText: item?.loginEnabled == true
+                      ? 'Preencha apenas se quiser redefinir a senha.'
+                      : 'Use pelo menos 8 caracteres.',
+                ),
+              ),
+            ],
             TextField(
               controller: commission,
               keyboardType: const TextInputType.numberWithOptions(
@@ -360,6 +401,9 @@ Future<void> _showProfessionalForm(
                     email: email.text,
                     commissionPercent: _number(commission.text),
                     userId: linkToCurrentUser ? identity?.id : item?.userId,
+                    enableEmployeeLogin: enableEmployeeLogin,
+                    employeeLoginName: employeeLoginName.text,
+                    employeePassword: employeePassword.text,
                   ),
                 );
                 Navigator.pop(sheetContext);
@@ -374,6 +418,8 @@ Future<void> _showProfessionalForm(
     name.dispose();
     phone.dispose();
     email.dispose();
+    employeeLoginName.dispose();
+    employeePassword.dispose();
     commission.dispose();
   }
 }

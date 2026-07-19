@@ -11,6 +11,8 @@ class Professional {
     this.defaultCommissionPercent = 0,
     this.active = true,
     this.userId,
+    this.loginEnabled = false,
+    this.loginName = '',
     this.updatedAt,
   });
 
@@ -22,6 +24,8 @@ class Professional {
   final double defaultCommissionPercent;
   final bool active;
   final String? userId;
+  final bool loginEnabled;
+  final String loginName;
   final DateTime createdAt;
   final DateTime? updatedAt;
 
@@ -34,6 +38,8 @@ class Professional {
     defaultCommissionPercent: defaultCommissionPercent,
     active: active ?? this.active,
     userId: userId,
+    loginEnabled: loginEnabled,
+    loginName: loginName,
     createdAt: createdAt,
     updatedAt: DateTime.now(),
   );
@@ -47,6 +53,8 @@ class Professional {
     'defaultCommissionPercent': defaultCommissionPercent,
     'active': active,
     'userId': userId,
+    'loginEnabled': loginEnabled,
+    'loginName': loginName,
     'createdAt': createdAt.toIso8601String(),
     'updatedAt': updatedAt?.toIso8601String(),
   };
@@ -61,6 +69,8 @@ class Professional {
         (json['defaultCommissionPercent'] as num?)?.toDouble() ?? 0,
     active: json['active'] as bool? ?? true,
     userId: json['userId'] as String?,
+    loginEnabled: json['loginEnabled'] as bool? ?? false,
+    loginName: json['loginName'] as String? ?? '',
     createdAt: DateTime.parse(json['createdAt'] as String),
     updatedAt: DateTime.tryParse(json['updatedAt'] as String? ?? ''),
   );

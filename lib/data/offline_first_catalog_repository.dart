@@ -69,6 +69,19 @@ class OfflineFirstCatalogRepository implements CatalogRepository {
   }
 
   @override
+  Future<void> configureProfessionalLogin({
+    required String professionalId,
+    required String loginName,
+    required String password,
+  }) {
+    return _remote.configureProfessionalLogin(
+      professionalId: professionalId,
+      loginName: loginName,
+      password: password,
+    );
+  }
+
+  @override
   Future<void> saveService(BeautyService service) async {
     await _local.saveService(service);
     await _sendOrQueue(_CatalogOperation.service(service));

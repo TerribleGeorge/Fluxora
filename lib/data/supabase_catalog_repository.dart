@@ -40,7 +40,29 @@ class SupabaseCatalogRepository implements CatalogRepository {
       'email': professional.email,
       'default_commission_percent': professional.defaultCommissionPercent,
       'active': professional.active,
+      'login_enabled': professional.loginEnabled,
+      'login_name': professional.loginName,
     });
+  }
+
+  @override
+  Future<void> configureProfessionalLogin({
+    required String professionalId,
+    required String loginName,
+    required String password,
+  }) async {
+    final response = await _client.functions.invoke(
+      'configure-employee-login',
+      body: {
+        'businessId': businessId,
+        'professionalId': professionalId,
+        'loginName': loginName,
+        'password': password,
+      },
+    );
+    if (response.status < 200 || response.status >= 300) {
+      throw Exception('Unable to configure professional login');
+    }
   }
 
   @override
@@ -86,6 +108,8 @@ class SupabaseCatalogRepository implements CatalogRepository {
     defaultCommissionPercent: (row['default_commission_percent'] as num)
         .toDouble(),
     active: row['active'] as bool,
+    loginEnabled: row['login_enabled'] as bool? ?? false,
+    loginName: row['login_name'] as String? ?? '',
     createdAt: DateTime.parse(row['created_at'] as String),
     updatedAt: DateTime.parse(row['updated_at'] as String),
   );

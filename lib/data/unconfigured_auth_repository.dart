@@ -22,6 +22,13 @@ class UnconfiguredAuthRepository implements AuthRepository {
   }) async => _unavailable();
 
   @override
+  Future<void> signInEmployee({
+    required String businessEmail,
+    required String professionalName,
+    required String password,
+  }) async => _unavailable();
+
+  @override
   Future<void> signOut() async => _unavailable();
 
   @override

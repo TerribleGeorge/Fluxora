@@ -31,6 +31,11 @@ abstract interface class AuthRepository {
   Stream<AuthSessionChange> get sessionChanges;
 
   Future<void> signIn({required String email, required String password});
+  Future<void> signInEmployee({
+    required String businessEmail,
+    required String professionalName,
+    required String password,
+  });
   Future<void> signUp({
     required String name,
     required String email,

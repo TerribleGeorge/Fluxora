@@ -10,6 +10,18 @@ final class AuthSignInRequested extends AuthEvent {
   final String password;
 }
 
+final class AuthEmployeeSignInRequested extends AuthEvent {
+  const AuthEmployeeSignInRequested({
+    required this.businessEmail,
+    required this.professionalName,
+    required this.password,
+  });
+
+  final String businessEmail;
+  final String professionalName;
+  final String password;
+}
+
 final class AuthSignUpRequested extends AuthEvent {
   const AuthSignUpRequested(this.name, this.email, this.password);
   final String name;

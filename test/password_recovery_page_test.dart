@@ -115,6 +115,13 @@ class _FakeAuthRepository implements AuthRepository {
   }) async {}
 
   @override
+  Future<void> signInEmployee({
+    required String businessEmail,
+    required String professionalName,
+    required String password,
+  }) async {}
+
+  @override
   Future<void> signOut() async {}
 
   @override

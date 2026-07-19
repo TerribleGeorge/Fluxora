@@ -45,9 +45,23 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
     final existing = state.professionals
         .where((item) => item.id == event.id)
         .firstOrNull;
+    if (event.enableEmployeeLogin) {
+      final needsPassword = existing?.loginEnabled != true;
+      if (event.employeeLoginName.trim().length < 2 ||
+          (needsPassword && event.employeePassword.length < 8) ||
+          (event.employeePassword.isNotEmpty &&
+              event.employeePassword.length < 8)) {
+        _failure(
+          emit,
+          'Informe nome de login e senha do funcionário com 8 caracteres.',
+        );
+        return;
+      }
+    }
     final now = DateTime.now();
+    final professionalId = existing?.id ?? createUuid();
     final professional = Professional(
-      id: existing?.id ?? createUuid(),
+      id: professionalId,
       businessId: businessId,
       name: event.name.trim(),
       phone: event.phone.trim(),
@@ -55,10 +69,21 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
       defaultCommissionPercent: event.commissionPercent,
       active: existing?.active ?? true,
       userId: event.userId,
+      loginEnabled: existing?.loginEnabled ?? false,
+      loginName: existing?.loginName ?? '',
       createdAt: existing?.createdAt ?? now,
       updatedAt: now,
     );
-    await _run(emit, () => _repository.saveProfessional(professional));
+    await _run(emit, () async {
+      await _repository.saveProfessional(professional);
+      if (event.enableEmployeeLogin) {
+        await _repository.configureProfessionalLogin(
+          professionalId: professionalId,
+          loginName: event.employeeLoginName.trim(),
+          password: event.employeePassword,
+        );
+      }
+    });
   }
 
   Future<void> _onProfessionalActiveChanged(

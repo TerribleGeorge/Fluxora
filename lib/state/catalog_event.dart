@@ -16,6 +16,9 @@ final class ProfessionalSaved extends CatalogEvent {
     required this.email,
     required this.commissionPercent,
     this.userId,
+    this.enableEmployeeLogin = false,
+    this.employeeLoginName = '',
+    this.employeePassword = '',
   });
   final String? id;
   final String name;
@@ -23,6 +26,9 @@ final class ProfessionalSaved extends CatalogEvent {
   final String email;
   final double commissionPercent;
   final String? userId;
+  final bool enableEmployeeLogin;
+  final String employeeLoginName;
+  final String employeePassword;
 }
 
 final class ProfessionalActiveChanged extends CatalogEvent {

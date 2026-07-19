@@ -5,7 +5,7 @@ import '../state/auth_bloc.dart';
 import '../state/auth_event.dart';
 import '../state/auth_state.dart';
 
-enum _AuthMode { signIn, signUp, reset }
+enum _AuthMode { ownerSignIn, employeeSignIn, signUp, reset }
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -17,14 +17,18 @@ class AuthPage extends StatefulWidget {
 class _AuthPageState extends State<AuthPage> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _employeeBusinessEmailController = TextEditingController();
+  final _employeeNameController = TextEditingController();
   final _passwordController = TextEditingController();
-  _AuthMode _mode = _AuthMode.signIn;
+  _AuthMode _mode = _AuthMode.ownerSignIn;
   bool _obscurePassword = true;
 
   @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _employeeBusinessEmailController.dispose();
+    _employeeNameController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -69,6 +73,27 @@ class _AuthPageState extends State<AuthPage> {
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
                             const SizedBox(height: 28),
+                            if (_mode == _AuthMode.ownerSignIn ||
+                                _mode == _AuthMode.employeeSignIn) ...[
+                              SegmentedButton<_AuthMode>(
+                                segments: const [
+                                  ButtonSegment<_AuthMode>(
+                                    value: _AuthMode.ownerSignIn,
+                                    icon: Icon(Icons.storefront_outlined),
+                                    label: Text('Proprietário'),
+                                  ),
+                                  ButtonSegment<_AuthMode>(
+                                    value: _AuthMode.employeeSignIn,
+                                    icon: Icon(Icons.badge_outlined),
+                                    label: Text('Funcionário'),
+                                  ),
+                                ],
+                                selected: {_mode},
+                                onSelectionChanged: (selection) =>
+                                    _changeMode(selection.single),
+                              ),
+                              const SizedBox(height: 20),
+                            ],
                             if (_mode == _AuthMode.signUp) ...[
                               TextField(
                                 controller: _nameController,
@@ -81,21 +106,47 @@ class _AuthPageState extends State<AuthPage> {
                               ),
                               const SizedBox(height: 16),
                             ],
-                            TextField(
-                              controller: _emailController,
-                              keyboardType: TextInputType.emailAddress,
-                              textInputAction: _mode == _AuthMode.reset
-                                  ? TextInputAction.done
-                                  : TextInputAction.next,
-                              autofillHints: const [AutofillHints.email],
-                              onSubmitted: _mode == _AuthMode.reset
-                                  ? (_) => _submit()
-                                  : null,
-                              decoration: const InputDecoration(
-                                labelText: 'E-mail',
-                                prefixIcon: Icon(Icons.mail_outline),
+                            if (_mode == _AuthMode.employeeSignIn) ...[
+                              TextField(
+                                controller: _employeeBusinessEmailController,
+                                keyboardType: TextInputType.emailAddress,
+                                textInputAction: TextInputAction.next,
+                                autofillHints: const [AutofillHints.email],
+                                decoration: const InputDecoration(
+                                  labelText: 'E-mail do estabelecimento',
+                                  helperText:
+                                      'Use o e-mail de login informado pelo dono.',
+                                  prefixIcon: Icon(Icons.storefront_outlined),
+                                ),
                               ),
-                            ),
+                              const SizedBox(height: 16),
+                              TextField(
+                                controller: _employeeNameController,
+                                textInputAction: TextInputAction.next,
+                                autofillHints: const [AutofillHints.name],
+                                decoration: const InputDecoration(
+                                  labelText: 'Nome cadastrado',
+                                  helperText:
+                                      'Digite como o dono cadastrou seu acesso.',
+                                  prefixIcon: Icon(Icons.badge_outlined),
+                                ),
+                              ),
+                            ] else
+                              TextField(
+                                controller: _emailController,
+                                keyboardType: TextInputType.emailAddress,
+                                textInputAction: _mode == _AuthMode.reset
+                                    ? TextInputAction.done
+                                    : TextInputAction.next,
+                                autofillHints: const [AutofillHints.email],
+                                onSubmitted: _mode == _AuthMode.reset
+                                    ? (_) => _submit()
+                                    : null,
+                                decoration: const InputDecoration(
+                                  labelText: 'E-mail',
+                                  prefixIcon: Icon(Icons.mail_outline),
+                                ),
+                              ),
                             if (_mode != _AuthMode.reset) ...[
                               const SizedBox(height: 16),
                               TextField(
@@ -107,6 +158,8 @@ class _AuthPageState extends State<AuthPage> {
                                   labelText: 'Senha',
                                   helperText: _mode == _AuthMode.signUp
                                       ? 'Use pelo menos 8 caracteres'
+                                      : _mode == _AuthMode.employeeSignIn
+                                      ? 'Senha definida pelo dono do estabelecimento'
                                       : null,
                                   prefixIcon: const Icon(Icons.lock_outline),
                                   suffixIcon: IconButton(
@@ -136,19 +189,25 @@ class _AuthPageState extends State<AuthPage> {
                                   : Text(_primaryLabel),
                             ),
                             const SizedBox(height: 12),
-                            if (_mode == _AuthMode.signIn)
+                            if (_mode == _AuthMode.ownerSignIn)
                               TextButton(
                                 onPressed: () => _changeMode(_AuthMode.reset),
                                 child: const Text('Esqueci minha senha'),
                               ),
+                            if (_mode == _AuthMode.employeeSignIn)
+                              Text(
+                                'Se esqueceu a senha, peça para o dono redefinir no cadastro do funcionário.',
+                                textAlign: TextAlign.center,
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
                             TextButton(
                               onPressed: () => _changeMode(
-                                _mode == _AuthMode.signIn
+                                _mode == _AuthMode.ownerSignIn
                                     ? _AuthMode.signUp
-                                    : _AuthMode.signIn,
+                                    : _AuthMode.ownerSignIn,
                               ),
                               child: Text(
-                                _mode == _AuthMode.signIn
+                                _mode == _AuthMode.ownerSignIn
                                     ? 'Criar minha conta'
                                     : 'Voltar para o acesso',
                               ),
@@ -168,19 +227,23 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   String get _title => switch (_mode) {
-    _AuthMode.signIn => 'Bem-vindo ao Fluxora',
+    _AuthMode.ownerSignIn => 'Bem-vindo ao Fluxora',
+    _AuthMode.employeeSignIn => 'Acesso do funcionário',
     _AuthMode.signUp => 'Crie seu acesso',
     _AuthMode.reset => 'Recupere sua senha',
   };
 
   String get _subtitle => switch (_mode) {
-    _AuthMode.signIn => 'A gestão do seu negócio de beleza começa aqui.',
+    _AuthMode.ownerSignIn => 'A gestão do seu negócio de beleza começa aqui.',
+    _AuthMode.employeeSignIn =>
+      'Entre somente na agenda e nas tarefas liberadas para você.',
     _AuthMode.signUp => 'Organize sua equipe, caixa e lucro real.',
     _AuthMode.reset => 'Enviaremos um link seguro para o seu e-mail.',
   };
 
   String get _primaryLabel => switch (_mode) {
-    _AuthMode.signIn => 'Entrar',
+    _AuthMode.ownerSignIn => 'Entrar como proprietário',
+    _AuthMode.employeeSignIn => 'Entrar como funcionário',
     _AuthMode.signUp => 'Criar conta',
     _AuthMode.reset => 'Enviar instruções',
   };
@@ -195,9 +258,17 @@ class _AuthPageState extends State<AuthPage> {
   void _submit() {
     final bloc = context.read<AuthBloc>();
     switch (_mode) {
-      case _AuthMode.signIn:
+      case _AuthMode.ownerSignIn:
         bloc.add(
           AuthSignInRequested(_emailController.text, _passwordController.text),
+        );
+      case _AuthMode.employeeSignIn:
+        bloc.add(
+          AuthEmployeeSignInRequested(
+            businessEmail: _employeeBusinessEmailController.text,
+            professionalName: _employeeNameController.text,
+            password: _passwordController.text,
+          ),
         );
       case _AuthMode.signUp:
         bloc.add(

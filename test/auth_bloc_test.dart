@@ -33,6 +33,27 @@ void main() {
     expect(repository.signInCalls, 0);
   });
 
+  test('autentica funcionário com e-mail do negócio, nome e senha', () async {
+    final repository = _FakeAuthRepository();
+    final bloc = AuthBloc(repository);
+    addTearDown(bloc.close);
+
+    bloc.add(
+      const AuthEmployeeSignInRequested(
+        businessEmail: 'dono@barbearia.com',
+        professionalName: 'João',
+        password: 'senha123',
+      ),
+    );
+    final state = await bloc.stream.firstWhere(
+      (item) => item.status == AuthStatus.authenticated,
+    );
+
+    expect(state.identity?.email, 'employee-login@fluxora.test');
+    expect(repository.employeeBusinessEmails, ['dono@barbearia.com']);
+    expect(repository.employeeNames, ['João']);
+  });
+
   test('entra no fluxo de criação de senha após link de recuperação', () async {
     final repository = _FakeAuthRepository(
       identity: const AuthIdentity(id: 'user-1', email: 'ana@example.com'),
@@ -204,6 +225,8 @@ class _FakeAuthRepository implements AuthRepository {
   int signInCalls = 0;
   final List<String> passwordResetEmails = [];
   final List<String> updatedPasswords = [];
+  final List<String> employeeBusinessEmails = [];
+  final List<String> employeeNames = [];
 
   void emit(AuthSessionChange change) => _controller.add(change);
 
@@ -219,6 +242,21 @@ class _FakeAuthRepository implements AuthRepository {
   Future<void> signIn({required String email, required String password}) async {
     signInCalls++;
     _identity = AuthIdentity(id: 'user-1', email: email);
+  }
+
+  @override
+  Future<void> signInEmployee({
+    required String businessEmail,
+    required String professionalName,
+    required String password,
+  }) async {
+    employeeBusinessEmails.add(businessEmail);
+    employeeNames.add(professionalName);
+    _identity = const AuthIdentity(
+      id: 'employee-1',
+      email: 'employee-login@fluxora.test',
+      name: 'João',
+    );
   }
 
   @override

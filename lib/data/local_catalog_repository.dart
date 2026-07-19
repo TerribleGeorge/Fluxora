@@ -50,6 +50,17 @@ class LocalCatalogRepository implements CatalogRepository {
   }
 
   @override
+  Future<void> configureProfessionalLogin({
+    required String professionalId,
+    required String loginName,
+    required String password,
+  }) {
+    throw UnsupportedError(
+      'A criação de login de funcionário exige conexão com o servidor.',
+    );
+  }
+
+  @override
   Future<void> saveService(BeautyService service) async {
     final items = await getServices();
     final index = items.indexWhere((item) => item.id == service.id);

@@ -61,6 +61,37 @@ class SupabaseAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<void> signInEmployee({
+    required String businessEmail,
+    required String professionalName,
+    required String password,
+  }) async {
+    await _guard(() async {
+      final response = await _client.rpc<dynamic>(
+        'resolve_employee_login_email',
+        params: {
+          'business_owner_email': businessEmail.trim(),
+          'professional_login_name': professionalName.trim(),
+        },
+      );
+      final row = switch (response) {
+        final List<dynamic> rows when rows.isNotEmpty =>
+          rows.first as Map<String, dynamic>,
+        final Map<String, dynamic> value => value,
+        _ => throw const AuthFailure('Funcionário não encontrado.'),
+      };
+      final loginEmail = row['login_email'] as String? ?? '';
+      if (loginEmail.trim().isEmpty) {
+        throw const AuthFailure('Funcionário não encontrado.');
+      }
+      await _client.auth.signInWithPassword(
+        email: loginEmail,
+        password: password,
+      );
+    });
+  }
+
+  @override
   Future<void> signUp({
     required String name,
     required String email,
@@ -107,6 +138,8 @@ class SupabaseAuthRepository implements AuthRepository {
   Future<T> _guard<T>(Future<T> Function() operation) async {
     try {
       return await operation();
+    } on AuthFailure {
+      rethrow;
     } on AuthException catch (error) {
       throw AuthFailure(_friendlyMessage(error));
     } on Exception {
