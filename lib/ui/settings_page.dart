@@ -22,6 +22,7 @@ import 'patch_notes_page.dart';
 import 'privacy_page.dart';
 import 'transactions_page.dart';
 import 'loyalty_settings_page.dart';
+import 'customers_page.dart';
 import 'public_booking_settings_page.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -31,6 +32,9 @@ class SettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final access = context.watch<BusinessAccess>();
     final publicBookingRepository = context.watch<PublicBookingRepository?>();
+    final canManageCustomers =
+        access.membership.role == MembershipRole.owner ||
+        access.membership.role == MembershipRole.manager;
     return Scaffold(
       appBar: AppBar(title: const Text('Configurações')),
       body: ListView(
@@ -90,23 +94,42 @@ class SettingsPage extends StatelessWidget {
               ),
             ),
           ),
-          Card(
-            child: ListTile(
-              leading: const CircleAvatar(
-                child: Icon(Icons.workspace_premium_outlined),
-              ),
-              title: const Text('Fidelidade de clientes'),
-              subtitle: const Text(
-                'Ative níveis, descontos e antifraude no agendamento',
-              ),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const LoyaltySettingsPage(),
+          if (canManageCustomers)
+            Card(
+              child: ListTile(
+                leading: const CircleAvatar(
+                  child: Icon(Icons.workspace_premium_outlined),
+                ),
+                title: const Text('Fidelidade de clientes'),
+                subtitle: const Text(
+                  'Ative níveis, descontos e antifraude no agendamento',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const LoyaltySettingsPage(),
+                  ),
                 ),
               ),
             ),
-          ),
+          if (canManageCustomers)
+            Card(
+              child: ListTile(
+                leading: const CircleAvatar(
+                  child: Icon(Icons.people_alt_outlined),
+                ),
+                title: const Text('Clientes e descontos'),
+                subtitle: const Text(
+                  'Veja agendados, atendidos e ajuste a categoria de fidelidade',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const CustomersPage(),
+                  ),
+                ),
+              ),
+            ),
           Card(
             child: ListTile(
               leading: const CircleAvatar(

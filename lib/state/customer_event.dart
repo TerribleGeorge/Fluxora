@@ -16,6 +16,18 @@ final class LoyaltySettingsSaved extends CustomerEvent {
   final LoyaltySettings settings;
 }
 
+final class CustomerLoyaltyOverrideSaved extends CustomerEvent {
+  const CustomerLoyaltyOverrideSaved({
+    required this.customerId,
+    required this.tier,
+    required this.reason,
+  });
+
+  final String customerId;
+  final CustomerLoyaltyTier? tier;
+  final String reason;
+}
+
 final class CustomerLinkedToAppointment extends CustomerEvent {
   CustomerLinkedToAppointment({
     required this.appointmentId,

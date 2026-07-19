@@ -87,6 +87,8 @@ class Customer {
     this.relationshipStartedAt,
     this.lastCompletedAt,
     this.completedVisitsCount = 0,
+    this.scheduledAppointmentsCount = 0,
+    this.nextScheduledAt,
     this.updatedAt,
   });
 
@@ -101,8 +103,18 @@ class Customer {
   final DateTime? relationshipStartedAt;
   final DateTime? lastCompletedAt;
   final int completedVisitsCount;
+  final int scheduledAppointmentsCount;
+  final DateTime? nextScheduledAt;
   final DateTime createdAt;
   final DateTime? updatedAt;
+
+  bool get hasManualLoyalty => manualTierOverride != null;
+
+  bool get hasHistory =>
+      completedVisitsCount > 0 ||
+      scheduledAppointmentsCount > 0 ||
+      lastCompletedAt != null ||
+      nextScheduledAt != null;
 
   CustomerLoyaltyTier effectiveTier({
     required LoyaltySettings settings,
@@ -134,6 +146,8 @@ class Customer {
     'relationshipStartedAt': relationshipStartedAt?.toIso8601String(),
     'lastCompletedAt': lastCompletedAt?.toIso8601String(),
     'completedVisitsCount': completedVisitsCount,
+    'scheduledAppointmentsCount': scheduledAppointmentsCount,
+    'nextScheduledAt': nextScheduledAt?.toIso8601String(),
     'createdAt': createdAt.toIso8601String(),
     'updatedAt': updatedAt?.toIso8601String(),
   };
@@ -160,6 +174,10 @@ class Customer {
       json['lastCompletedAt'] as String? ?? '',
     ),
     completedVisitsCount: json['completedVisitsCount'] as int? ?? 0,
+    scheduledAppointmentsCount: json['scheduledAppointmentsCount'] as int? ?? 0,
+    nextScheduledAt: DateTime.tryParse(
+      json['nextScheduledAt'] as String? ?? '',
+    ),
     createdAt: DateTime.parse(json['createdAt'] as String),
     updatedAt: DateTime.tryParse(json['updatedAt'] as String? ?? ''),
   );

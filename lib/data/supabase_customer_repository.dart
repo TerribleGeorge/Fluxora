@@ -44,13 +44,17 @@ class SupabaseCustomerRepository implements CustomerRepository {
 
   @override
   Future<List<Customer>> getCustomers() async {
-    final rows = await _client
-        .from('customers')
-        .select()
-        .eq('business_id', businessId)
-        .isFilter('deleted_at', null)
-        .order('name');
-    return rows.map(_customerFromRow).toList(growable: false);
+    final rows = await _client.rpc<dynamic>(
+      'list_customer_activity',
+      params: {'target_business_id': businessId, 'raw_query': ''},
+    );
+    final values = switch (rows) {
+      final List<dynamic> list => list,
+      _ => throw const FormatException('Lista de clientes inválida.'),
+    };
+    return values
+        .map((row) => _customerFromRow(row as Map<String, dynamic>))
+        .toList(growable: false);
   }
 
   @override
@@ -73,6 +77,29 @@ class SupabaseCustomerRepository implements CustomerRepository {
       'last_completed_at': customer.lastCompletedAt?.toUtc().toIso8601String(),
       'completed_visits_count': customer.completedVisitsCount,
     });
+  }
+
+  @override
+  Future<Customer> updateCustomerLoyaltyOverride({
+    required String customerId,
+    required CustomerLoyaltyTier? tier,
+    required String reason,
+  }) async {
+    final response = await _client.rpc<dynamic>(
+      'update_customer_loyalty_override',
+      params: {
+        'target_customer_id': customerId,
+        'target_tier': tier?.storageName,
+        'target_reason': reason.trim(),
+      },
+    );
+    final row = switch (response) {
+      final List<dynamic> rows when rows.isNotEmpty =>
+        rows.first as Map<String, dynamic>,
+      final Map<String, dynamic> value => value,
+      _ => throw const FormatException('Cliente atualizado inválido.'),
+    };
+    return _customerFromRow(row);
   }
 
   @override
@@ -167,6 +194,11 @@ class SupabaseCustomerRepository implements CustomerRepository {
       row['last_completed_at'] as String? ?? '',
     )?.toLocal(),
     completedVisitsCount: row['completed_visits_count'] as int? ?? 0,
+    scheduledAppointmentsCount:
+        row['scheduled_appointments_count'] as int? ?? 0,
+    nextScheduledAt: DateTime.tryParse(
+      row['next_scheduled_at'] as String? ?? '',
+    )?.toLocal(),
     createdAt: DateTime.parse(row['created_at'] as String).toLocal(),
     updatedAt: DateTime.tryParse(row['updated_at'] as String? ?? '')?.toLocal(),
   );

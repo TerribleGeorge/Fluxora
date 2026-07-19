@@ -8,6 +8,7 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
   CustomerBloc(this._repository) : super(const CustomerState()) {
     on<CustomerStarted>(_onStarted);
     on<LoyaltySettingsSaved>(_onLoyaltySettingsSaved);
+    on<CustomerLoyaltyOverrideSaved>(_onCustomerLoyaltyOverrideSaved);
     on<CustomerLinkedToAppointment>(_onCustomerLinkedToAppointment);
     on<CustomerAssociationSearched>(_onCustomerAssociationSearched);
   }
@@ -53,6 +54,43 @@ class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
         state.copyWith(
           status: CustomerStatus.failure,
           message: 'Não foi possível salvar a fidelidade.',
+        ),
+      );
+    }
+  }
+
+  Future<void> _onCustomerLoyaltyOverrideSaved(
+    CustomerLoyaltyOverrideSaved event,
+    Emitter<CustomerState> emit,
+  ) async {
+    if (event.customerId.trim().isEmpty) {
+      emit(
+        state.copyWith(
+          status: CustomerStatus.failure,
+          message: 'Não foi possível identificar o cliente.',
+        ),
+      );
+      return;
+    }
+
+    emit(state.copyWith(status: CustomerStatus.loading));
+    try {
+      await _repository.updateCustomerLoyaltyOverride(
+        customerId: event.customerId,
+        tier: event.tier,
+        reason: event.reason,
+      );
+      await _reload(
+        emit,
+        message: event.tier == null
+            ? 'Cliente voltou para a fidelidade automática.'
+            : 'Categoria de fidelidade do cliente salva.',
+      );
+    } on Exception {
+      emit(
+        state.copyWith(
+          status: CustomerStatus.failure,
+          message: 'Não foi possível salvar a categoria do cliente.',
         ),
       );
     }

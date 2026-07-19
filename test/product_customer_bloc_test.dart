@@ -53,6 +53,35 @@ void main() {
     await bloc.close();
   });
 
+  test('CustomerBloc salva categoria manual de cliente fiel', () async {
+    final repository = _FakeCustomerRepository();
+    final bloc = CustomerBloc(repository);
+
+    bloc.add(
+      const CustomerLoyaltyOverrideSaved(
+        customerId: 'customer-1',
+        tier: CustomerLoyaltyTier.premium,
+        reason: 'Cliente antigo da casa',
+      ),
+    );
+
+    await expectLater(
+      bloc.stream,
+      emitsThrough(
+        predicate<CustomerState>(
+          (state) =>
+              state.status == CustomerStatus.success &&
+              state.message == 'Categoria de fidelidade do cliente salva.',
+        ),
+      ),
+    );
+    expect(repository.overrideCustomerId, 'customer-1');
+    expect(repository.overrideTier, CustomerLoyaltyTier.premium);
+    expect(repository.overrideReason, 'Cliente antigo da casa');
+
+    await bloc.close();
+  });
+
   test(
     'CustomerBloc associa cliente sem exigir leitura ampla da base',
     () async {
@@ -230,6 +259,9 @@ class _FakeCustomerRepository implements CustomerRepository {
   bool failLink = false;
   String? searchedAppointmentId;
   String? searchedQuery;
+  String? overrideCustomerId;
+  CustomerLoyaltyTier? overrideTier;
+  String? overrideReason;
 
   @override
   Future<List<Customer>> getCustomers() async {
@@ -242,6 +274,25 @@ class _FakeCustomerRepository implements CustomerRepository {
 
   @override
   Future<void> saveCustomer(Customer customer) async {}
+
+  @override
+  Future<Customer> updateCustomerLoyaltyOverride({
+    required String customerId,
+    required CustomerLoyaltyTier? tier,
+    required String reason,
+  }) async {
+    overrideCustomerId = customerId;
+    overrideTier = tier;
+    overrideReason = reason;
+    return Customer(
+      id: customerId,
+      businessId: 'business-1',
+      name: 'Cliente Fiel',
+      manualTierOverride: tier,
+      manualTierReason: reason,
+      createdAt: DateTime(2026),
+    );
+  }
 
   @override
   Future<void> saveLoyaltySettings(LoyaltySettings settings) async {
