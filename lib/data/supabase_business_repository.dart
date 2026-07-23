@@ -48,11 +48,20 @@ class SupabaseBusinessRepository implements BusinessRepository {
       final business = _businessFromRow(row);
       final accesses = await getBusinesses();
       return accesses.firstWhere((item) => item.business.id == business.id);
-    } on PostgrestException {
-      throw const AuthFailure(
-        'Não foi possível criar o estabelecimento. Tente novamente.',
-      );
+    } on PostgrestException catch (error) {
+      throw AuthFailure(_friendlyCreateBusinessMessage(error));
     }
+  }
+
+  String _friendlyCreateBusinessMessage(PostgrestException error) {
+    final details = '${error.message} ${error.details ?? ''}'.toLowerCase();
+    if (error.code == '23505' || details.contains('already registered')) {
+      return 'Este CNPJ já possui um estabelecimento cadastrado no Fluxora. Entre com a conta original ou fale com o suporte da DevVoid.dev.';
+    }
+    if (details.contains('cnpj') || details.contains('business document')) {
+      return 'Informe um CNPJ válido para criar o estabelecimento.';
+    }
+    return 'Não foi possível criar o estabelecimento. Tente novamente.';
   }
 
   BusinessAccess _fromMembershipRow(Map<String, dynamic> row) {

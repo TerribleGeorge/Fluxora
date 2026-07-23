@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/services.dart';
 
 import '../domain/account.dart';
+import '../domain/business_document.dart';
 import '../state/business_bloc.dart';
 import '../state/business_event.dart';
 
@@ -14,12 +16,14 @@ class BusinessSetupPage extends StatefulWidget {
 
 class _BusinessSetupPageState extends State<BusinessSetupPage> {
   final _nameController = TextEditingController();
+  final _documentController = TextEditingController();
   final _referralController = TextEditingController();
   BusinessType _type = BusinessType.beautySalon;
 
   @override
   void dispose() {
     _nameController.dispose();
+    _documentController.dispose();
     _referralController.dispose();
     super.dispose();
   }
@@ -43,7 +47,7 @@ class _BusinessSetupPageState extends State<BusinessSetupPage> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Você poderá cadastrar equipe, serviços e regras financeiras depois.',
+                  'O CNPJ protege seu teste gratuito, evita cadastros duplicados e ajuda o Fluxora a tratar seu negócio como uma empresa real.',
                 ),
                 const SizedBox(height: 24),
                 TextField(
@@ -73,6 +77,43 @@ class _BusinessSetupPageState extends State<BusinessSetupPage> {
                 ),
                 const SizedBox(height: 16),
                 TextField(
+                  controller: _documentController,
+                  textCapitalization: TextCapitalization.characters,
+                  keyboardType: TextInputType.text,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp('[A-Za-z0-9./-]')),
+                    _BusinessDocumentInputFormatter(),
+                  ],
+                  decoration: const InputDecoration(
+                    labelText: 'CNPJ do estabelecimento',
+                    helperText:
+                        'Obrigatório para liberar os 14 dias grátis. Aceita CNPJ numérico e alfanumérico.',
+                    prefixIcon: Icon(Icons.badge_outlined),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.verified_user_outlined,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Text(
+                            'Usamos o CNPJ para impedir que o mesmo estabelecimento crie vários testes grátis com e-mails diferentes.',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
                   controller: _referralController,
                   textCapitalization: TextCapitalization.characters,
                   decoration: const InputDecoration(
@@ -90,6 +131,7 @@ class _BusinessSetupPageState extends State<BusinessSetupPage> {
                           BusinessCreated(
                             name: _nameController.text,
                             type: _type,
+                            document: _documentController.text,
                             referralCode: _referralController.text,
                           ),
                         ),
@@ -123,4 +165,33 @@ class _BusinessSetupPageState extends State<BusinessSetupPage> {
     BusinessType.aestheticClinic => 'Clínica de estética',
     BusinessType.otherBeauty => 'Outro negócio de beleza',
   };
+}
+
+class _BusinessDocumentInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final normalized = BusinessDocument.normalize(newValue.text);
+    final trimmed = normalized.length > 14
+        ? normalized.substring(0, 14)
+        : normalized;
+    final formatted = _formatPartial(trimmed);
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+
+  String _formatPartial(String value) {
+    final buffer = StringBuffer();
+    for (var i = 0; i < value.length; i++) {
+      if (i == 2 || i == 5) buffer.write('.');
+      if (i == 8) buffer.write('/');
+      if (i == 12) buffer.write('-');
+      buffer.write(value[i]);
+    }
+    return buffer.toString();
+  }
 }

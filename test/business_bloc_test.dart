@@ -27,6 +27,7 @@ void main() {
       const BusinessCreated(
         name: 'Studio Aurora',
         type: BusinessType.beautySalon,
+        document: '11.222.333/0001-81',
       ),
     );
     final state = await bloc.stream.firstWhere(
@@ -34,7 +35,25 @@ void main() {
     );
 
     expect(state.business?.name, 'Studio Aurora');
+    expect(state.business?.document, '11222333000181');
     expect(state.membership?.role, MembershipRole.owner);
+  });
+
+  test('bloqueia criação sem CNPJ válido', () async {
+    final bloc = BusinessBloc(_FakeBusinessRepository());
+    addTearDown(bloc.close);
+
+    bloc.add(
+      const BusinessCreated(
+        name: 'Studio Sem Documento',
+        type: BusinessType.beautySalon,
+        document: '00.000.000/0000-00',
+      ),
+    );
+    final state = await bloc.stream.firstWhere((item) => item.message != null);
+
+    expect(state.status, BusinessStatus.requiresBusiness);
+    expect(state.message, contains('CNPJ válido'));
   });
 
   test('envia código de indicação ao criar estabelecimento', () async {
@@ -46,6 +65,7 @@ void main() {
       const BusinessCreated(
         name: 'Studio Indicado',
         type: BusinessType.spa,
+        document: '11.222.333/0001-81',
         referralCode: 'AB12CD',
       ),
     );
@@ -58,6 +78,7 @@ void main() {
 class _FakeBusinessRepository implements BusinessRepository {
   final List<BusinessAccess> items = [];
   String lastReferralCode = '';
+  String lastDocument = '';
 
   @override
   Future<BusinessAccess> createBusiness({
@@ -68,6 +89,7 @@ class _FakeBusinessRepository implements BusinessRepository {
     String referralCode = '',
   }) async {
     lastReferralCode = referralCode;
+    lastDocument = document;
     final createdAt = DateTime(2026, 7, 7);
     final access = BusinessAccess(
       business: BeautyBusiness(
@@ -75,6 +97,7 @@ class _FakeBusinessRepository implements BusinessRepository {
         name: name,
         type: type,
         createdAt: createdAt,
+        document: document,
       ),
       membership: BusinessMembership(
         id: 'membership-1',

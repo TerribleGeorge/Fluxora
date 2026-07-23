@@ -13,10 +13,12 @@ final class BusinessCreated extends BusinessEvent {
   const BusinessCreated({
     required this.name,
     required this.type,
+    required this.document,
     this.referralCode = '',
   });
   final String name;
   final BusinessType type;
+  final String document;
   final String referralCode;
 }
 

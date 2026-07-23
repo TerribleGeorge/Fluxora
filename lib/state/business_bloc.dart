@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../domain/auth_repository.dart';
+import '../domain/business_document.dart';
 import '../domain/business_repository.dart';
 import 'business_event.dart';
 import 'business_state.dart';
@@ -50,11 +51,22 @@ class BusinessBloc extends Bloc<BusinessEvent, BusinessState> {
       );
       return;
     }
+    if (!BusinessDocument.isValid(event.document)) {
+      emit(
+        const BusinessState(
+          status: BusinessStatus.requiresBusiness,
+          message:
+              'Informe um CNPJ válido para ativar o teste gratuito do estabelecimento.',
+        ),
+      );
+      return;
+    }
     emit(const BusinessState(status: BusinessStatus.loading));
     try {
       final access = await _repository.createBusiness(
         name: event.name,
         type: event.type,
+        document: BusinessDocument.normalize(event.document),
         referralCode: event.referralCode,
       );
       emit(

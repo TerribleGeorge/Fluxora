@@ -59,6 +59,7 @@ void main() {
       name: 'Studio Ana',
       type: BusinessType.browAndLashStudio,
       createdAt: createdAt,
+      document: '11222333000181',
       phone: '11999999999',
       referralCode: 'AB12CD',
     );
