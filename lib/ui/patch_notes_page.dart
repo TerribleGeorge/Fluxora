@@ -4,7 +4,7 @@ class PatchNotesPage extends StatelessWidget {
   const PatchNotesPage({super.key});
 
   static const version = '1.0.0';
-  static const buildNumber = '19';
+  static const buildNumber = '20';
 
   @override
   Widget build(BuildContext context) {
@@ -16,43 +16,43 @@ class PatchNotesPage extends StatelessWidget {
           _ReleaseHeader(),
           SizedBox(height: 16),
           _ReleaseSection(
-            icon: Icons.badge_outlined,
-            title: 'Login do funcionário mais claro e seguro',
+            icon: Icons.verified_user_outlined,
+            title: 'Cadastro de estabelecimento com CNPJ validado',
             items: [
-              'A tela de entrada agora separa Proprietário e Funcionário para evitar confusão no acesso.',
-              'O dono continua entrando com e-mail e senha da conta principal.',
-              'O funcionário entra com e-mail do estabelecimento, nome cadastrado e senha definida pelo dono.',
-              'Esse fluxo ajuda a impedir que colaboradores acessem informações financeiras do proprietário.',
+              'O cadastro do estabelecimento agora solicita CNPJ para liberar o teste gratuito com mais segurança.',
+              'O Fluxora valida o documento antes de criar o negócio e aceita o novo padrão alfanumérico de CNPJ.',
+              'A base do Supabase bloqueia o mesmo CNPJ em mais de uma conta, mesmo usando e-mails diferentes.',
+              'Essa proteção reduz abuso do período grátis e fortalece a identidade real de cada estabelecimento.',
             ],
           ),
           _ReleaseSection(
-            icon: Icons.groups_outlined,
-            title: 'Cadastro de equipe com acesso operacional',
+            icon: Icons.security_outlined,
+            title: 'Blindagem antifraude no backend',
             items: [
-              'O cadastro de profissional passou a orientar a criação do acesso de funcionário.',
-              'O dono define o nome de login e uma senha inicial para cada colaborador.',
-              'O acesso do funcionário fica conectado ao profissional certo dentro do estabelecimento.',
-              'A rotina operacional fica preparada para agenda própria, atendimentos e permissões restritas.',
+              'As regras de criação de estabelecimento foram reforçadas diretamente no banco de dados.',
+              'O CNPJ é normalizado e comparado no Supabase para evitar duplicidade por formatação diferente.',
+              'O app mostra mensagens claras quando o documento é inválido ou já pertence a outro cadastro.',
+              'A regra fica protegida fora do cliente, reduzindo risco de manipulação pelo aplicativo.',
+            ],
+          ),
+          _ReleaseSection(
+            icon: Icons.badge_outlined,
+            title: 'Login do funcionário preservado',
+            items: [
+              'A separação entre Proprietário e Funcionário continua disponível na tela de entrada.',
+              'O dono entra com e-mail e senha da conta principal.',
+              'O funcionário entra com e-mail do estabelecimento, nome cadastrado e senha definida pelo dono.',
+              'Esse fluxo segue ajudando a impedir acesso indevido aos relatórios financeiros do proprietário.',
             ],
           ),
           _ReleaseSection(
             icon: Icons.loyalty_outlined,
-            title: 'Clientes recorrentes e fidelidade manual',
+            title: 'Clientes recorrentes e fidelidade',
             items: [
-              'A base de clientes passou a considerar histórico de agendamentos e atendimentos.',
+              'A base de clientes continua preparada para considerar histórico de agendamentos e atendimentos.',
               'O dono pode classificar clientes fiéis de forma mais direta quando fizer sentido para o negócio.',
               'O Fluxora fica preparado para reconhecer clientes assíduos quando retornarem ao estabelecimento.',
               'O objetivo é aplicar preços e descontos corretos no fechamento sem depender de importação de planilhas.',
-            ],
-          ),
-          _ReleaseSection(
-            icon: Icons.payments_outlined,
-            title: 'Assinatura e indicações mais robustas',
-            items: [
-              'O fluxo de verificação de compras do Google Play foi corrigido para validar assinaturas com mais segurança.',
-              'A base de indicações foi preparada para acompanhar convites e crescimento orgânico do produto.',
-              'O suporte a eventos de billing em tempo real ficou pronto para sincronizar mudanças de assinatura.',
-              'As melhorias reduzem risco de divergência entre o app, o Google Play e o backend.',
             ],
           ),
           _ReleaseSection(
@@ -80,7 +80,7 @@ class PatchNotesPage extends StatelessWidget {
             title: 'Qualidade e continuidade',
             items: [
               'As regras de permissão continuam separando dono, gerente e funcionário.',
-              'Os testes automatizados cobrem autenticação, agenda, financeiro, fidelidade, checkout e agendamento público.',
+              'Os testes automatizados cobrem autenticação, CNPJ, agenda, financeiro, fidelidade, checkout e agendamento público.',
               'A arquitetura com BLoC, Provider, repositórios e Supabase foi preservada.',
               'Vendas, produtos, caixa, comissões, fidelidade e lucro real continuam como núcleo do Fluxora.',
             ],
@@ -120,8 +120,8 @@ class _ReleaseHeader extends StatelessWidget {
             const Text(
               'A primeira versão reúne as ferramentas essenciais para negócios '
               'de beleza acompanharem vendas, equipe, fidelidade, produtos, '
-              'caixa e lucro real, agora com login de funcionário mais claro, '
-              'controle de clientes recorrentes e navegação financeira melhorada.',
+              'caixa e lucro real, agora com CNPJ validado no cadastro, '
+              'proteção contra duplicidade de teste grátis e login de funcionário claro.',
             ),
           ],
         ),

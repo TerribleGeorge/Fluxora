@@ -1,12 +1,12 @@
-Fluxora 1.0.0 (build 19)
+Fluxora 1.0.0 (build 20)
 Pacote: dev.devvoid.fluxora
 Empresa: DevVoid.dev
 Artefato: build/app/outputs/bundle/release/app-release.aab
-Tamanho: 49960833 bytes
-SHA-256: 06289D5DEC92C4D35A9D0B59A900A7E953C28E9291D987DE8E8DA33929A6B537
+Tamanho: 49971516 bytes
+SHA-256: 1C4CB9F93197E994531D4992C78AEEEB7175C2D7B6C2C66AF87BD858AA503D5D
 Assinatura: verificada (jar verified)
 Certificado de upload: CN=DevVoid.dev, OU=Mobile, O=DevVoid.dev, L=Brasilia, ST=DF, C=BR
-Gerado em: 2026-07-19
+Gerado em: 2026-07-23
 Backend: Supabase nqcoxxbzwzcuwprbzpdb
 Supabase: SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY passados via --dart-define-from-file=.env
 Portal público: https://terriblegeorge.github.io/fluxora-agendamento
@@ -17,24 +17,20 @@ Oferta configurada: teste-14-dias (teste gratuito de 2 semanas)
 
 Validações executadas:
 - flutter analyze --no-pub: sem problemas
-- flutter test --no-pub: 108 testes aprovados
+- flutter test --no-pub: 112 testes aprovados
 - flutter build appbundle --release --dart-define-from-file=.env: concluído
 - jarsigner -verify -certs build/app/outputs/bundle/release/app-release.aab: jar verified
 - SHA-256 calculado com Get-FileHash
 
-Principais mudanças da build 19:
-- Patch notes internos atualizados para a versão 1.0.0 (19).
-- Notas da Google Play atualizadas para a build 19.
-- Login do funcionário separado por modo de acesso na tela inicial.
-- Proprietário entra com e-mail e senha da conta principal.
-- Funcionário entra com e-mail do estabelecimento, nome cadastrado e senha definida pelo dono.
-- Cadastro de profissional orienta a criação de acesso operacional para colaboradores.
-- Controle de clientes recorrentes e fidelidade avançou para reduzir dependência de importação de planilhas.
-- Lista/histórico de clientes agendados e atendidos foi preservada como base para reconhecer assiduidade.
-- Navegação mobile financeira foi ajustada para deixar lançamentos, despesas, retiradas e impostos mais acessíveis.
-- Verificação de compras do Google Play foi corrigida.
-- Base de indicações e eventos de assinatura em tempo real foi preparada.
-- Manual rápido da tela inicial foi atualizado para explicar o fluxo do dono e do funcionário.
+Principais mudanças da build 20:
+- Patch notes internos atualizados para a versão 1.0.0 (20).
+- Notas da Google Play atualizadas para a build 20.
+- Cadastro de estabelecimento agora solicita CNPJ para liberar teste gratuito com mais segurança.
+- Validação de CNPJ foi adicionada no app, incluindo suporte ao padrão alfanumérico.
+- Banco Supabase normaliza o documento e bloqueia duplicidade por CNPJ.
+- O mesmo estabelecimento não consegue reiniciar teste grátis apenas trocando o e-mail.
+- Mensagens de erro foram melhoradas para CNPJ inválido ou já cadastrado.
+- Fluxo de login do funcionário, fidelidade, financeiro mobile e manual inicial seguem preservados.
 - Vendas, produtos, checkout, comissões, caixa, fidelidade e lucro real continuam preservados.
 
 Pendências externas conhecidas:
